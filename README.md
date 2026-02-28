@@ -41,3 +41,8 @@ skills/
 - スキル内容は実運用でのフィードバックに基づいて継続的に改善
 - 汎用化できる手順は、特定ツール依存を減らして再利用性を高める
 - 互換性に影響する変更は、変更理由と移行方法を明記する
+
+## 設定マニュアル
+
+- [SKILL_SETUP_MANUAL.md](SKILL_SETUP_MANUAL.md): Codex/Claude CodeでSkillを設定する手順
+
