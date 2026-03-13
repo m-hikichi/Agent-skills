@@ -1,0 +1,28 @@
+{
+  "project_name": "project-name",
+  "language": "TypeScript",
+  "framework": "Next.js",
+  "spec_dir": "docs/specs",
+  "traceability_path": "docs/traceability-matrix.md",
+  "requirements_path": "docs/requirements.md",
+  "spec_id_prefix": "SPEC",
+  "requirement_id_policies": {
+    "project_functional": "FC-LL-MM-NNN",
+    "project_non_functional": "NF-NNN",
+    "spec_functional": "FR-NNN",
+    "spec_non_functional": "NFR-NNN",
+    "spec_test": "TC-NNN"
+  },
+  "status_flow": [
+    "draft",
+    "review",
+    "approved",
+    "implemented",
+    "deprecated"
+  ],
+  "coding_conventions": {
+    "naming": "camelCase",
+    "test_framework": "Vitest",
+    "directory_structure": "src/ feature-first"
+  }
+}
