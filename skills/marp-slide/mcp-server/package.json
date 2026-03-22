@@ -1,0 +1,18 @@
+{
+  "name": "marp-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Marp slide export and validation (Docker)",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "@types/node": "^22.15.3"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Review the Marp slide artifacts after every edit. Read .slide-work/request.yaml, .slide-work/outline.yaml, .slide-work/review.json, and slides/presentation.md. Evaluate against the review rubric: missing required info, audience fit, goal alignment, one-slide-one-message, logical flow, overflow risk, terminology difficulty, and export readiness. Write the updated review result to .slide-work/review.json. Return {\"ok\": true} only when no blocking issue remains. $ARGUMENTS"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Check if Claude is allowed to stop. Read .slide-work/review.json. Allow Claude to stop ONLY if ALL of the following conditions are met: (1) .slide-work/review.json exists, (2) status is \"pass\", (3) missing_required is an empty array, (4) questions_for_user is an empty array. If any condition is not met, return {\"ok\": false, \"reason\": \"Review has not passed. Current status: <status>. Remaining issues: <summary>.\"}. If all conditions are met, return {\"ok\": true}. $ARGUMENTS"
+          }
+        ]
+      }
+    ]
+  }
+}
