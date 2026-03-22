@@ -83,13 +83,14 @@ slides:
 review_notes: []
 ```
 
-#### `.slide-work/review.json` — レビュー結果
+#### `.slide-work/review.json` — レビュー結果と完了判定
 
-ドラフト作成後、必ずこのファイルを更新する。`status` が `pass` になるまで完了扱いにしない。
+ドラフト作成後は毎回このファイルを**上書き**する。`review.json` は「現在の `request.yaml` / `outline.yaml` / `slides/presentation.md` に対する最新レビュー結果」を表す唯一の完了判定ファイルであり、`status` が `pass` かつ検証成功のときだけ完了候補になる。
 
 ```json
 {
   "status": "missing_info",
+  "reviewed_at": "",
   "missing_required": [],
   "issues": [],
   "questions_for_user": [],
@@ -98,14 +99,34 @@ review_notes: []
     ".slide-work/request.yaml",
     ".slide-work/outline.yaml",
     "slides/presentation.md"
-  ]
+  ],
+  "validation": {
+    "marp_check": {
+      "status": "not_run",
+      "details": ""
+    },
+    "exports": [
+      {
+        "format": "html",
+        "output": ".slide-work/preview.html",
+        "status": "not_run",
+        "details": ""
+      }
+    ]
+  }
 }
 ```
 
 `status` の値:
-- `pass` — すべてのチェックをクリア。完了可能
-- `fail` — 問題あり。`issues` と `exact_fix_instructions` に従って修正が必要
-- `missing_info` — 必須情報が不足。`missing_required` と `questions_for_user` に従ってユーザーに確認が必要
+- `pass` — 最新ドラフトに対するレビュー、`marp_check`、HTML プレビュー、および要求された出力形式のエクスポート検証がすべて成功。完了候補
+- `fail` — 問題あり。`exact_fix_instructions` に従って修正し、**同じファイル群に対して再レビュー**が必要
+- `missing_info` — 必須情報不足またはユーザー確認が必要。`questions_for_user` をそのままユーザーに確認し、推測で進めない
+
+### 責務分担
+
+- `SKILL.md` — 状態遷移と次のアクションを定義する。`pass` / `fail` / `missing_info` を読んでどう動くかはここに従う
+- `.claude/agents/slide-reviewer.md` — 1回分のレビュー処理を定義する。何を読み、何を検証し、どの形式で `review.json` を上書きするかはここに従う
+- `.claude/settings.json` — いつ review を自動再実行するか、いつ終了をブロックするかを定義する
 
 ### 進行ルール
 
@@ -113,14 +134,13 @@ review_notes: []
 2. 必須項目が未充足なら `missing_required` に記録し、推測で進めない
 3. 不足情報がある場合、質問すべき項目だけを `open_questions` に記録してユーザーに確認する
 4. 構成案は `.slide-work/outline.yaml` に保存し、ユーザー承認後に `approval.outline_approved: true` にする
-5. ドラフト作成後は必ず `.slide-work/review.json` を更新する
-6. `review.json` の `status` が `pass` になるまで完了扱いにしない
-7. エクスポート時は MCP サーバーの `marp_export` ツールを使って出力が成功することを確認する:
-   - HTML プレビュー: `marp_export(source: "slides/presentation.md", format: "html", output: ".slide-work/preview.html")`
-   - PDF 出力: `marp_export(source: "slides/presentation.md", format: "pdf", output: ".slide-work/presentation.pdf")`
-   - バリデーション: `marp_check(source: "slides/presentation.md")`
+5. `slides/presentation.md`、`.slide-work/request.yaml`、`.slide-work/outline.yaml` を更新したら、hook によってレビューが再実行される前提で進める。ただし hook の結果は必ず `.slide-work/review.json` を読み返して確認し、更新されていなければ `slide-reviewer` を手動で呼び出す
+6. `review.json` の `status` が `fail` の間は完了扱いにしない。`exact_fix_instructions` を順に反映し、再レビューする
+7. `review.json` の `status` が `missing_info` の場合は、`questions_for_user` をユーザーに確認して待つ。推測で埋めて進まない
+8. `review.json` の `status` が `pass` でも、`validation.marp_check.status` が `pass` であり、HTML プレビューと `request.yaml.output_formats` の各形式の export が成功していなければ完了扱いにしない
+9. レビュー時の検証は `slide-reviewer` が担当する。毎回 `marp_check(source: "slides/presentation.md")` と HTML プレビュー export を実行し、さらに `request.yaml.output_formats` に含まれる各形式を `marp_export` で検証する
 
-### レビュー観点（slide-reviewer subagent が評価）
+### レビュー観点（slide-reviewer が評価）
 
 以下の観点でレビューを行い、結果を `review.json` に記録する:
 
@@ -628,26 +648,31 @@ style: |
 #### レビューの進め方
 
 1. **ドラフトを作成する**: 承認された構成（`outline.yaml`）に沿って `slides/presentation.md` を書く
-2. **slide-reviewer subagent を呼び出す**: ドラフト作成後、必ず slide-reviewer subagent でレビューを実行する。結果は `.slide-work/review.json` に書き込まれる
-3. **レビュー結果に基づいて対応する**:
-   - `status: "missing_info"` → `questions_for_user` の内容をユーザーに確認する
-   - `status: "fail"` → `exact_fix_instructions` に従って修正し、再度レビューを実行する
+2. **最新の review.json を必ず得る**: 通常は `settings.json` の hook が `slide-reviewer` 相当のレビューを自動実行して `.slide-work/review.json` を更新する。`review.json` が存在しない、更新されていない、または内容が古そうな場合は、`slide-reviewer` を手動で呼び出して最新化する
+3. **レビュー結果に基づいて分岐する**:
+   - `status: "missing_info"` → `questions_for_user` をそのままユーザーに確認し、回答が得られるまで止まる
+   - `status: "fail"` → `exact_fix_instructions` を順に反映して `slides/presentation.md` などを修正し、**必ず** 2 に戻って再レビューする
    - `status: "pass"` → ユーザーにドラフトを提示してフィードバックを求める
-4. **フィードバックを反映して改善する**: ユーザーの指摘を受けて修正し、再度 slide-reviewer を実行する
-5. **完了条件**: `review.json` の `status` が `pass` かつユーザーが「これでいい」と言ったら、`request.yaml` の `approval.draft_approved` を `true` に更新する
+4. **ユーザー指摘後も同じループを続ける**: ユーザーのフィードバックを受けて `slides/presentation.md`、`request.yaml`、`outline.yaml` のいずれかを更新したら、pass が一度出ていてもそこで終わらず、必ず 2 に戻って再レビューする
+5. **完了条件**: 最新の `review.json` が `status: "pass"` で、`validation.marp_check.status == "pass"` かつ HTML プレビューと要求形式の export が成功し、さらにユーザーが「これでいい」と言ったときだけ、`request.yaml` の `approval.draft_approved` を `true` に更新する
 
 #### レビュー結果の読み方
 
 `review.json` の各フィールドは以下の意味を持つ：
 
 - `status`: `pass` | `fail` | `missing_info` — 全体の判定
+- `reviewed_at`: そのレビューが実行された時刻。hook はこれを見てレビューの鮮度を判断する
 - `missing_required`: 不足している必須情報のリスト
-- `issues`: 検出された問題のリスト（対象者適合、ゴール整合、はみ出しリスクなど）
+- `issues`: 検出された問題のリスト（対象者適合、ゴール整合、はみ出しリスク、検証失敗など）
 - `questions_for_user`: ユーザーに確認すべき質問のリスト
 - `exact_fix_instructions`: 自動修正可能な具体的な修正指示のリスト
 - `last_checked_files`: レビュー時に確認したファイルのリスト
+- `validation.marp_check`: `marp_check` の結果
+- `validation.exports`: HTML プレビューおよび要求形式ごとの `marp_export` 結果
 
 ### 10. エクスポート
+
+レビュー段階では、`slide-reviewer` が **毎回** `marp_check` と export 検証を実行する。ここでのエクスポート工程は、最新の `review.json` が `pass` になったあとに利用者へ渡す成果物を再出力したり、出力先を変えたりするための工程として扱う。
 
 MCP サーバーの `marp_export` ツールを使ってスライドを出力する：
 
@@ -665,7 +690,7 @@ marp_export(source: "slides/presentation.md", format: "pptx")
 marp_export(source: "slides/presentation.md", format: "pdf", output: "slides/presentation.pdf")
 ```
 
-エクスポート前に `marp_check` でバリデーションを実行し、frontmatter や HTML タグの問題がないことを確認する。
+`marp_check` と HTML プレビュー + 要求形式の export 検証は、完了判定の一部として `slide-reviewer` が実行する。ここで追加の `marp_export` を実行するのは、別パスへの保存や最終納品ファイルの再生成が必要なときだけでよい。
 
 ## ファイルの保存先
 

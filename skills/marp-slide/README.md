@@ -6,8 +6,9 @@ Marp（Markdown Presentation Ecosystem）を使ったスライド資料の作成
 
 - ヒアリング → 構成提案 → ドラフト → レビュー → 改善 の対話的ワークフロー
 - 状態ファイル（`.slide-work/`）による進行管理
-- slide-reviewer subagent による自動レビュー（対象者適合、はみ出しリスク、エクスポート検証など）
-- Stop hook によるレビュー未通過時の完了防止
+- slide-reviewer による自動レビュー（対象者適合、はみ出しリスク、エクスポート検証など）
+- PostToolUse hook による `Write` / `Edit` / `MultiEdit` / `Bash` 後のレビュー再実行
+- Stop hook による「最新レビュー未通過なのに終了」の防止
 
 ## セットアップ手順
 
@@ -69,7 +70,7 @@ docker images | grep marp-mcp-server
 │   │   └── marp-slide/
 │   │       └── SKILL.md           # スキル本体（ワークフロー定義）
 │   ├── agents/
-│   │   └── slide-reviewer.md      # レビュー用 subagent
+│   │   └── slide-reviewer.md      # レビュー契約 / reviewer
 │   └── settings.json              # hooks 設定（自動レビュー・完了制御）
 ├── .mcp.json                      # MCP サーバー設定（Docker 経由で Marp CLI を実行）
 ├── .slide-work/                   # ← スキル実行時に自動生成される作業ディレクトリ
@@ -96,6 +97,6 @@ Claude Code で以下のように話しかけるだけです:
 | ファイル | 役割 |
 |---|---|
 | `.claude/skills/marp-slide/SKILL.md` | スキル本体。ワークフロー、ルール、テンプレートを定義 |
-| `.claude/agents/slide-reviewer.md` | レビュー用 subagent。8観点でスライドを自動評価 |
-| `.claude/settings.json` | hooks 設定。Write/Edit 後の自動レビューと、レビュー未通過時の完了防止 |
+| `.claude/agents/slide-reviewer.md` | レビュー契約。`review.json` を上書きし、8観点 + 検証結果を記録 |
+| `.claude/settings.json` | hooks 設定。`Write` / `Edit` / `MultiEdit` / `Bash` 後の自動再レビューと、最新 review 未通過時の完了防止 |
 | `.mcp.json` | MCP サーバー設定。Docker 経由で Marp CLI のエクスポート・バリデーションを実行 |
