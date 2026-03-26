@@ -5,6 +5,14 @@
   "spec_dir": "docs/specs",
   "traceability_path": "docs/traceability-matrix.md",
   "requirements_path": "docs/requirements.md",
+  "implementation_roots": [
+    "src",
+    "app"
+  ],
+  "test_roots": [
+    "tests",
+    "src"
+  ],
   "spec_id_prefix": "SPEC",
   "requirement_id_policies": {
     "project_functional": "FC-LL-MM-NNN",
@@ -20,6 +28,12 @@
     "implemented",
     "deprecated"
   ],
+  "verification": {
+    "consistency_runner": "docker",
+    "project_test_commands": [
+      "docker compose run --rm <service> <your-test-command>"
+    ]
+  },
   "coding_conventions": {
     "naming": "camelCase",
     "test_framework": "Vitest",
