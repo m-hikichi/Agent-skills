@@ -1,6 +1,6 @@
 # 最終整合性監査テンプレート
 
-変更を伴う依頼を閉じる前に、最終メッセージの末尾へ次のブロックを入れる。
+変更を伴う依頼を本当に閉じる前に、外側の最終メッセージの末尾へ次のブロックを入れる。child skill は authoring summary、implementation summary、audit findings を返すだけに留め、親 `spec-driven-dev` または利用者側の最終 close out でこの書式を組み立てる。
 
 この見出し名と `判定:` の表記は、Claude Code の Stop reviewer が機械的に読む。言い換えない。
 

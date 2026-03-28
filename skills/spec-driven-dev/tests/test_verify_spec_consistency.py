@@ -309,6 +309,157 @@ class VerifySpecConsistencyTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("requirements traceability is not reflected in spec requirement table", result.stdout)
 
+    def test_checker_fails_when_matrix_is_missing_second_contract_row_for_same_feature(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            self.make_project(root)
+            write(
+                root / "docs" / "specs" / "SPEC-001-todo.md",
+                """
+                ---
+                spec_id: SPEC-001
+                title: Todo 作成
+                status: approved
+                created: 2026-03-26
+                updated: 2026-03-26
+                author: test
+                related_specs: []
+                ---
+
+                # SPEC-001: Todo 作成
+
+                ## 対応要件（requirements.md）
+
+                | 要件ID | 要件概要 | 本仕様での実装機能ID |
+                |--------|----------|----------------------|
+                | FC-01-01-001 | Todo を作成できる | FR-001 |
+
+                ## 機能仕様（要件実装一覧）
+
+                - [ ] FR-001: Todo を作成できる
+
+                ## 実装トレーサビリティ契約
+
+                | 機能ID | 実装ファイル | シンボル種別 | シンボル名 | テストファイル | テストID | 備考 |
+                |--------|--------------|--------------|------------|----------------|----------|------|
+                | FR-001 | src/todos/create.py | function | create_todo | tests/test_create_todo.py | TC-001 | entrypoint |
+                | FR-001 | src/todos/validate.py | function | validate_todo | tests/test_validate_todo.py | TC-002 | validation |
+
+                ## 実装完了条件
+
+                | 機能ID | 観測可能な結果 | テストID | 自動化 | 備考 |
+                |--------|----------------|----------|--------|------|
+                | FR-001 | 正常な入力で Todo が作成される | TC-001, TC-002 | yes | |
+
+                ## テスト仕様
+
+                | テストID | 対応要件 | テスト内容 | 種別 |
+                |---------|---------|-----------|------|
+                | TC-001 | FR-001 | Todo が作成される | 正常系 |
+                | TC-002 | FR-001 | 作成前に入力が検証される | 正常系 |
+                """,
+            )
+            write(
+                root / "src" / "todos" / "validate.py",
+                """
+                def validate_todo(title: str) -> bool:
+                    return bool(title)
+                """,
+            )
+            write(
+                root / "tests" / "test_validate_todo.py",
+                """
+                def test_validate_todo_tc_002():
+                    # TC-002
+                    assert True
+                """,
+            )
+            result = self.run_checker(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("matrix row missing from expected coverage", result.stdout)
+            self.assertIn("validate.py", result.stdout)
+
+    def test_checker_fails_when_matrix_is_missing_second_requirement_row_for_same_feature(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            self.make_project(root)
+            write(
+                root / "docs" / "requirements.md",
+                """
+                # 要件
+
+                ## プロダクトゴール
+                - sample
+
+                ## 対象ユーザー
+                - sample
+
+                ## MVPスコープ
+                - sample
+
+                ### 要件と仕様の対応（Traceability）
+                | 要件ID | 要件概要 | 対応仕様 |
+                |--------|----------|----------|
+                | FC-01-01-001 | Todo を作成できる | SPEC-001 / FR-001 |
+                | FC-01-01-002 | Todo 入力を検証できる | SPEC-001 / FR-001 |
+
+                ## MVP対象外
+                - none
+
+                ## 受け入れ基準（MVP）
+                - AC-001
+                """,
+            )
+            write(
+                root / "docs" / "specs" / "SPEC-001-todo.md",
+                """
+                ---
+                spec_id: SPEC-001
+                title: Todo 作成
+                status: approved
+                created: 2026-03-26
+                updated: 2026-03-26
+                author: test
+                related_specs: []
+                ---
+
+                # SPEC-001: Todo 作成
+
+                ## 対応要件（requirements.md）
+
+                | 要件ID | 要件概要 | 本仕様での実装機能ID |
+                |--------|----------|----------------------|
+                | FC-01-01-001 | Todo を作成できる | FR-001 |
+                | FC-01-01-002 | Todo 入力を検証できる | FR-001 |
+
+                ## 機能仕様（要件実装一覧）
+
+                - [ ] FR-001: Todo を作成できる
+
+                ## 実装トレーサビリティ契約
+
+                | 機能ID | 実装ファイル | シンボル種別 | シンボル名 | テストファイル | テストID | 備考 |
+                |--------|--------------|--------------|------------|----------------|----------|------|
+                | FR-001 | src/todos/create.py | function | create_todo | tests/test_create_todo.py | TC-001 | entrypoint |
+
+                ## 実装完了条件
+
+                | 機能ID | 観測可能な結果 | テストID | 自動化 | 備考 |
+                |--------|----------------|----------|--------|------|
+                | FR-001 | 正常な入力で Todo が作成される | TC-001 | yes | |
+
+                ## テスト仕様
+
+                | テストID | 対応要件 | テスト内容 | 種別 |
+                |---------|---------|-----------|------|
+                | TC-001 | FR-001 | Todo が作成される | 正常系 |
+                """,
+            )
+            result = self.run_checker(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("matrix row missing from expected coverage", result.stdout)
+            self.assertIn("FC-01-01-002", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

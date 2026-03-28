@@ -124,6 +124,28 @@ def split_csv(value: str) -> List[str]:
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
+def row_signature(
+    requirement_id: str,
+    spec_id: str,
+    feature_id: str,
+    impl_file: str,
+    symbol_kind: str,
+    symbol_name: str,
+    test_file: str,
+    test_ids: Sequence[str],
+) -> Tuple[str, str, str, str, str, str, str, Tuple[str, ...]]:
+    return (
+        requirement_id,
+        spec_id,
+        feature_id,
+        impl_file,
+        symbol_kind,
+        symbol_name,
+        test_file,
+        tuple(test_ids),
+    )
+
+
 def parse_spec_mapping_cell(value: str) -> List[Tuple[str, str]]:
     mappings: List[Tuple[str, str]] = []
     for spec_id, feature_blob in SPEC_MAPPING_RE.findall(value):
@@ -343,7 +365,7 @@ def validate(project_root: Path, config: Dict[str, object]) -> List[Finding]:
     if not matrix_rows:
         findings.append(Finding("High", "traceability matrix has no parseable rows"))
 
-    seen_matrix_keys = set()
+    actual_matrix_signatures = set()
     for row in matrix_rows:
         requirement_id = row.get("要件ID", "")
         spec_id = row.get("仕様ID", "")
@@ -355,7 +377,18 @@ def validate(project_root: Path, config: Dict[str, object]) -> List[Finding]:
         test_ids = tuple(split_csv(row.get("テストID", "")))
 
         key = (spec_id, feature_id)
-        seen_matrix_keys.add(key)
+        actual_matrix_signatures.add(
+            row_signature(
+                requirement_id,
+                spec_id,
+                feature_id,
+                impl_file,
+                symbol_kind,
+                symbol_name,
+                test_file,
+                test_ids,
+            )
+        )
 
         if key not in spec_contract_rows:
             findings.append(Finding("High", f"matrix row references unknown contract: {spec_id} / {feature_id}"))
@@ -390,9 +423,33 @@ def validate(project_root: Path, config: Dict[str, object]) -> List[Finding]:
         if contract_test_ids != test_ids:
             findings.append(Finding("Medium", f"matrix test IDs do not match contract: {spec_id} / {feature_id}"))
 
-    for key in spec_contract_rows:
-        if key not in seen_matrix_keys:
-            findings.append(Finding("High", f"contract row missing from matrix: {key[0]} / {key[1]}"))
+    expected_matrix_signatures = set()
+    for requirement_id, mappings in requirements_mappings.items():
+        for spec_id, feature_id in mappings:
+            for contract_row in spec_contract_rows.get((spec_id, feature_id), []):
+                expected_matrix_signatures.add(
+                    row_signature(
+                        requirement_id,
+                        spec_id,
+                        feature_id,
+                        contract_row.get("実装ファイル", ""),
+                        contract_row.get("シンボル種別", ""),
+                        contract_row.get("シンボル名", ""),
+                        contract_row.get("テストファイル", ""),
+                        split_csv(contract_row.get("テストID", "")),
+                    )
+                )
+
+    for signature in expected_matrix_signatures - actual_matrix_signatures:
+        requirement_id, spec_id, feature_id, impl_file, symbol_kind, symbol_name, test_file, test_ids = signature
+        findings.append(
+            Finding(
+                "High",
+                "matrix row missing from expected coverage: "
+                f"{requirement_id} -> {spec_id} / {feature_id} "
+                f"({impl_file}, {symbol_kind} {symbol_name}, {test_file}, {', '.join(test_ids)})",
+            )
+        )
 
     for requirement_id, mappings in requirements_mappings.items():
         for spec_id, feature_id in mappings:

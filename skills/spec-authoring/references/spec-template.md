@@ -55,11 +55,12 @@ related_specs: []
 
 ## 実装トレーサビリティ契約
 
-自由文ではなく、この表で「どこに実装されるか」を固定する。1 行は 1 つの `FR-` / `NFR-` と 1 つの実装シンボルの対応にする。
+自由文ではなく、この表で「どこに実装されるか」を固定する。1 行は 1 つの `FR-` / `NFR-` と 1 つの実装シンボルの対応にする。同じ機能が複数シンボルにまたがるなら、機能IDを重複させて行を分ける。
 
 | 機能ID | 実装ファイル | シンボル種別 | シンボル名 | テストファイル | テストID | 備考 |
 |--------|--------------|--------------|------------|----------------|----------|------|
-| FR-001 | src/todos/create.ts | function | createTodo | tests/todos/create.test.ts | TC-001, TC-002 | 作成処理の入口 |
+| FR-001 | src/todos/create.ts | function | createTodo | tests/todos/create.test.ts | TC-001 | 作成処理の入口 |
+| FR-001 | src/todos/CreateTodoForm.tsx | component | CreateTodoForm | tests/todos/CreateTodoForm.test.tsx | TC-002 | 作成画面の入力 |
 | FR-002 | src/todos/CreateTodoForm.tsx | component | CreateTodoForm | tests/todos/CreateTodoForm.test.tsx | TC-003 | 画面入力 |
 | NFR-001 | src/todos/create.ts | function | createTodo | tests/perf/todos.test.ts | TC-101 | 200ms 以内 |
 
@@ -70,7 +71,7 @@ related_specs: []
 | 機能ID | 観測可能な結果 | テストID | 自動化 | 備考 |
 |--------|----------------|----------|--------|------|
 | FR-001 | 正常な入力で Todo が作成され、レスポンスに生成 ID が含まれる | TC-001 | yes | API テスト |
-| FR-001 | 不正な入力では 400 を返し、保存されない | TC-002 | yes | 異常系 |
+| FR-001 | 作成画面から正常に Todo を登録できる | TC-002 | yes | UI テスト |
 | FR-002 | 必須項目が空のとき送信ボタンが無効化される | TC-003 | yes | UI テスト |
 | NFR-001 | 100 件投入時でも P95 が 200ms 未満である | TC-101 | yes | 性能測定 |
 
@@ -147,7 +148,7 @@ RESTful APIのエンドポイント定義。
 | テストID | 対応要件 | テスト内容 | 種別 |
 |---------|---------|-----------|------|
 | TC-001 | FR-001 | 正常な入力で期待通りの結果が得られる | 正常系 |
-| TC-002 | FR-001 | 不正な入力でエラーが返される | 異常系 |
+| TC-002 | FR-001 | 画面から正常に登録できる | 正常系 |
 | TC-003 | FR-002 | 必須項目が空なら送信できない | 境界値 |
 
 ## 依存関係

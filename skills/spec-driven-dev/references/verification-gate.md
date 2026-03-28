@@ -1,6 +1,6 @@
 # 検証ゲート導入ガイド
 
-Agent の文章だけで 100% 一致保証を作るのは難しい。強い保証が欲しいなら、`spec-driven-dev` の作業手順に加えて、機械ゲートを置く。
+Agent の文章だけで 100% 一致保証を作るのは難しい。強い保証が欲しいなら、分割後の spec skill 群の作業手順に加えて、共通の機械ゲートを置く。
 
 ## 3 層で考える
 
@@ -35,6 +35,8 @@ Claude Code の完了直前に `run_verify_stop_hook.*` を走らせ、次の 3 
 
 この reviewer があることで、「まだ NG なのに Claude が自分で終わった扱いにする」ことを止めやすくなる。
 
+分割後も reviewer は 1 つの共通基盤として扱う。child skill は自分の役割ごとの summary / findings を返すだけで、最終停止可否の判定は設定側 reviewer が同じ 3 条件で見る。
+
 ## どこまで機械的に強制できるか
 
 機械ゲートで強制できるのは、主に次の範囲。
@@ -59,7 +61,8 @@ Claude Code の完了直前に `run_verify_stop_hook.*` を走らせ、次の 3 
 ## `SKILL.md` 単体との違い
 
 - `SKILL.md` 単体
-  - 何を更新し、どの順で検証し、どんな最終報告を書くかを定義する
+  - 親 skill はどの core child skill に振るかと、どこへ戻すかを定義する
+  - 子 skill は自分の責務範囲の手順を定義する
   - ただし、Claude がその手順を守らずに止まる可能性は残る
 - hooks 併用
   - reviewer が Stop / SubagentStop で毎回 3 条件を確認する
@@ -69,13 +72,14 @@ Claude Code の完了直前に `run_verify_stop_hook.*` を走らせ、次の 3 
 
 ## 推奨フロー
 
-1. 仕様書の `実装トレーサビリティ契約` と `実装完了条件` を更新する
-2. コードとテストを書く
-3. トレーサビリティマトリクスを更新する
-4. `run_verify_in_docker.*` で整合性検証を通す
-5. `project_test_commands` を通す
-6. `## 最終整合性監査` を `clean` にする
-7. Claude Code では `Stop` / `SubagentStop` reviewer に最終判定させる
+1. 入口に応じて親 skill か core child skill を選ぶ
+2. 仕様資産が無い既存コードだけは、family 外の bootstrap skill `reverse-spec` で requirements / specs / matrix の最小版を起こす
+3. docs 更新が必要なら `spec-authoring` で requirements / specs / matrix をそろえる
+4. 実装が必要なら `spec-implementation` で code / tests / matrix を更新し、機械検証を回す
+5. `spec-audit` で整合性を監査し、Findings を `implementation-fix` / `spec-fix` / `needs-user-decision` で返す
+6. Findings が残る間は、親 `spec-driven-dev` が `spec-implementation` または `spec-authoring` へ戻す
+7. `High` / `Medium` がなくなったら、外側の最終報告で `## 最終整合性監査` を `clean` にする
+8. Claude Code では `Stop` / `SubagentStop` reviewer に最終判定させる
 
 ## 一時停止をどう扱うか
 
