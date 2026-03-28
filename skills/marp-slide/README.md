@@ -1,102 +1,157 @@
 # marp-slide スキル
 
-Marp（Markdown Presentation Ecosystem）を使ったスライド資料の作成・レビュー・エクスポートを支援する Claude Code スキルです。
+このスキルは、厳格なレビューゲート付きで Marp スライド作成を支援します。要件整理、構成承認、ドラフト作成、レビュー、エクスポート確認には `.slide-work/` の状態ファイルを使用します。利用先プロジェクトへコピーする配布物は `package/` にまとめています。
 
-## 特徴
+このバージョンでは、レビューゲートは `SKILL.md` の frontmatter hooks にあります。reviewer が `pass` を返すまで、このタスクは完了できません。見た目レビューは、生の Markdown ではなく、レンダリング済みの各スライド PNG 画像に基づいて行います。
 
-- ヒアリング → 構成提案 → ドラフト → レビュー → 改善 の対話的ワークフロー
-- 状態ファイル（`.slide-work/`）による進行管理
-- slide-reviewer による自動レビュー（対象者適合、はみ出しリスク、エクスポート検証など）
-- PostToolUse hook による `Write` / `Edit` / `MultiEdit` / `Bash` 後のレビュー再実行
-- Stop hook による「最新レビュー未通過なのに終了」の防止
+## 責務
 
-## セットアップ手順
+- MCP サーバー `marp`
+  - `marp_export`
+- reviewer
+  - PDF を出力する
+  - ページ画像を出力する
+  - ページ画像を確認する
+  - `.slide-work/review.json` を上書きする
+- `SKILL.md`
+  - 状態機械
+  - 完了ルール
+  - hooks
 
-### 必要な環境
+visual review のロジックは意図的に MCP の外に置いています。
 
-- [Claude Code](https://claude.ai/claude-code) がインストール済みであること
-- [Docker](https://www.docker.com/) がインストール済みであること
+## セットアップ
 
-Node.js や Marp CLI のローカルインストールは不要です。Marp CLI、Chromium、日本語フォントはすべて Docker コンテナ内で動きます。
+### 必要なもの
 
-### 導入方法（4ステップ）
+- Claude Code
+- Docker
 
-**ステップ 1**: `.claude/` をプロジェクトのルートにコピーします。
+ローカルの Node.js や Marp CLI は不要です。Marp CLI、Chromium、日本語フォントは Docker イメージ内で動作します。
+
+### 導入手順
+
+1. `package/.claude/` を利用先プロジェクトのルートにコピーします
 
 ```bash
-# <path-to-this-repo> は、このリポジトリのパスに置き換えてください
-cp -r <path-to-this-repo>/skills/marp-slide/.claude/ <your-project>/.claude/
+cp -r <path-to-this-repo>/skills/marp-slide/package/.claude/ <your-project>/.claude/
 ```
 
-プロジェクトに既に `.claude/settings.json` がある場合は、中身をマージしてください。
-既存の `hooks` がある場合は、`PostToolUse` と `Stop` の配列にこのスキルの hook を追加してください。
-
-**ステップ 2**: `.mcp.json` をプロジェクトのルートにコピーします。
+2. `package/.mcp.json` を利用先プロジェクトのルートにコピーします
 
 ```bash
-cp <path-to-this-repo>/skills/marp-slide/.mcp.json <your-project>/.mcp.json
+cp <path-to-this-repo>/skills/marp-slide/package/.mcp.json <your-project>/.mcp.json
 ```
 
-既に `.mcp.json` がある場合は、`mcpServers` の中に `"marp"` の設定を追加してください。
-
-**ステップ 3**: Docker イメージをビルドします。
+3. Docker イメージをビルドします
 
 ```bash
 cd <path-to-this-repo>/skills/marp-slide/mcp-server
 docker build -t marp-mcp-server .
 ```
 
-**ステップ 4**: ビルドが成功したか確認します。
+## ディレクトリ構成
 
-```bash
-docker images | grep marp-mcp-server
+```text
+skills/marp-slide/
+|-- package/
+|   |-- .claude/
+|   |   |-- agents/
+|   |   |   \-- slide-reviewer.md
+|   |   \-- skills/
+|   |       \-- marp-slide/
+|   |           |-- SKILL.md
+|   |           |-- templates/
+|   |           |   |-- request-template.yaml
+|   |           |   |-- outline-template.yaml
+|   |           |   |-- review-template.json
+|   |           |   \-- presentation-starter.md
+|   |           |-- references/
+|   |           |   |-- presentation-structures.md
+|   |           |   |-- layout-patterns.md
+|   |           |   \-- design-reference-playbook.md
+|   \-- .mcp.json
+|-- README.md
+\-- mcp-server/
+    |-- Dockerfile
+    |-- package.json
+    |-- tsconfig.json
+    \-- src/
+        \-- index.ts
 ```
 
-これで導入完了です。
+## 生成される作業ファイル
 
-### MCP サーバーが提供するツール
-
-| ツール名 | 説明 |
-|---|---|
-| `marp_export` | Marp Markdown を HTML / PDF / PPTX にエクスポート |
-| `marp_check` | Marp Markdown のバリデーション（frontmatter、HTML タグ、テスト出力） |
-
-### コピー後のプロジェクト構成
-
-```
-あなたのプロジェクト/
-├── .claude/
-│   ├── skills/
-│   │   └── marp-slide/
-│   │       └── SKILL.md           # スキル本体（ワークフロー定義）
-│   ├── agents/
-│   │   └── slide-reviewer.md      # レビュー契約 / reviewer
-│   └── settings.json              # hooks 設定（自動レビュー・完了制御）
-├── .mcp.json                      # MCP サーバー設定（Docker 経由で Marp CLI を実行）
-├── .slide-work/                   # ← スキル実行時に自動生成される作業ディレクトリ
-│   ├── request.yaml               #    ヒアリング結果
-│   ├── outline.yaml               #    構成案
-│   └── review.json                #    レビュー結果
-└── slides/                        # ← スキル実行時に自動生成される出力ディレクトリ
-    └── presentation.md            #    スライド本体
+```text
+.slide-work/
+|-- request.yaml
+|-- outline.yaml
+|-- review.json
+|-- preview.html
+|-- presentation.pdf
+|-- presentation.pptx
+\-- rendered-pages/
+    |-- page-001.png
+    |-- page-002.png
+    \-- ...
 ```
 
-## 使い方
+## Reviewer の動作
 
-Claude Code で以下のように話しかけるだけです:
+`agents/slide-reviewer.md` は厳格な reviewer です。常に次の順で処理します。
 
-- 「スライドを作って」
-- 「プレゼン資料を作成して」
-- 「LT資料を作りたい」
-- 「プロジェクト報告のスライドを作って」
+1. 必須情報を確認する
+2. `slides/presentation.md` を確認する
+3. reviewer 自前の source checks を実行する
+4. PDF を出力する
+5. ページ画像を出力する
+6. ページ画像を確認する
+7. 必要な export を検証する
+8. `review.json` を上書きする
 
-スキルが自動的に起動し、ヒアリングから始まります。
+reviewer はデッキを修正しません。返すのは `missing_info`、`fail`、`pass` のいずれかだけです。
 
-## ファイルの役割
+## Hooks
 
-| ファイル | 役割 |
-|---|---|
-| `.claude/skills/marp-slide/SKILL.md` | スキル本体。ワークフロー、ルール、テンプレートを定義 |
-| `.claude/agents/slide-reviewer.md` | レビュー契約。`review.json` を上書きし、8観点 + 検証結果を記録 |
-| `.claude/settings.json` | hooks 設定。`Write` / `Edit` / `MultiEdit` / `Bash` 後の自動再レビューと、最新 review 未通過時の完了防止 |
-| `.mcp.json` | MCP サーバー設定。Docker 経由で Marp CLI のエクスポート・バリデーションを実行 |
+レビューゲートは `SKILL.md` frontmatter hooks が正本です。
+
+- `PostToolUse`
+  - 次の変更後にレビューを再実行します:
+    - `slides/presentation.md`
+    - `.slide-work/request.yaml`
+    - `.slide-work/outline.yaml`
+- `Stop`
+  - すべてのレビューゲートが通るまで完了をブロックします:
+    - reviewer が `pass` を返している
+    - reviewer 自前の source checks が成功している
+    - 必要な export が成功している
+    - visual review が成功している
+    - ページ画像が存在している
+
+## Visual Review の流れ
+
+ページ画像は `marp_export` の PNG 出力で生成します。reviewer は PDF とあわせて、各スライド画像を PNG で出力します。MCP は Marp の連番 PNG を `.slide-work/rendered-pages/page-001.png` 形式に正規化して扱います。
+
+- `.slide-work/presentation.pdf`
+- `.slide-work/rendered-pages/page-001.png`
+- `.slide-work/rendered-pages/page-002.png`
+
+## 完了条件
+
+次のすべてが真のときだけ、このタスクは完了です。
+
+1. `review.json.status == "pass"`
+2. `missing_required`、`issues`、`questions_for_user`、`exact_fix_instructions` が空である
+3. `validation.source_checks.status == "pass"`
+4. `validation.exports.required_formats_satisfied == true`
+5. `validation.visual_review.executed == true`
+6. `validation.visual_review.status == "pass"`
+7. `validation.visual_review.checked_page_count > 0`
+8. `.slide-work/presentation.pdf` が存在する
+9. `.slide-work/rendered-pages/page-###.png` が存在する
+10. ワークフロー上必要な場合、ユーザー承認が記録されている
+
+## 注意
+
+- 常に `.slide-work/...` を使ってください
+- MCP の責務は export に限定されます

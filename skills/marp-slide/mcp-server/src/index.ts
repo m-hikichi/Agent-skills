@@ -2,8 +2,15 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { execSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  renameSync,
+  rmSync,
+} from "node:fs";
+import { basename, dirname, extname, resolve } from "node:path";
 
 const WORKSPACE = process.env.WORKSPACE_DIR || "/workspace";
 
@@ -12,9 +19,69 @@ const server = new McpServer({
   version: "1.0.0",
 });
 
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function prepareOutputPath(outputPath: string, format: "html" | "pdf" | "pptx" | "png") {
+  mkdirSync(dirname(outputPath), { recursive: true });
+
+  if (format !== "png") {
+    return;
+  }
+
+  const extension = extname(outputPath);
+  const stem = basename(outputPath, extension);
+  const pngSequencePattern = new RegExp(`^${escapeRegex(stem)}[.-]\\d+\\.png$`);
+
+  if (existsSync(outputPath)) {
+    rmSync(outputPath, { force: true });
+  }
+
+  for (const entry of readdirSync(dirname(outputPath), { withFileTypes: true })) {
+    if (entry.isFile() && pngSequencePattern.test(entry.name)) {
+      rmSync(resolve(dirname(outputPath), entry.name), { force: true });
+    }
+  }
+}
+
+function collectPngOutputs(outputPath: string): string[] {
+  const extension = extname(outputPath);
+  const stem = basename(outputPath, extension);
+  const pngSequencePattern = new RegExp(`^${escapeRegex(stem)}-\\d+\\.png$`);
+
+  return readdirSync(dirname(outputPath))
+    .filter((name) => pngSequencePattern.test(name))
+    .sort()
+    .map((name) => resolve(dirname(outputPath), name));
+}
+
+function normalizePngOutputNames(outputPath: string) {
+  const extension = extname(outputPath);
+  const stem = basename(outputPath, extension);
+  const rawSequencePattern = new RegExp(`^${escapeRegex(stem)}\\.(\\d+)\\.png$`);
+
+  for (const entry of readdirSync(dirname(outputPath), { withFileTypes: true })) {
+    if (!entry.isFile()) {
+      continue;
+    }
+
+    const match = entry.name.match(rawSequencePattern);
+    if (!match) {
+      continue;
+    }
+
+    const normalizedName = `${stem}-${match[1]}.png`;
+    renameSync(
+      resolve(dirname(outputPath), entry.name),
+      resolve(dirname(outputPath), normalizedName)
+    );
+  }
+}
+
 server.tool(
   "marp_export",
-  "Export a Marp markdown file to HTML, PDF, or PPTX. The source file must contain 'marp: true' in its YAML frontmatter.",
+  "Export a Marp markdown file to HTML, PDF, PPTX, or per-slide PNG images. The source file must contain 'marp: true' in its YAML frontmatter.",
   {
     source: z
       .string()
@@ -22,13 +89,13 @@ server.tool(
         "Path to the Marp markdown file (relative to workspace root)"
       ),
     format: z
-      .enum(["html", "pdf", "pptx"])
+      .enum(["html", "pdf", "pptx", "png"])
       .describe("Output format"),
     output: z
       .string()
       .optional()
       .describe(
-        "Output file path (relative to workspace root). Defaults to same name with the target extension."
+        "Output file path (relative to workspace root). Defaults to same name with the target extension. For png, the server asks Marp for numbered images and normalizes them to names such as page-001.png."
       ),
   },
   async ({ source, format, output }) => {
@@ -58,7 +125,10 @@ server.tool(
       ? resolve(WORKSPACE, output)
       : sourcePath.replace(/\.md$/, `.${format}`);
 
-    const formatFlag = format === "html" ? "" : `--${format}`;
+    prepareOutputPath(outputPath, format);
+
+    const formatFlag =
+      format === "html" ? "" : format === "png" ? "--images png" : `--${format}`;
     const cmd = `marp "${sourcePath}" --html ${formatFlag} -o "${outputPath}"`;
 
     try {
@@ -69,6 +139,43 @@ server.tool(
       });
 
       const relativeOutput = output || outputPath.replace(`${WORKSPACE}/`, "");
+      if (format === "png") {
+        normalizePngOutputNames(outputPath);
+        const outputs = collectPngOutputs(outputPath).map((filePath) =>
+          filePath.replace(`${WORKSPACE}/`, "")
+        );
+
+        if (outputs.length === 0) {
+          return {
+            isError: true,
+            content: [
+              {
+                type: "text" as const,
+                text: `Export failed:\nNo PNG page images were generated for ${relativeOutput}`,
+              },
+            ],
+          };
+        }
+
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: [
+                `Export successful: ${relativeOutput}`,
+                "Format: png",
+                "Generated files:",
+                ...outputs.map((generated) => `- ${generated}`),
+                "",
+                result,
+              ]
+                .join("\n")
+                .trim(),
+            },
+          ],
+        };
+      }
+
       return {
         content: [
           {
@@ -87,97 +194,6 @@ server.tool(
         content: [{ type: "text" as const, text: `Export failed:\n${msg}` }],
       };
     }
-  }
-);
-
-server.tool(
-  "marp_check",
-  "Validate a Marp markdown file. Checks frontmatter, HTML tag usage, slide structure, and attempts a test HTML export.",
-  {
-    source: z
-      .string()
-      .describe(
-        "Path to the Marp markdown file to validate (relative to workspace root)"
-      ),
-  },
-  async ({ source }) => {
-    const sourcePath = resolve(WORKSPACE, source);
-    const issues: string[] = [];
-
-    if (!existsSync(sourcePath)) {
-      return {
-        isError: true,
-        content: [{ type: "text" as const, text: `File not found: ${source}` }],
-      };
-    }
-
-    const content = readFileSync(sourcePath, "utf-8");
-
-    // Check marp: true in frontmatter
-    if (!content.includes("marp: true")) {
-      issues.push("Missing 'marp: true' in frontmatter");
-    }
-
-    // Check html: true when HTML tags are used in body
-    const body = content.replace(/^---[\s\S]*?---/, "");
-    const hasHtmlTags = /<[a-z][\s\S]*?>/i.test(body);
-    if (hasHtmlTags && !content.includes("html: true")) {
-      issues.push(
-        "HTML tags found in slides but 'html: true' is not set in frontmatter"
-      );
-    }
-
-    // Count slides
-    const slideSeparators = (content.match(/^---$/gm) || []).length;
-    // Subtract 2 for frontmatter delimiters if present
-    const hasFrontmatter = content.startsWith("---");
-    const slideCount = hasFrontmatter
-      ? Math.max(slideSeparators - 2, 0) + 1
-      : slideSeparators + 1;
-
-    if (slideCount <= 1 && slideSeparators === 0) {
-      issues.push("No slide separators (---) found");
-    }
-
-    // Attempt test HTML export
-    try {
-      execSync(`marp "${sourcePath}" --html -o /tmp/marp-check-output.html`, {
-        encoding: "utf-8",
-        timeout: 60_000,
-        cwd: WORKSPACE,
-      });
-    } catch (error: unknown) {
-      const msg =
-        error instanceof Error
-          ? (error as { stderr?: string }).stderr || error.message
-          : String(error);
-      issues.push(`Test export failed: ${msg}`);
-    }
-
-    if (issues.length === 0) {
-      return {
-        content: [
-          {
-            type: "text" as const,
-            text: [
-              "Validation passed.",
-              `- Slides: ${slideCount}`,
-              `- HTML tags: ${hasHtmlTags ? "yes (html: true is set)" : "none"}`,
-            ].join("\n"),
-          },
-        ],
-      };
-    }
-
-    return {
-      isError: true,
-      content: [
-        {
-          type: "text" as const,
-          text: `Validation failed (${issues.length} issue(s)):\n${issues.map((issue, i) => `${i + 1}. ${issue}`).join("\n")}`,
-        },
-      ],
-    };
   }
 );
 

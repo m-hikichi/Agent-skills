@@ -1,7 +1,7 @@
 {
   "name": "marp-mcp-server",
   "version": "1.0.0",
-  "description": "MCP server for Marp slide export and validation (Docker)",
+  "description": "MCP server for Marp slide export, including per-slide PNG images (Docker)",
   "type": "module",
   "scripts": {
     "build": "tsc",

@@ -1,0 +1,32 @@
+{
+  "status": "missing_info",
+  "reviewed_at": "",
+  "missing_required": [],
+  "issues": [],
+  "questions_for_user": [],
+  "exact_fix_instructions": [],
+  "last_checked_files": [],
+  "artifacts": {
+    "pdf": ".slide-work/presentation.pdf",
+    "page_images": []
+  },
+  "validation": {
+    "source_checks": {
+      "status": "not_run",
+      "details": "",
+      "findings": []
+    },
+    "exports": {
+      "required_formats": [],
+      "required_formats_satisfied": false,
+      "results": []
+    },
+    "visual_review": {
+      "executed": false,
+      "status": "not_run",
+      "checked_page_count": 0,
+      "page_findings": [],
+      "summary": ""
+    }
+  }
+}
