@@ -1,77 +1,94 @@
-# Layout Patterns
+# Slide Archetypes And Layout Patterns
 
-## Density Rules
+Every slide must choose one approved archetype in `.slide-work/slide-plan.yaml`.
+If more than 40% of slides use the same archetype, redesign the deck unless repetition is clearly essential.
 
-- Put the conclusion in the heading
+## Shared Rules
+
+- Put the takeaway in the title
 - Keep one message per slide
-- Aim for at most five bullet items
-- Keep tables short and code blocks concise
+- Keep bullet-only slides under 30% of the deck
+- Use local class directives when an archetype needs custom styling
 - Prefer whitespace over cramped content
+- Avoid dense bullet lists, paragraph-heavy slides, and table-heavy slides
 
-## Useful Frontmatter
+## Marp Implementation Defaults
 
-```markdown
----
-marp: true
-theme: default
-paginate: true
-html: true
-style: |
-  @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
-  section {
-    font-family: 'Noto Sans JP', sans-serif;
-  }
-  .icon {
-    font-family: 'Material Symbols Outlined';
-    font-size: 1.2em;
-    vertical-align: middle;
-    margin-right: 0.3em;
-    font-variation-settings: 'FILL' 0, 'wght' 300;
-  }
----
-```
+- Use a custom visual foundation, not untouched default Marp output
+- Set global directives for `theme`, `paginate`, `header`, and `footer`
+- Use split backgrounds only on `section-divider` or comparison slides
+- Use background images only when they reinforce the message
+- Use icons only when they improve scanability
 
-## Two Columns
+## title-hero
 
-```markdown
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2em;">
-<div>
+- Use for the first slide or a major opening beat
+- Keep to title, subtitle, and audience/context cue
+- Avoid support bullets
+- Suggested class: `title-hero`
 
-### Current
-- Point 1
-- Point 2
+## section-divider
 
-</div>
-<div>
+- Use between sections in medium or long decks
+- Keep to one headline and one short subline
+- Use split background here if any slide uses it
+- Suggested class: `section-divider`
 
-### Future
-- Benefit 1
-- Benefit 2
+## assertion-evidence
 
-</div>
-</div>
-```
+- Use when one claim needs two or three proof points
+- Keep to one assertion title and up to three support bullets or one compact visual
+- Avoid repeating the title in the bullets
+- Suggested class: `assertion-evidence`
 
-## Card Layout
+## two-column-compare
 
-```markdown
-<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1em;">
-<div style="background: #f0f7ff; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 1em;">
+- Use for before/after, option A vs B, or current vs future
+- Keep each side to at most three comparison rows
+- Avoid adding a third comparison column
+- Suggested class: `two-column-compare`
 
-**Result A**
-Short note
+## process-flow
 
-</div>
-</div>
-```
+- Use for sequential steps or operating model explanations
+- Keep to three to five steps
+- Add short labels, not paragraphs
+- Suggested class: `process-flow`
 
-## Icon Bullets
+## timeline-roadmap
 
-```markdown
-- <span class="icon">check_circle</span> Completed item
-- <span class="icon">warning</span> Item needing attention
-- <span class="icon">arrow_forward</span> Next action
-```
+- Use for milestones, rollout phases, or implementation timing
+- Keep to three to five milestones
+- Emphasize dates or phase names visually
+- Suggested class: `timeline-roadmap`
+
+## big-number
+
+- Use when one metric or headline number is the message
+- Pair the number with one label and one implication
+- Avoid surrounding the number with dense commentary
+- Suggested class: `big-number`
+
+## architecture-diagram
+
+- Use for system structure or component relationships
+- Keep to three to six nodes and one dominant flow
+- Add only the labels needed to explain the diagram
+- Suggested class: `architecture-diagram`
+
+## quote-callout
+
+- Use for voice-of-customer, executive quote, or principle statement
+- Pair the quote with a short interpretation or implication
+- Avoid long quotation blocks
+- Suggested class: `quote-callout`
+
+## closing-next-action
+
+- Use for the final slide
+- State the decision, action, owner, or timing clearly
+- Do not end with a generic thank-you slide unless the user explicitly wants it
+- Suggested class: `closing-next-action`
 
 ## Visual Review Reminder
 

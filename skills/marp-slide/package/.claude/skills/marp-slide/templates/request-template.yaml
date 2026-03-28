@@ -3,6 +3,7 @@ topic:
 audience:
 audience_knowledge:
 presentation_context:
+presentation_type:
 goal:
 target_slide_count:
 output_formats: []

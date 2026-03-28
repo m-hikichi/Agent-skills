@@ -1,0 +1,12 @@
+deck_goal: ""
+story_arc: []
+slides:
+  - slide_no: 1
+    section: opening
+    role: title
+    takeaway: ""
+    archetype: title-hero
+    key_visual: ""
+    max_text_lines: 6
+    max_bullets: 0
+    required_elements: []

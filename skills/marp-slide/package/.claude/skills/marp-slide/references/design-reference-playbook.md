@@ -1,5 +1,11 @@
 # Design Reference Playbook
 
+## First Principle
+
+- Build `.slide-work/design-system.yaml` before drafting slides
+- Define typography, spacing, color emphasis, and archetype usage explicitly
+- Do not ship untouched default Marp styling as final output
+
 ## Reuse An Existing Marp Deck
 
 1. Read the reference deck frontmatter
@@ -14,7 +20,7 @@
 
 ## No Design Reference
 
-- default: safest baseline
-- gaia: stronger presentation feel
-- uncover: cleaner and more minimal
-- add custom CSS only when it clearly improves understanding
+- Start from the presentation type and audience, then fill `design-system.yaml`
+- Use `gaia` when you need a stronger stage-presentation feel
+- Use `uncover` when you need a cleaner editorial feel
+- Add custom CSS or theme tokens before draft completion
