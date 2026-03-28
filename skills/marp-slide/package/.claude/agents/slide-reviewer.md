@@ -72,6 +72,7 @@ model: sonnet
 export の前に、`slides/presentation.md` に対して reviewer 自前の source checks を実行してください。
 最低限、次の項目を確認してください:
 
+- `request.yaml.design_reference` が指定され、その参照ファイルが存在する場合は design system と deck に反映されている
 - `.slide-work/design-system.yaml` が存在し、主要フィールドが埋まっている
 - `.slide-work/slide-plan.yaml` が存在し、各スライドに `role`、`takeaway`、`archetype`、`max_text_lines` がある
 - `design-system.yaml.layout_rules.approved_archetypes` に沿っている

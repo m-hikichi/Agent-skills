@@ -1,26 +1,34 @@
-# Design Reference Playbook
+# デザイン参照プレイブック
 
-## First Principle
+## 第一原則
 
-- Build `.slide-work/design-system.yaml` before drafting slides
-- Define typography, spacing, color emphasis, and archetype usage explicitly
-- Do not ship untouched default Marp styling as final output
+- スライドを書き始める前に `.slide-work/design-system.yaml` を作る
+- タイポグラフィ、余白、色の強調、レイアウト型の使い方を明示的に定義する
+- 手を加えていないデフォルトの Marp スタイルを最終成果物として出さない
 
-## Reuse An Existing Marp Deck
+## まず同梱のスターターを使う
 
-1. Read the reference deck frontmatter
-2. Extract theme, style, color, spacing, and heading patterns
-3. Reuse the direction, not a pixel-perfect copy
+- 既定の組み込みデザイン基盤として `templates/presentation-starter.md` から始める
+- `design-system.yaml` を埋める前に、その frontmatter、スタイルブロック、class の語彙、レイアウトの基本要素を読む
+- 配色、タイポグラフィ、header/footer の扱い、ページ番号の扱い、コンテンツのリズムを再利用する
+- 再利用するのは見た目の方向性であり、プレースホルダーの文面ではない
 
-## Reuse A PPTX Style
+## 既存の Marp デッキを再利用する
 
-1. Observe colors, typography, spacing, and decoration
-2. Recreate only the parts that fit Marp cleanly
-3. Prefer readability over visual mimicry
+1. 参照デッキの frontmatter を読む
+2. theme、スタイル、色、余白、見出しのパターンを抽出する
+3. ピクセル単位で複製するのではなく、方向性を再利用する
 
-## No Design Reference
+## PPTX のスタイルを再利用する
 
-- Start from the presentation type and audience, then fill `design-system.yaml`
-- Use `gaia` when you need a stronger stage-presentation feel
-- Use `uncover` when you need a cleaner editorial feel
-- Add custom CSS or theme tokens before draft completion
+1. 色、タイポグラフィ、余白、装飾を観察する
+2. Marp で無理なく再現できる部分だけを作り直す
+3. 見た目を真似ることより可読性を優先する
+
+## デザイン参照がない場合
+
+- このフォールバックを使うのは、明示的な参照デッキがなく、同梱スターターも依頼に合わない場合だけにする
+- 資料タイプと対象読者から始めて、そこから `design-system.yaml` を埋める
+- よりステージプレゼン向きの強い印象が必要なら `gaia` を使う
+- よりクリーンでエディトリアルな印象が必要なら `uncover` を使う
+- 下書きを完成させる前に custom CSS または theme token を追加する

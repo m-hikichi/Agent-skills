@@ -1,69 +1,69 @@
-# Presentation Structures
+# 資料構成パターン
 
-Choose the default flow from `request.yaml.presentation_type`.
-If the type is ambiguous, pick the closest structure, record the assumption, and align `design-system.yaml`.
+既定の流れは `request.yaml.presentation_type` から選ぶ。
+タイプが曖昧な場合は、最も近い構成を選び、その前提を記録し、`design-system.yaml` をそれに合わせる。
 
-## Shared Defaults
+## 共通の既定値
 
-- Slide 1 is a title slide with subtitle and audience/context cue
-- Slide 2 is an executive summary or the main recommendation
-- The final slide asks for a decision, action, or next step
-- Decks with 7 or more slides include at least one section divider
-- Skip an agenda slide unless navigation itself is useful to the audience
+- 1 枚目はサブタイトルと対象読者/文脈の手がかりを含むタイトルスライドにする
+- 2 枚目はエグゼクティブサマリーまたは主たる提案にする
+- 最終スライドでは判断、アクション、または次の一手を求める
+- 7 枚以上のデッキには少なくとも 1 枚の section divider を入れる
+- ナビゲーション自体が聞き手に有益でない限り、agenda スライドは省く
 
-## Proposal
+## 提案資料
 
-1. Title
-2. Executive summary
-3. Problem or opportunity
-4. Evidence or urgency
-5. Proposed solution
-6. Expected impact or ROI
-7. Rollout or next action
+1. タイトル
+2. エグゼクティブサマリー
+3. 課題または機会
+4. 根拠または緊急性
+5. 提案する解決策
+6. 想定される効果または ROI
+7. 展開計画または次のアクション
 
-## Executive Update
+## エグゼクティブ向け進捗報告
 
-1. Title
-2. Executive summary
-3. Progress against goal
-4. Key numbers
-5. Risks or blockers
-6. Decisions needed
-7. Next steps
+1. タイトル
+2. エグゼクティブサマリー
+3. 目標に対する進捗
+4. 主要な数値
+5. リスクまたは障害
+6. 必要な判断
+7. 次のステップ
 
-## Report
+## 報告資料
 
-1. Title
-2. Summary of findings
-3. Scope or methodology
-4. Key findings
-5. Implications
-6. Recommendations
-7. Next action
+1. タイトル
+2. 判明事項の要約
+3. 対象範囲または方法論
+4. 主な発見
+5. 示唆
+6. 提言
+7. 次のアクション
 
-## Training
+## 研修資料
 
-1. Title
-2. What learners will be able to do
-3. Why this matters
-4. Core concept
-5. Example or walkthrough
-6. Practice or checklist
-7. Key takeaways
+1. タイトル
+2. 学習者ができるようになること
+3. なぜ重要か
+4. 中核概念
+5. 例または手順解説
+6. 演習またはチェックリスト
+7. 重要な要点
 
-## Research
+## リサーチ資料
 
-1. Title
-2. Research question and conclusion
-3. Background
-4. Method
-5. Evidence
-6. Interpretation
-7. Recommendation or open questions
+1. タイトル
+2. リサーチクエスチョンと結論
+3. 背景
+4. 手法
+5. 根拠
+6. 解釈
+7. 提言または未解決の問い
 
-## Guidance
+## ガイダンス
 
-- Use assertion-style slide titles throughout the deck
-- Front-load the judgment before the details
-- Keep the middle of the deck on a clear arc: problem -> evidence -> solution -> impact
-- When the audience already knows the domain, remove setup slides before compressing evidence
+- デッキ全体を通して主張型のスライドタイトルを使う
+- 詳細より先に判断を前に出す
+- デッキ中盤は 課題 -> 根拠 -> 解決策 -> 効果 の明確な流れを保つ
+- 聞き手がすでにその領域を理解している場合は、根拠を圧縮する前に導入スライドを削る

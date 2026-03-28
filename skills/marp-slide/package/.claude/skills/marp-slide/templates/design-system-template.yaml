@@ -1,5 +1,6 @@
 deck_style:
   presentation_type:
+  reference_deck: bundled-presentation-starter
   tone: professional
   visual_style: clean-minimal
   theme_name: custom-corporate
@@ -15,9 +16,12 @@ typography:
 layout_rules:
   approved_archetypes:
     - title-hero
+    - agenda-overview
     - section-divider
+    - title-content
     - assertion-evidence
     - two-column-compare
+    - two-column-content
     - process-flow
     - timeline-roadmap
     - big-number
@@ -32,6 +36,7 @@ layout_rules:
 
 visual_rules:
   use_icons: true
+  icon_style: outline
   use_background_images: section-only
   use_split_background: true
   chart_style: simple-flat

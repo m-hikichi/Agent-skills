@@ -1,96 +1,122 @@
-# Slide Archetypes And Layout Patterns
+# スライド型とレイアウトパターン
 
-Every slide must choose one approved archetype in `.slide-work/slide-plan.yaml`.
-If more than 40% of slides use the same archetype, redesign the deck unless repetition is clearly essential.
+すべてのスライドは `.slide-work/slide-plan.yaml` で承認済みの型を 1 つ選ばなければならない。
+40% を超えるスライドが同じ型を使っている場合は、その繰り返しが明確に必要なときを除き、デッキを再設計する。
 
-## Shared Rules
+## 共通ルール
 
-- Put the takeaway in the title
-- Keep one message per slide
-- Keep bullet-only slides under 30% of the deck
-- Use local class directives when an archetype needs custom styling
-- Prefer whitespace over cramped content
-- Avoid dense bullet lists, paragraph-heavy slides, and table-heavy slides
+- タイトルに要点を入れる
+- 1 スライド 1 メッセージを守る
+- 箇条書きだけのスライドはデッキ全体の 30% 未満にする
+- ある型に独自スタイルが必要な場合は local class directive を使う
+- 窮屈な詰め込みより余白を優先する
+- 密な箇条書き、文章だらけのスライド、表だらけのスライドは避ける
 
-## Marp Implementation Defaults
+## Marp 実装の既定値
 
-- Use a custom visual foundation, not untouched default Marp output
-- Set global directives for `theme`, `paginate`, `header`, and `footer`
-- Use split backgrounds only on `section-divider` or comparison slides
-- Use background images only when they reinforce the message
-- Use icons only when they improve scanability
+- 手を加えていないデフォルトの Marp 出力ではなく、独自の見た目の基盤を使う
+- `theme`、`paginate`、`header`、`footer` には global directive を設定する
+- split background は `section-divider` または比較スライドでのみ使う
+- 背景画像はメッセージを強める場合にのみ使う
+- アイコンは一覧性が向上する場合にのみ使う
+- コンテンツより目立ちすぎないよう、塗りつぶしアイコンより線画やアウトラインのアイコンを優先する
 
 ## title-hero
 
-- Use for the first slide or a major opening beat
-- Keep to title, subtitle, and audience/context cue
-- Avoid support bullets
-- Suggested class: `title-hero`
+- 1 枚目または大きな導入の山場で使う
+- タイトル、サブタイトル、対象読者/文脈の手がかりに絞る
+- 補助的な箇条書きは避ける
+- 推奨 class: `title-hero`
+
+## agenda-overview
+
+- 聞き手が冒頭でデッキ構成を把握したほうがよい場合に使う
+- 短いラベルの agenda 項目を 3〜5 個に収める
+- 説明の長い箇条書きではなく、番号付きリストやコンパクトなカードを優先する
+- 4〜5 項目必要な場合は 2 カラムの agenda に切り替える
+- ナビゲーションが聞き手の助けにならない場合はこのスライドを省く
+- 推奨 class: `agenda-overview`
 
 ## section-divider
 
-- Use between sections in medium or long decks
-- Keep to one headline and one short subline
-- Use split background here if any slide uses it
-- Suggested class: `section-divider`
+- 中規模以上のデッキで章の区切りとして使う
+- 見出し 1 つと短いサブライン 1 つに絞る
+- どこかのスライドで split background を使うなら、ここで使う
+- 推奨 class: `section-divider`
+
+## title-content
+
+- 標準的な「タイトル + 主要コンテンツ 1 ブロック」のページで使う
+- 主役となるコンテンツ領域は 1 つにし、最大 3 つの箇条書き、1 つのカード群、または 1 つの図に収める
+- 説明は必要だが比較レイアウトまでは不要なスライドで使う
+- この型は hero、divider、two-column ページよりも視覚的に静かに保つ
+- 推奨 class: `title-content`
 
 ## assertion-evidence
 
-- Use when one claim needs two or three proof points
-- Keep to one assertion title and up to three support bullets or one compact visual
-- Avoid repeating the title in the bullets
-- Suggested class: `assertion-evidence`
+- 1 つの主張に対して 2〜3 個の根拠を示したいときに使う
+- 主張型タイトル 1 つと、最大 3 個の補助箇条書きまたは 1 つのコンパクトな図に収める
+- 箇条書きでタイトルを繰り返さない
+- 推奨 class: `assertion-evidence`
 
 ## two-column-compare
 
-- Use for before/after, option A vs B, or current vs future
-- Keep each side to at most three comparison rows
-- Avoid adding a third comparison column
-- Suggested class: `two-column-compare`
+- before/after、案 A vs B、現状 vs 将来の比較に使う
+- 各列は最大 3 行の比較に収める
+- 3 列目の比較列は追加しない
+- 推奨 class: `two-column-compare`
+
+## two-column-content
+
+- 厳密な比較構図ではないが、関連する 2 つのコンテンツブロックを横並びにしたいときに使う
+- 各カラムに短い小見出しと、コンパクトなカードまたはリストを 1 つ置く
+- 両カラムの高さと情報密度の見た目をそろえる
+- `title-content` よりも、2 本の読み筋が視覚的に明確に分かるようにする
+- 推奨 class: `two-column-content`
 
 ## process-flow
 
-- Use for sequential steps or operating model explanations
-- Keep to three to five steps
-- Add short labels, not paragraphs
-- Suggested class: `process-flow`
+- 連続した手順や運用モデルの説明に使う
+- 3〜5 ステップに収める
+- 段落ではなく短いラベルを付ける
+- 推奨 class: `process-flow`
 
 ## timeline-roadmap
 
-- Use for milestones, rollout phases, or implementation timing
-- Keep to three to five milestones
-- Emphasize dates or phase names visually
-- Suggested class: `timeline-roadmap`
+- マイルストーン、展開フェーズ、実装時期の説明に使う
+- 3〜5 個のマイルストーンに収める
+- 日付やフェーズ名を視覚的に強調する
+- 推奨 class: `timeline-roadmap`
 
 ## big-number
 
-- Use when one metric or headline number is the message
-- Pair the number with one label and one implication
-- Avoid surrounding the number with dense commentary
-- Suggested class: `big-number`
+- 1 つの指標や見出し級の数字そのものがメッセージであるときに使う
+- 数字に対してラベル 1 つと示唆 1 つを添える
+- 数字のまわりを密な説明文で囲まない
+- 推奨 class: `big-number`
 
 ## architecture-diagram
 
-- Use for system structure or component relationships
-- Keep to three to six nodes and one dominant flow
-- Add only the labels needed to explain the diagram
-- Suggested class: `architecture-diagram`
+- システム構造やコンポーネント関係の説明に使う
+- 3〜6 個のノードと 1 本の主たる流れに収める
+- 図の説明に必要なラベルだけを付ける
+- 推奨 class: `architecture-diagram`
 
 ## quote-callout
 
-- Use for voice-of-customer, executive quote, or principle statement
-- Pair the quote with a short interpretation or implication
-- Avoid long quotation blocks
-- Suggested class: `quote-callout`
+- 顧客の声、経営層の引用、原則の提示に使う
+- 引用には短い解釈または示唆を添える
+- 長い引用ブロックは避ける
+- 推奨 class: `quote-callout`
 
 ## closing-next-action
 
-- Use for the final slide
-- State the decision, action, owner, or timing clearly
-- Do not end with a generic thank-you slide unless the user explicitly wants it
-- Suggested class: `closing-next-action`
+- 最終スライドで使う
+- 判断、アクション、担当者、または時期を明確に示す
+- ユーザーが明示的に望まない限り、一般的な謝辞スライドで終わらない
+- 推奨 class: `closing-next-action`
 
-## Visual Review Reminder
+## 視覚レビューの注意
 
-- Markdown can look fine while the rendered PDF still overflows
-- If a layout looks risky, split it before the reviewer sees the page images
+- Markdown 上では問題なく見えても、レンダリング後の PDF でははみ出すことがある
+- レイアウトに危うさがあるなら、reviewer がページ画像を見る前に分割する
