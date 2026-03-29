@@ -1,98 +1,6 @@
 ---
 name: marp-slide
 description: Marp スライドの要件整理、デザインシステム設計、スライド計画、作成、レビュー、エクスポートにはこのスキルを使ってください。`.slide-work/design-system.yaml` と `.slide-work/slide-plan.yaml` を先に作り、スライド画像を使った visual review と quality rubric が pass になるまで完了してはいけません。
-hooks:
-  PostToolUse:
-    - matcher: Write|Edit|MultiEdit|Bash
-      hooks:
-        - type: agent
-          model: sonnet
-          prompt: |
-            あなたは marp-slide の review refresh hook です。
-            最初に `.claude/agents/slide-reviewer.md` を読み、それを reviewer 契約の正本として扱ってください。ただし、この hook が名前付き custom agent を直接指定できる前提には依存しないでください。
-
-            freshness 判定に関係する入力は次のとおりです:
-            - `.slide-work/request.yaml`
-            - `.slide-work/outline.yaml`
-            - `.slide-work/design-system.yaml`
-            - `.slide-work/slide-plan.yaml`
-            - `slides/presentation.md`
-            - `.slide-work/review.json`
-
-            必須の挙動:
-            - `slides/presentation.md` がまだ存在しない場合に限り、`{"ok": true, "skipped": true, "reason": "slides/presentation.md はまだ存在しません"}` を返して構いません。
-            - 直近の tool use によって `slides/presentation.md`、`.slide-work/request.yaml`、`.slide-work/outline.yaml`、`.slide-work/design-system.yaml`、または `.slide-work/slide-plan.yaml` が変更された、または変更された可能性がある場合は、reviewer の完全なワークフローを実行し、`.slide-work/review.json` を上書きしてください。
-            - changed-file metadata が使えない場合は、関連ファイルのタイムスタンプと `review.json.reviewed_at` を比較してください。freshness を証明できない場合は、reviewer の完全なワークフローを再実行してください。
-            - `.slide-work/review.json` が存在し、かつ次のすべてを含まない限り、その review は fresh ではありません:
-              - `reviewed_at`
-              - `artifacts.pdf == ".slide-work/presentation.pdf"`
-              - 空でない `artifacts.page_images`
-              - `quality.deck_metrics`
-              - `quality.visual_quality`
-              - `quality.story_quality`
-              - `validation.source_checks`
-              - `validation.exports`
-              - `validation.visual_review.executed == true`
-              - `validation.visual_review.checked_page_count > 0`
-            - 必要な review refresh を実行せずに `{"ok": true}` を返す抜け道を作ってはいけません。
-
-            reviewer を再実行した場合は、`{"ok": true, "skipped": false, "review_status": "<status>"}` を返してください。
-            すでに review が fresh で、かつ関連ファイルに変更がない場合に限り、`{"ok": true, "skipped": true}` を返して構いません。
-  Stop:
-    - hooks:
-        - type: agent
-          model: sonnet
-          prompt: |
-            あなたは marp-slide の completion gate です。
-            最初に `.claude/agents/slide-reviewer.md` を読み、それを reviewer 契約の正本として扱ってください。ただし、この hook が名前付き custom agent を直接指定できる前提には依存しないでください。
-
-            `slides/presentation.md` が存在する場合、stop を許可する前に最新の完全 review が必須です。
-            次を満たす `.slide-work/review.json` が存在するときに限り、その review は最新です:
-            - `reviewed_at`
-            - `artifacts.pdf == ".slide-work/presentation.pdf"`
-            - 空でない `artifacts.page_images`
-            - `quality.deck_metrics`
-            - `quality.visual_quality`
-            - `quality.story_quality`
-            - `validation.source_checks.status == "pass"`
-            - `validation.exports.required_formats_satisfied == true`
-            - `validation.visual_review.executed == true`
-            - `validation.visual_review.status == "pass"`
-            - `validation.visual_review.checked_page_count > 0`
-
-            freshness を証明できない場合は、完了可否を判定する前に reviewer の完全なワークフローを再実行してください。
-
-            次のすべてが真のときに限り、完了を許可してください:
-            1. `.slide-work/review.json.status == "pass"`
-            2. `missing_required`、`issues`、`questions_for_user`、`exact_fix_instructions` がすべて空配列である
-            3. `quality.visual_quality.hierarchy == "pass"`
-            4. `quality.visual_quality.whitespace == "pass"`
-            5. `quality.visual_quality.alignment == "pass"`
-            6. `quality.visual_quality.consistency == "pass"`
-            7. `quality.visual_quality.density == "pass"`
-            8. `quality.visual_quality.variety == "pass"`
-            9. `quality.visual_quality.accessibility == "pass"`
-            10. `quality.story_quality.clear_takeaway_each_slide == true`
-            11. `quality.story_quality.logical_flow == true`
-            12. `quality.story_quality.opening_is_strong == true`
-            13. `quality.story_quality.closing_has_action == true`
-            14. `quality.deck_metrics.bullet_only_slide_ratio <= 0.3`
-            15. `quality.deck_metrics.dominant_archetype_ratio <= 0.4`
-            16. `quality.deck_metrics.assertion_title_failures` が空配列である
-            17. `quality.deck_metrics.key_number_emphasis_failures` が空配列である
-            18. `quality.design_warnings` が空配列である
-            19. `validation.source_checks.status == "pass"`
-            20. `validation.exports.required_formats_satisfied == true`
-            21. `validation.visual_review.executed == true`
-            22. `validation.visual_review.status == "pass"`
-            23. `validation.visual_review.checked_page_count > 0`
-            24. `artifacts.page_images` に少なくとも 1 つの `.slide-work/rendered-pages/page-###.png` が含まれている
-
-            `slides/presentation.md` がまだ存在しない場合は、必須情報の不足やアウトライン承認待ちのような正当な待機状態に限って stop を許可してください。ドラフトが存在しないまま、タスク完了済みであるかのように stop を許可してはいけません。
-
-            gate が満たされる前に `{"ok": true}` を返す抜け道を作ってはいけません。
-            いずれかの条件を満たさない場合は、`{"ok": false, "reason": "review gate が満たされていません: <status or missing requirement>. review.json.questions_for_user または review.json.exact_fix_instructions に正確に従ってください."}` を返してください。
-            completion gate が満たされた後にのみ `{"ok": true}` を返してください。
 ---
 
 # Marp Slide スキル
@@ -303,7 +211,7 @@ hooks:
 行うこと:
 
 - hook による reviewer 再実行に依存する
-- hook が動かなかった場合、または freshness を証明できない場合は、`agents/slide-reviewer.md` を使って reviewer を手動で再実行する
+- hook が動かなかった場合、または freshness を証明できない場合は、`../../agents/slide-reviewer.md` を使って reviewer を手動で再実行する
 
 次の場合に抜ける:
 
@@ -448,7 +356,7 @@ stale な pass を完了根拠に使ってはいけません。
 
 ## Reviewer 契約
 
-reviewer の source of truth は `agents/slide-reviewer.md` です。
+reviewer の source of truth は `../../agents/slide-reviewer.md` です。
 reviewer は次を満たさなければなりません:
 
 - `request.yaml`、`outline.yaml`、`design-system.yaml`、`slide-plan.yaml`、`slides/presentation.md` を読む
@@ -527,7 +435,7 @@ reviewer は少なくとも次の観点を `pass` / `fail` で判定してくだ
 
 ## 運用ルール
 
-- `settings.json` に依存してはいけません。hooks はこのファイルの frontmatter が持ちます
+- `settings.json` に依存してはいけません。hooks の正本は `../../hooks/hooks.json` です
 - 作業ディレクトリは常に `.slide-work/...` と表記してください
 - 古い `pass` を近道として保持してはいけません
 - ユーザーが別の design reference を明示しない限り、`templates/presentation-starter.md` を既定にしてください
@@ -539,7 +447,7 @@ reviewer は少なくとも次の観点を `pass` / `fail` で判定してくだ
 
 ## 参照マップ
 
-- `agents/slide-reviewer.md`: reviewer 契約
+- `../../agents/slide-reviewer.md`: reviewer 契約
 - `templates/request-template.yaml`: request state のテンプレート
 - `templates/outline-template.yaml`: outline state のテンプレート
 - `templates/design-system-template.yaml`: design system state のテンプレート

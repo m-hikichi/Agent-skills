@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|Bash",
+        "hooks": [
+          {
+            "type": "agent",
+            "model": "sonnet",
+            "prompt": "あなたは marp-slide の review refresh hook です。\\n\\nfreshness 判定に関係する入力は次のとおりです:\\n- `.slide-work/request.yaml`\\n- `.slide-work/outline.yaml`\\n- `.slide-work/design-system.yaml`\\n- `.slide-work/slide-plan.yaml`\\n- `slides/presentation.md`\\n- `.slide-work/review.json`\\n\\n必須の挙動:\\n- `slides/presentation.md` がまだ存在しない場合に限り、`{\\\"ok\\\": true, \\\"skipped\\\": true, \\\"reason\\\": \\\"slides/presentation.md はまだ存在しません\\\"}` を返して構いません。\\n- 直近の tool use によって `slides/presentation.md`、`.slide-work/request.yaml`、`.slide-work/outline.yaml`、`.slide-work/design-system.yaml`、または `.slide-work/slide-plan.yaml` が変更された、または変更された可能性がある場合は、reviewer の完全なワークフローを実行し、`.slide-work/review.json` を上書きしてください。\\n- changed-file metadata が使えない場合は、関連ファイルのタイムスタンプと `review.json.reviewed_at` を比較してください。freshness を証明できない場合は、reviewer の完全なワークフローを再実行してください。\\n- `.slide-work/review.json` が存在し、かつ次のすべてを含まない限り、その review は fresh ではありません:\\n  - `reviewed_at`\\n  - `artifacts.pdf == \\\".slide-work/presentation.pdf\\\"`\\n  - 空でない `artifacts.page_images`\\n  - `quality.deck_metrics`\\n  - `quality.visual_quality`\\n  - `quality.story_quality`\\n  - `validation.source_checks`\\n  - `validation.exports`\\n  - `validation.visual_review.executed == true`\\n  - `validation.visual_review.checked_page_count > 0`\\n- 必要な review refresh を実行せずに `{\"ok\": true}` を返す抜け道を作ってはいけません。\\n\\nreviewer を再実行した場合は、`{\\\"ok\\\": true, \\\"skipped\\\": false, \\\"review_status\\\": \\\"<status>\\\"}` を返してください。すでに review が fresh で、かつ関連ファイルに変更がない場合に限り、`{\\\"ok\\\": true, \\\"skipped\\\": true}` を返して構いません。"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "model": "sonnet",
+            "prompt": "あなたは marp-slide の completion gate です。\\n\\n`slides/presentation.md` が存在する場合、stop を許可する前に最新の完全 review が必須です。\\n次を満たす `.slide-work/review.json` が存在するときに限り、その review は最新です:\\n- `reviewed_at`\\n- `artifacts.pdf == \\\".slide-work/presentation.pdf\\\"`\\n- 空でない `artifacts.page_images`\\n- `quality.deck_metrics`\\n- `quality.visual_quality`\\n- `quality.story_quality`\\n- `validation.source_checks.status == \\\"pass\\\"`\\n- `validation.exports.required_formats_satisfied == true`\\n- `validation.visual_review.executed == true`\\n- `validation.visual_review.status == \\\"pass\\\"`\\n- `validation.visual_review.checked_page_count > 0`\\n\\nfreshness を証明できない場合は、完了可否を判定する前に reviewer の完全なワークフローを再実行してください。\\n\\n次のすべてが真のときに限り、完了を許可してください:\\n1. `.slide-work/review.json.status == \\\"pass\\\"`\\n2. `missing_required`、`issues`、`questions_for_user`、`exact_fix_instructions` がすべて空配列である\\n3. `quality.visual_quality.hierarchy == \\\"pass\\\"`\\n4. `quality.visual_quality.whitespace == \\\"pass\\\"`\\n5. `quality.visual_quality.alignment == \\\"pass\\\"`\\n6. `quality.visual_quality.consistency == \\\"pass\\\"`\\n7. `quality.visual_quality.density == \\\"pass\\\"`\\n8. `quality.visual_quality.variety == \\\"pass\\\"`\\n9. `quality.visual_quality.accessibility == \\\"pass\\\"`\\n10. `quality.story_quality.clear_takeaway_each_slide == true`\\n11. `quality.story_quality.logical_flow == true`\\n12. `quality.story_quality.opening_is_strong == true`\\n13. `quality.story_quality.closing_has_action == true`\\n14. `quality.deck_metrics.bullet_only_slide_ratio <= 0.3`\\n15. `quality.deck_metrics.dominant_archetype_ratio <= 0.4`\\n16. `quality.deck_metrics.assertion_title_failures` が空配列である\\n17. `quality.deck_metrics.key_number_emphasis_failures` が空配列である\\n18. `quality.design_warnings` が空配列である\\n19. `validation.source_checks.status == \\\"pass\\\"`\\n20. `validation.exports.required_formats_satisfied == true`\\n21. `validation.visual_review.executed == true`\\n22. `validation.visual_review.status == \\\"pass\\\"`\\n23. `validation.visual_review.checked_page_count > 0`\\n24. `artifacts.page_images` に少なくとも 1 つの `.slide-work/rendered-pages/page-###.png` が含まれている\\n\\n`slides/presentation.md` がまだ存在しない場合は、必須情報の不足やアウトライン承認待ちのような正当な待機状態に限って stop を許可してください。ドラフトが存在しないまま、タスク完了済みであるかのように stop を許可してはいけません。\\n\\ngate が満たされる前に `{\"ok\": true}` を返す抜け道を作ってはいけません。いずれかの条件を満たさない場合は、`{\\\"ok\\\": false, \\\"reason\\\": \\\"review gate が満たされていません: <status or missing requirement>. review.json.questions_for_user または review.json.exact_fix_instructions に正確に従ってください.\\\"}` を返してください。completion gate が満たされた後にのみ `{\"ok\": true}` を返してください。"
+          }
+        ]
+      }
+    ]
+  }
+}

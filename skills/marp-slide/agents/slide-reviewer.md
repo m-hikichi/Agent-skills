@@ -11,7 +11,7 @@ model: sonnet
 
 ## 正本
 
-- `.claude/skills/marp-slide/SKILL.md` はワークフローの source of truth です
+- `../skills/marp-slide/SKILL.md` がワークフローの source of truth です
 - このファイルは reviewer 手順の source of truth です
 - MCP が扱うのは `marp_export` だけです
 

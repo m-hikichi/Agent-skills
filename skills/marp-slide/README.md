@@ -1,84 +1,76 @@
-# marp-slide スキル
+# marp-slide プラグイン
 
-このスキルは、厳格なレビューゲート付きで Marp スライド作成を支援します。要件整理、構成承認、ドラフト作成、レビュー、エクスポート確認には `.slide-work/` の状態ファイルを使用します。利用先プロジェクトへコピーする配布物は `package/` にまとめています。
+Claude Code の plugin として共有できる Marp スライド作成支援パッケージです。公式 docs の plugin 構造に合わせて、plugin root 直下に `skills/`、`agents/`、`hooks/`、`.mcp.json`、`.claude-plugin/plugin.json` を配置しています。
 
-このバージョンでは、レビューゲートは `SKILL.md` の frontmatter hooks にあります。reviewer が `pass` を返すまで、このタスクは完了できません。見た目レビューは、生の Markdown ではなく、レンダリング済みの各スライド PNG 画像に基づいて行います。
+このプラグインは、要件整理、design system 設計、slide plan 作成、Marp 本文作成、visual review、PDF/PNG export までを一連のワークフローとして扱います。reviewer が `pass` を返すまでタスクは完了できません。
 
-## 責務
+## 構成
 
-- MCP サーバー `marp`
-  - `marp_export`
-- reviewer
-  - PDF を出力する
-  - ページ画像を出力する
-  - ページ画像を確認する
-  - `.slide-work/review.json` を上書きする
-- `SKILL.md`
-  - 状態機械
-  - 完了ルール
-  - hooks
+```text
+skills/marp-slide/
+|-- .claude-plugin/
+|   \-- plugin.json
+|-- .mcp.json
+|-- agents/
+|   \-- slide-reviewer.md
+|-- hooks/
+|   \-- hooks.json
+|-- skills/
+|   \-- marp-slide/
+|       |-- SKILL.md
+|       |-- references/
+|       |   |-- design-reference-playbook.md
+|       |   |-- layout-patterns.md
+|       |   \-- presentation-structures.md
+|       \-- templates/
+|           |-- design-system-template.yaml
+|           |-- outline-template.yaml
+|           |-- presentation-starter.md
+|           |-- request-template.yaml
+|           |-- review-template.json
+|           \-- slide-plan-template.yaml
+|-- mcp-server/
+|   |-- Dockerfile
+|   |-- package.json
+|   |-- tsconfig.json
+|   \-- src/
+|       \-- index.ts
+\-- README.md
+```
 
-visual review のロジックは意図的に MCP の外に置いています。
+## 必要なもの
 
-## セットアップ
-
-### 必要なもの
-
-- Claude Code
+- Claude Code 1.0.33 以降
 - Docker
 
 ローカルの Node.js や Marp CLI は不要です。Marp CLI、Chromium、日本語フォントは Docker イメージ内で動作します。
 
-### 導入手順
+## セットアップ
 
-1. `package/.claude/` を利用先プロジェクトのルートにコピーします
-
-```bash
-cp -r <path-to-this-repo>/skills/marp-slide/package/.claude/ <your-project>/.claude/
-```
-
-2. `package/.mcp.json` を利用先プロジェクトのルートにコピーします
-
-```bash
-cp <path-to-this-repo>/skills/marp-slide/package/.mcp.json <your-project>/.mcp.json
-```
-
-3. Docker イメージをビルドします
+1. Docker イメージをビルドします
 
 ```bash
 cd <path-to-this-repo>/skills/marp-slide/mcp-server
 docker build -t marp-mcp-server .
 ```
 
-## ディレクトリ構成
+2. plugin をローカルで読み込みます
+
+```bash
+claude --plugin-dir <path-to-this-repo>/skills/marp-slide
+```
+
+3. Claude Code で plugin のスキルを実行します
 
 ```text
-skills/marp-slide/
-|-- package/
-|   |-- .claude/
-|   |   |-- agents/
-|   |   |   \-- slide-reviewer.md
-|   |   \-- skills/
-|   |       \-- marp-slide/
-|   |           |-- SKILL.md
-|   |           |-- templates/
-|   |           |   |-- request-template.yaml
-|   |           |   |-- outline-template.yaml
-|   |           |   |-- review-template.json
-|   |           |   \-- presentation-starter.md
-|   |           |-- references/
-|   |           |   |-- presentation-structures.md
-|   |           |   |-- layout-patterns.md
-|   |           |   \-- design-reference-playbook.md
-|   \-- .mcp.json
-|-- README.md
-\-- mcp-server/
-    |-- Dockerfile
-    |-- package.json
-    |-- tsconfig.json
-    \-- src/
-        \-- index.ts
+/marp-slide:marp-slide
 ```
+
+`/help` を実行すると、`marp-slide` 名前空間の下にスキルが表示されます。
+
+## 共有方法
+
+このフォルダ全体 `skills/marp-slide/` をそのまま共有すれば plugin として配布できます。plugin docs の推奨どおり、`.claude-plugin/` の中には `plugin.json` だけを置き、それ以外の component はすべて plugin root レベルにあります。
 
 ## 生成される作業ファイル
 
@@ -86,6 +78,8 @@ skills/marp-slide/
 .slide-work/
 |-- request.yaml
 |-- outline.yaml
+|-- design-system.yaml
+|-- slide-plan.yaml
 |-- review.json
 |-- preview.html
 |-- presentation.pdf
@@ -96,62 +90,21 @@ skills/marp-slide/
     \-- ...
 ```
 
-## Reviewer の動作
+## 主なコンポーネント
 
-`agents/slide-reviewer.md` は厳格な reviewer です。常に次の順で処理します。
+- `skills/marp-slide/SKILL.md`
+  - ワークフロー、状態機械、完了条件の正本
+- `agents/slide-reviewer.md`
+  - review 判定と `review.json` 更新の正本
+- `hooks/hooks.json`
+  - review refresh と completion gate の hook 定義
+- `.mcp.json`
+  - `marp` MCP サーバー定義
+- `mcp-server/`
+  - Docker で動かす MCP サーバー実装
 
-1. 必須情報を確認する
-2. `slides/presentation.md` を確認する
-3. reviewer 自前の source checks を実行する
-4. PDF を出力する
-5. ページ画像を出力する
-6. ページ画像を確認する
-7. 必要な export を検証する
-8. `review.json` を上書きする
+## 補足
 
-reviewer はデッキを修正しません。返すのは `missing_info`、`fail`、`pass` のいずれかだけです。
-
-## Hooks
-
-レビューゲートは `SKILL.md` frontmatter hooks が正本です。
-
-- `PostToolUse`
-  - 次の変更後にレビューを再実行します:
-    - `slides/presentation.md`
-    - `.slide-work/request.yaml`
-    - `.slide-work/outline.yaml`
-- `Stop`
-  - すべてのレビューゲートが通るまで完了をブロックします:
-    - reviewer が `pass` を返している
-    - reviewer 自前の source checks が成功している
-    - 必要な export が成功している
-    - visual review が成功している
-    - ページ画像が存在している
-
-## Visual Review の流れ
-
-ページ画像は `marp_export` の PNG 出力で生成します。reviewer は PDF とあわせて、各スライド画像を PNG で出力します。MCP は Marp の連番 PNG を `.slide-work/rendered-pages/page-001.png` 形式に正規化して扱います。
-
-- `.slide-work/presentation.pdf`
-- `.slide-work/rendered-pages/page-001.png`
-- `.slide-work/rendered-pages/page-002.png`
-
-## 完了条件
-
-次のすべてが真のときだけ、このタスクは完了です。
-
-1. `review.json.status == "pass"`
-2. `missing_required`、`issues`、`questions_for_user`、`exact_fix_instructions` が空である
-3. `validation.source_checks.status == "pass"`
-4. `validation.exports.required_formats_satisfied == true`
-5. `validation.visual_review.executed == true`
-6. `validation.visual_review.status == "pass"`
-7. `validation.visual_review.checked_page_count > 0`
-8. `.slide-work/presentation.pdf` が存在する
-9. `.slide-work/rendered-pages/page-###.png` が存在する
-10. ワークフロー上必要な場合、ユーザー承認が記録されている
-
-## 注意
-
-- 常に `.slide-work/...` を使ってください
-- MCP の責務は export に限定されます
+- visual review のロジックは MCP の外にあります
+- reviewer は生の Markdown ではなく、レンダリングしたページ画像を見て判定します
+- plugin 構造は Claude Code docs の「プラグインを作成する」に合わせています
