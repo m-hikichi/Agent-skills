@@ -12,7 +12,8 @@ skills/marp-slide/
 |   \-- plugin.json
 |-- .mcp.json
 |-- agents/
-|   \-- slide-reviewer.md
+|   |-- slide-reviewer.md
+|   \-- structure-consultant.md
 |-- hooks/
 |   \-- hooks.json
 |-- skills/
@@ -96,6 +97,8 @@ claude --plugin-dir <path-to-this-repo>/skills/marp-slide
   - ワークフロー、状態機械、完了条件の正本
 - `agents/slide-reviewer.md`
   - review 判定と `review.json` 更新の正本
+- `agents/structure-consultant.md`
+  - 要件分析とストーリーアーク提案の構成コンサルタント
 - `hooks/hooks.json`
   - review refresh と completion gate の hook 定義
 - `.mcp.json`
