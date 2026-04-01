@@ -5,6 +5,7 @@
   "author": {
     "name": "agent-skills"
   },
+  "agents": "./agents/",
   "skills": "./skills/",
   "hooks": "./hooks/hooks.json",
   "mcpServers": "./.mcp.json"

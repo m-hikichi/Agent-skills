@@ -2,7 +2,7 @@
 
 Claude Code の plugin として共有できる Marp スライド作成支援パッケージです。公式 docs の plugin 構造に合わせて、plugin root 直下に `skills/`、`agents/`、`hooks/`、`.mcp.json`、`.claude-plugin/plugin.json` を配置しています。
 
-このプラグインは、要件整理、design system 設計、slide plan 作成、Marp 本文作成、visual review、PDF/PNG export までを一連のワークフローとして扱います。reviewer が `pass` を返すまでタスクは完了できません。
+このプラグインは、要件整理、構成検証、design system 設計、slide plan 作成、Marp 本文作成、technical review、critical review、PDF/PNG export までを一連のワークフローとして扱います。technical reviewer と devil's advocate reviewer の両方が `pass` を返すまでタスクは完了できません。シングルエージェント、マルチエージェント、エージェントチームのいずれでも動作します。
 
 ## 構成
 
@@ -12,6 +12,7 @@ skills/marp-slide/
 |   \-- plugin.json
 |-- .mcp.json
 |-- agents/
+|   |-- devil-advocate-reviewer.md
 |   |-- slide-reviewer.md
 |   \-- structure-consultant.md
 |-- hooks/
@@ -96,9 +97,11 @@ claude --plugin-dir <path-to-this-repo>/skills/marp-slide
 - `skills/marp-slide/SKILL.md`
   - ワークフロー、状態機械、完了条件の正本
 - `agents/slide-reviewer.md`
-  - review 判定と `review.json` 更新の正本
+  - technical review 判定と `review.json` 更新の正本
+- `agents/devil-advocate-reviewer.md`
+  - 聞き手の立場からのクリティカルレビュー。「文句のつけようがない」が pass の基準
 - `agents/structure-consultant.md`
-  - 要件分析とストーリーアーク提案の構成コンサルタント
+  - 批判的な視点での要件分析、ストーリーアーク提案、アウトライン検証
 - `hooks/hooks.json`
   - review refresh と completion gate の hook 定義
 - `.mcp.json`
@@ -110,4 +113,7 @@ claude --plugin-dir <path-to-this-repo>/skills/marp-slide
 
 - visual review のロジックは MCP の外にあります
 - reviewer は生の Markdown ではなく、レンダリングしたページ画像を見て判定します
+- 構成段階（S2-S3）で構成コンサルタントによる批判的検証を行い、検証を通過してからユーザーに提示します
+- ドラフト完成後は technical review（構文・デザイン整合性・visual review）→ critical review（聞き手シミュレーション・So what テスト・説得力）の二段階で審査します
+- シングルエージェントモードでは、メインエージェントが各 agent ファイルを読み、その手順を自分で実行します
 - plugin 構造は Claude Code docs の「プラグインを作成する」に合わせています

@@ -55,5 +55,35 @@
       "page_findings": [],
       "summary": ""
     }
+  },
+  "critical_review": {
+    "status": "not_run",
+    "reviewed_at": "",
+    "reviewer": "devil-advocate",
+    "audience_simulation": {
+      "status": "not_run",
+      "findings": []
+    },
+    "so_what_test": {
+      "status": "not_run",
+      "failed_slides": [],
+      "findings": []
+    },
+    "story_persuasiveness": {
+      "status": "not_run",
+      "findings": []
+    },
+    "visual_clarity": {
+      "status": "not_run",
+      "checked_page_count": 0,
+      "findings": []
+    },
+    "professional_quality": {
+      "status": "not_run",
+      "findings": []
+    },
+    "structural_issues": [],
+    "issues": [],
+    "exact_fix_instructions": []
   }
 }
