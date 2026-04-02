@@ -27,7 +27,8 @@
       "consistency": "not_run",
       "density": "not_run",
       "variety": "not_run",
-      "accessibility": "not_run"
+      "accessibility": "not_run",
+      "rhythm": "not_run"
     },
     "story_quality": {
       "clear_takeaway_each_slide": false,
@@ -79,6 +80,10 @@
       "findings": []
     },
     "professional_quality": {
+      "status": "not_run",
+      "findings": []
+    },
+    "information_design": {
       "status": "not_run",
       "findings": []
     },

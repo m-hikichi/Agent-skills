@@ -53,7 +53,7 @@ style: |
     color: var(--text-main);
     font-family: var(--font-body);
     font-size: 27px;
-    line-height: 1.42;
+    line-height: 1.48;
   }
 
   section::before {
@@ -83,11 +83,12 @@ style: |
   h1, h2, h3 { margin: 0; font-family: var(--font-title); color: var(--text-main); }
 
   h2 {
-    font-size: 1.45em;
+    font-size: 1.52em;
     margin-bottom: 22px;
     padding-bottom: 14px;
     position: relative;
     line-height: 1.24;
+    letter-spacing: -0.01em;
   }
 
   h2::after {
@@ -100,11 +101,13 @@ style: |
     background: linear-gradient(90deg, var(--accent), rgba(67, 211, 255, 0.16));
   }
 
-  h3 { font-size: 0.82em; margin-bottom: 8px; color: var(--accent-soft); }
-  p, li { color: var(--text-sub); }
+  h3 { font-size: 0.86em; margin-bottom: 8px; color: var(--accent-soft); }
+  p, li { color: var(--text-sub); line-height: 1.48; }
   ul { margin: 0.28em 0 0 1em; padding: 0; }
   li { margin: 0.18em 0; }
-  strong { color: var(--text-main); }
+  ul li::marker { color: var(--accent-soft); }
+  ul li li::marker { color: var(--text-muted); }
+  strong { color: var(--text-main); text-shadow: 0 0 12px rgba(67,211,255,0.15); }
 
   code {
     font-family: "Cascadia Code", "Consolas", monospace;
@@ -154,12 +157,14 @@ style: |
     background: var(--bg-card); border: 1px solid var(--border-soft);
     border-left: 4px solid var(--accent); border-radius: var(--radius-lg);
     padding: 18px 20px; box-shadow: var(--shadow-card);
+    backdrop-filter: blur(8px);
   }
   .card p    { margin: 0.15em 0 0; font-size: 0.8em; }
   .card.soft { background: var(--bg-soft); }
   .card.gold { border-left-color: var(--accent-gold); }
   .card.mint { border-left-color: var(--accent-mint); }
   .card.warn { border-left-color: var(--accent-warn); }
+  .card.purple { border-left-color: var(--accent-purple); }
 
   .content-panel { padding: 20px 22px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); }
   .content-panel.flat { background: var(--bg-flat); border-left: 4px solid rgba(67, 211, 255, 0.45); box-shadow: none; }
@@ -221,9 +226,9 @@ style: |
   .step p  { margin: 0; font-size: 0.76em; text-align: center; }
 
   .step::after {
-    content: "\25B8";
+    content: "→";
     position: absolute; top: 50%; right: -20px; transform: translateY(-50%);
-    font-size: 1.2em; color: var(--accent-soft); z-index: 1;
+    font-size: 1.5em; color: var(--accent-soft); z-index: 1;
   }
   .flow > :last-child::after { display: none; }
 
@@ -261,7 +266,12 @@ style: |
      BIG NUMBER
      ============================================================ */
 
-  .big-stat { font-family: var(--font-title); font-size: 4.2em; font-weight: 700; line-height: 0.92; color: var(--accent-soft); margin-bottom: 8px; }
+  .big-stat {
+    font-family: var(--font-title); font-size: 4.2em; font-weight: 700; line-height: 0.92; color: var(--accent-soft); margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent-soft), var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
   .big-sub  { color: var(--text-main); font-size: 0.88em; margin-bottom: 20px; }
 
   /* ============================================================
@@ -301,6 +311,96 @@ style: |
   .compare-panel.after .compare-label  { background: rgba(53, 211, 153, 0.2); color: var(--accent-mint); }
   .compare-panel h3 { margin-bottom: 8px; }
   .compare-panel ul  { margin-top: 0.1em; }
+
+  /* ============================================================
+     TABLE
+     ============================================================ */
+
+  table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: var(--radius-md); overflow: hidden; font-size: 0.78em; }
+  th { background: rgba(67,211,255,0.1); color: var(--accent-soft); font-family: var(--font-title); font-weight: 700; text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--border-soft); }
+  td { padding: 10px 16px; border-bottom: 1px solid var(--border-quiet); color: var(--text-sub); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ============================================================
+     KEY INSIGHT CALLOUT
+     ============================================================ */
+
+  .key-insight {
+    position: relative; margin-top: 16px; padding: 18px 22px 18px 56px;
+    border-radius: var(--radius-lg); background: rgba(67,211,255,0.06);
+    border: 1px solid rgba(67,211,255,0.2); box-shadow: 0 0 24px rgba(67,211,255,0.06);
+  }
+  .key-insight::before {
+    content: "💡"; position: absolute; left: 18px; top: 18px; font-size: 1.2em;
+  }
+  .key-insight strong { color: var(--accent-soft); }
+  .key-insight p { margin: 0; font-size: 0.86em; color: var(--text-sub); }
+
+  /* ============================================================
+     METRICS ROW
+     ============================================================ */
+
+  .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
+  .metric {
+    text-align: center; padding: 20px 14px; border-radius: var(--radius-lg);
+    background: var(--bg-card); border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-panel);
+  }
+  .metric .value {
+    font-family: var(--font-title); font-size: 2.4em; font-weight: 700;
+    color: var(--accent-soft); line-height: 1;
+  }
+  .metric .label { font-size: 0.68em; color: var(--text-muted); margin-top: 8px; }
+  .metric .change { font-size: 0.6em; margin-top: 4px; }
+  .metric .change.up { color: var(--accent-mint); }
+  .metric .change.down { color: var(--accent-warn); }
+
+  /* ============================================================
+     CHECKLIST
+     ============================================================ */
+
+  .checklist { list-style: none; padding-left: 0; }
+  .checklist li { position: relative; padding-left: 32px; margin: 0.3em 0; }
+  .checklist li::before { content: "☐"; position: absolute; left: 0; color: var(--text-muted); font-size: 1.1em; }
+  .checklist li.done::before { content: "☑"; color: var(--accent-mint); }
+  .checklist li.done { color: var(--text-muted); text-decoration: line-through; text-decoration-color: var(--text-muted); }
+
+  /* ============================================================
+     HIGHLIGHT TEXT UTILITIES
+     ============================================================ */
+
+  .highlight {
+    display: inline; padding: 2px 8px; border-radius: 6px;
+    background: rgba(67,211,255,0.12); color: var(--accent-soft);
+  }
+  .highlight.gold { background: rgba(255,191,71,0.12); color: var(--accent-gold); }
+  .highlight.mint { background: rgba(53,211,153,0.12); color: var(--accent-mint); }
+
+  /* ============================================================
+     DIVIDER
+     ============================================================ */
+
+  .divider {
+    border: none; height: 1px; margin: 16px 0;
+    background: linear-gradient(90deg, transparent, var(--border-soft), transparent);
+  }
+
+  /* ============================================================
+     ARCHITECTURE DIAGRAM
+     ============================================================ */
+
+  .arch-grid { display: grid; gap: 20px; align-items: center; }
+  .arch-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .arch-node {
+    background: var(--bg-card); border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg); padding: 16px; text-align: center;
+    box-shadow: var(--shadow-card);
+  }
+  .arch-node.primary { border-color: var(--accent); background: rgba(67,211,255,0.08); }
+  .arch-node h3 { text-align: center; margin-bottom: 4px; }
+  .arch-node p { margin: 0; font-size: 0.72em; text-align: center; }
+  .arch-arrow { text-align: center; color: var(--accent-soft); font-size: 1.6em; }
 
   /* ============================================================
      ARCHETYPE OVERRIDES
@@ -649,6 +749,53 @@ style: |
 
 <p class="subline">Medium and long decks should visibly change rhythm between sections.</p>
 <p class="section-note">Use this layout for chapter changes, not for regular content pages.</p>
+
+---
+
+## Use tables when structured comparison needs more than two columns
+
+| Criteria | Option A | Option B | Option C |
+|----------|----------|----------|----------|
+| Cost | **$120K** | $180K | $95K |
+| Timeline | 6 months | 4 months | **3 months** |
+| Risk | Low | Medium | **Low** |
+| Team fit | **High** | Medium | Low |
+
+<div class="key-insight">
+<strong>Recommendation:</strong>
+<p>Option A balances cost, risk, and team fit most effectively.</p>
+</div>
+
+---
+
+<!-- _class: title-content -->
+
+## Key metrics show consistent improvement across all dimensions
+
+<div class="metrics-row">
+<div class="metric">
+<div class="value">94%</div>
+<div class="label">Customer satisfaction</div>
+<div class="change up">↑ 12pt YoY</div>
+</div>
+<div class="metric">
+<div class="value">2.1s</div>
+<div class="label">Avg response time</div>
+<div class="change up">↓ 38% from Q1</div>
+</div>
+<div class="metric">
+<div class="value">$4.2M</div>
+<div class="label">Revenue impact</div>
+<div class="change up">↑ 27% QoQ</div>
+</div>
+<div class="metric">
+<div class="value">18</div>
+<div class="label">New integrations</div>
+<div class="change up">↑ 6 this quarter</div>
+</div>
+</div>
+
+<div class="banner">Use the metrics row when 3-4 KPIs tell the story better than prose. Keep labels short and changes directional.</div>
 
 ---
 
