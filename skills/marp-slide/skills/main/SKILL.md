@@ -1,5 +1,5 @@
 ---
-name: marp-slide
+name: main
 description: Marp スライドの要件整理、デザインシステム設計、スライド計画、作成、レビュー、エクスポートにはこのスキルを使ってください。`.slide-work/design-system.yaml` と `.slide-work/slide-plan.yaml` を先に作り、スライド画像を使った visual review と quality rubric が pass になるまで完了してはいけません。
 ---
 

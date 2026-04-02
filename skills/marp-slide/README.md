@@ -18,7 +18,7 @@ skills/marp-slide/
 |-- hooks/
 |   \-- hooks.json
 |-- skills/
-|   \-- marp-slide/
+|   \-- main/
 |       |-- SKILL.md
 |       |-- references/
 |       |   |-- design-reference-playbook.md
@@ -65,7 +65,7 @@ claude --plugin-dir <path-to-this-repo>/skills/marp-slide
 3. Claude Code で plugin のスキルを実行します
 
 ```text
-/marp-slide:marp-slide
+/marp-slide:main
 ```
 
 `/help` を実行すると、`marp-slide` 名前空間の下にスキルが表示されます。
@@ -94,7 +94,7 @@ claude --plugin-dir <path-to-this-repo>/skills/marp-slide
 
 ## 主なコンポーネント
 
-- `skills/marp-slide/SKILL.md`
+- `skills/main/SKILL.md`
   - ワークフロー、状態機械、完了条件の正本
 - `agents/slide-reviewer.md`
   - technical review 判定と `review.json` 更新の正本

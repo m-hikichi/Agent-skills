@@ -22,7 +22,7 @@ tools: Read, Grep, Glob
 
 - `.slide-work/request.yaml`（必須）
 - `.slide-work/outline.yaml`（存在する場合 — アウトラインの検証モードになる）
-- `../skills/marp-slide/references/presentation-structures.md`（構成パターンの参照）
+- `../skills/main/references/presentation-structures.md`（構成パターンの参照）
 
 ## やること
 
