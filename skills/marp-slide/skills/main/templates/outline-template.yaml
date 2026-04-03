@@ -1,0 +1,36 @@
+# request.yaml の presentation_type をそのまま転記する
+presentation_type: ""
+
+# この資料で聞き手にどうなってほしいか（1文で書く）
+intent: ""
+
+# 聞き手に求める判断やアクション（判断不要なら空にする）
+core_decision: ""
+
+# デッキ全体の流れを 3〜5 ステップで要約する
+# 例: ["課題の共有", "根拠の提示", "解決策の提案", "効果の見込み", "次のアクション"]
+story_arc: []
+
+# 目標スライド枚数（request.yaml の target_slide_count を転記）
+slide_count: 0
+
+# デッキを大きなまとまりで区切る（7枚以上なら section-divider に対応させる）
+# 例:
+#   - name: 導入
+#     slides: [1, 2, 3]
+#   - name: 本論
+#     slides: [4, 5, 6, 7]
+#   - name: まとめ
+#     slides: [8, 9]
+sections: []
+
+# 各スライドの骨格（タイトルは topic label ではなく takeaway で書く）
+# 例:
+#   - slide_no: 1
+#     title: "現行プロセスの手作業が年間120時間のコストを生んでいる"
+#     role: 課題提示
+#     notes: ""
+slides: []
+
+# アウトライン確認時の備忘（ユーザーからの指摘や保留事項）
+review_notes: []

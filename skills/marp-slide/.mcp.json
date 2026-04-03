@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "marp": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "-v", ".:/workspace",
+        "marp-mcp-server"
+      ]
+    }
+  }
+}

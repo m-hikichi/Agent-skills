@@ -1,0 +1,94 @@
+{
+  "status": "missing_info",
+  "reviewed_at": "",
+  "missing_required": [],
+  "issues": [],
+  "questions_for_user": [],
+  "exact_fix_instructions": [],
+  "last_checked_files": [],
+  "artifacts": {
+    "pdf": ".slide-work/presentation.pdf",
+    "page_images": []
+  },
+  "quality": {
+    "deck_metrics": {
+      "bullet_only_slide_ratio": 0.0,
+      "dominant_archetype_ratio": 0.0,
+      "same_archetype_name": "",
+      "slides_over_text_limit": [],
+      "section_divider_count": 0,
+      "assertion_title_failures": [],
+      "key_number_emphasis_failures": []
+    },
+    "visual_quality": {
+      "hierarchy": "not_run",
+      "whitespace": "not_run",
+      "alignment": "not_run",
+      "consistency": "not_run",
+      "density": "not_run",
+      "variety": "not_run",
+      "accessibility": "not_run",
+      "rhythm": "not_run"
+    },
+    "story_quality": {
+      "clear_takeaway_each_slide": false,
+      "logical_flow": false,
+      "opening_is_strong": false,
+      "closing_has_action": false
+    },
+    "design_warnings": []
+  },
+  "validation": {
+    "source_checks": {
+      "status": "not_run",
+      "details": "",
+      "findings": []
+    },
+    "exports": {
+      "required_formats": [],
+      "required_formats_satisfied": false,
+      "results": []
+    },
+    "visual_review": {
+      "executed": false,
+      "status": "not_run",
+      "checked_page_count": 0,
+      "page_findings": [],
+      "summary": ""
+    }
+  },
+  "critical_review": {
+    "status": "not_run",
+    "reviewed_at": "",
+    "reviewer": "devil-advocate",
+    "audience_simulation": {
+      "status": "not_run",
+      "findings": []
+    },
+    "so_what_test": {
+      "status": "not_run",
+      "failed_slides": [],
+      "findings": []
+    },
+    "story_persuasiveness": {
+      "status": "not_run",
+      "findings": []
+    },
+    "visual_clarity": {
+      "status": "not_run",
+      "checked_page_count": 0,
+      "findings": []
+    },
+    "professional_quality": {
+      "status": "not_run",
+      "findings": []
+    },
+    "information_design": {
+      "status": "not_run",
+      "findings": []
+    },
+    "structural_issues": [],
+    "issues": [],
+    "exact_fix_instructions": []
+  }
+}

@@ -1,0 +1,61 @@
+deck_style:
+  presentation_type:
+  reference_deck: bundled-presentation-starter
+  tone: professional
+  visual_style: clean-minimal
+  theme_name: custom-corporate
+  aspect_ratio: "16:9"
+
+typography:
+  title_max_chars: 28
+  body_max_bullets: 3
+  body_max_lines_per_bullet: 2
+  max_body_lines_per_slide: 6
+  emphasis_rule: bold keywords and numbers only
+
+layout_rules:
+  approved_archetypes:
+    - title-hero
+    - agenda-overview
+    - section-divider
+    - title-content
+    - assertion-evidence
+    - two-column-compare
+    - two-column-content
+    - process-flow
+    - timeline-roadmap
+    - big-number
+    - architecture-diagram
+    - quote-callout
+    - closing-next-action
+  avoid_layouts:
+    - dense-bullet-list
+    - paragraph-heavy
+    - table-heavy
+  max_same_archetype_ratio: 0.4
+
+visual_rules:
+  use_icons: true
+  icon_style: outline
+  use_background_images: section-only
+  use_split_background: true
+  chart_style: simple-flat
+  whitespace_priority: high
+  emphasize_numbers_and_key_phrases: true
+
+consistency_rules:
+  section_divider_required: true
+  repeated_component_style: true
+  footer_style: subtle
+  page_number: true
+
+marp_policy:
+  use_custom_theme_foundation: true
+  use_global_directives:
+    - theme
+    - paginate
+    - header
+    - footer
+  use_local_class_directives: true
+  split_background_usage: section-divider or compare slides only
+  background_image_usage: message-reinforcing only
