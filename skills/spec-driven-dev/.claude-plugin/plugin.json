@@ -1,0 +1,10 @@
+{
+  "name": "spec-driven-dev",
+  "version": "1.0.0",
+  "description": "仕様駆動開発スキル群。要件定義・仕様作成・実装・監査のワークフローを管理し、トレーサビリティと整合性検証を自動化する。",
+  "author": {
+    "name": "m_hikichi"
+  },
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json"
+}

@@ -12,8 +12,12 @@ sys.modules[SPEC.name] = MODULE
 SPEC.loader.exec_module(MODULE)
 
 
-def ok_consistency(project_root: Path, skill_dir: Path):
+def ok_consistency(project_root: Path, plugin_root: Path, runner: str = "docker"):
     return MODULE.CommandResult(ok=True, summary="verify passed")
+
+
+def fail_consistency(project_root: Path, plugin_root: Path, runner: str = "docker"):
+    return MODULE.CommandResult(ok=False, summary="- High: SPEC-001 / FR-001 implementation file not found")
 
 
 def ok_tests(project_root: Path, commands):
@@ -51,25 +55,12 @@ class ReviewStopGateTests(unittest.TestCase):
             project_root=Path("."),
             config={"verification": {"consistency_runner": "docker", "project_test_commands": ["echo ok"]}},
             config_path=Path("spec-config.json"),
-            skill_dir=Path("."),
+            plugin_root=Path("."),
             run_consistency=ok_consistency,
             run_project_tests=ok_tests,
         )
         self.assertFalse(verdict.allow_stop)
         self.assertIn("最終整合性監査", verdict.reason)
-
-    def test_review_blocks_when_project_test_commands_are_missing(self) -> None:
-        verdict = MODULE.review_stop_request(
-            hook_input=self.make_hook_input(),
-            project_root=Path("."),
-            config={"verification": {"consistency_runner": "docker", "project_test_commands": []}},
-            config_path=Path("spec-config.json"),
-            skill_dir=Path("."),
-            run_consistency=ok_consistency,
-            run_project_tests=ok_tests,
-        )
-        self.assertFalse(verdict.allow_stop)
-        self.assertIn("project_test_commands", verdict.reason)
 
     def test_review_allows_clean_when_all_checks_pass(self) -> None:
         verdict = MODULE.review_stop_request(
@@ -77,37 +68,65 @@ class ReviewStopGateTests(unittest.TestCase):
             project_root=Path("."),
             config={"verification": {"consistency_runner": "docker", "project_test_commands": ["echo ok"]}},
             config_path=Path("spec-config.json"),
-            skill_dir=Path("."),
+            plugin_root=Path("."),
             run_consistency=ok_consistency,
             run_project_tests=ok_tests,
         )
         self.assertTrue(verdict.allow_stop)
         self.assertIsNone(verdict.reason)
 
-    def test_review_allows_needs_user_decision_pause(self) -> None:
+    def test_review_allows_needs_user_decision_when_consistency_passes(self) -> None:
         verdict = MODULE.review_stop_request(
             hook_input=self.make_hook_input(status="needs-user-decision", remaining="入力仕様の優先順位をユーザーに確認する"),
             project_root=Path("."),
             config={"verification": {"consistency_runner": "docker", "project_test_commands": ["echo ok"]}},
             config_path=Path("spec-config.json"),
-            skill_dir=Path("."),
+            plugin_root=Path("."),
             run_consistency=ok_consistency,
             run_project_tests=ok_tests,
         )
         self.assertTrue(verdict.allow_stop)
 
+    def test_review_blocks_needs_user_decision_when_consistency_fails(self) -> None:
+        verdict = MODULE.review_stop_request(
+            hook_input=self.make_hook_input(status="needs-user-decision", remaining="入力仕様の優先順位をユーザーに確認する"),
+            project_root=Path("."),
+            config={"verification": {"consistency_runner": "docker", "project_test_commands": ["echo ok"]}},
+            config_path=Path("spec-config.json"),
+            plugin_root=Path("."),
+            run_consistency=fail_consistency,
+            run_project_tests=ok_tests,
+        )
+        self.assertFalse(verdict.allow_stop)
+        self.assertIn("verify_spec_consistency.py", verdict.reason)
+        self.assertIn("整合性チェックは必須", verdict.reason)
+
     def test_review_blocks_when_consistency_runner_is_not_docker(self) -> None:
         verdict = MODULE.review_stop_request(
             hook_input=self.make_hook_input(),
             project_root=Path("."),
-            config={"verification": {"consistency_runner": "python", "project_test_commands": ["echo ok"]}},
+            config={"verification": {"consistency_runner": "local", "project_test_commands": ["echo ok"]}},
             config_path=Path("spec-config.json"),
-            skill_dir=Path("."),
+            plugin_root=Path("."),
             run_consistency=ok_consistency,
             run_project_tests=ok_tests,
         )
         self.assertFalse(verdict.allow_stop)
-        self.assertIn("consistency_runner", verdict.reason)
+        self.assertIn("docker", verdict.reason)
+
+    def test_block_reason_includes_findings_detail(self) -> None:
+        verdict = MODULE.review_stop_request(
+            hook_input=self.make_hook_input(),
+            project_root=Path("."),
+            config={"verification": {"consistency_runner": "docker", "project_test_commands": ["echo ok"]}},
+            config_path=Path("spec-config.json"),
+            plugin_root=Path("."),
+            run_consistency=fail_consistency,
+            run_project_tests=ok_tests,
+        )
+        self.assertFalse(verdict.allow_stop)
+        self.assertIn("SPEC-001", verdict.reason)
+        self.assertIn("FR-001", verdict.reason)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,38 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/run_verify_stop_hook.sh\" \"${CLAUDE_PROJECT_DIR}\"",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/run_verify_stop_hook.sh\" \"${CLAUDE_PROJECT_DIR}\"",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/check_spec_coverage.sh\" \"${CLAUDE_PROJECT_DIR}\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

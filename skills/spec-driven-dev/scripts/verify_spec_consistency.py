@@ -26,6 +26,10 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project-root", default=".", help="Project root directory")
     parser.add_argument("--config", default="spec-config.json", help="Path to spec-config.json")
+    parser.add_argument("--orphan-check", action="store_true", default=True, help="Check for implementation files not referenced by any SPEC (default: enabled)")
+    parser.add_argument("--no-orphan-check", action="store_false", dest="orphan_check", help="Disable orphan check")
+    parser.add_argument("--report", action="store_true", help="Print summary report of all SPECs and their implementation status")
+    parser.add_argument("--format", choices=["text", "json"], default="text", help="Output format")
     return parser.parse_args()
 
 
@@ -230,7 +234,20 @@ def find_matrix_rows(markdown: str) -> List[Dict[str, str]]:
     return extract_any_top_level_table(markdown)
 
 
-def validate(project_root: Path, config: Dict[str, object]) -> List[Finding]:
+def collect_implementation_files(project_root: Path, roots: List[str], extensions: tuple[str, ...] = (".ts", ".tsx", ".js", ".jsx", ".py", ".go", ".rs", ".java", ".kt", ".cs", ".rb", ".swift")) -> set[str]:
+    """Collect all code files under implementation_roots."""
+    files: set[str] = set()
+    for root in roots:
+        root_path = project_root / root
+        if not root_path.exists():
+            continue
+        for path in root_path.rglob("*"):
+            if path.is_file() and path.suffix in extensions:
+                files.add(str(path.relative_to(project_root)).replace("\\", "/"))
+    return files
+
+
+def validate(project_root: Path, config: Dict[str, object], *, orphan_check: bool = True) -> List[Finding]:
     findings: List[Finding] = []
 
     requirements_path = project_root / str(config.get("requirements_path", "docs/requirements.md"))
@@ -471,10 +488,37 @@ def validate(project_root: Path, config: Dict[str, object]) -> List[Finding]:
                     )
                 )
 
+    # --- orphan check: find implementation files not referenced by any SPEC ---
+    if orphan_check:
+        impl_roots = [str(r) for r in config.get("implementation_roots", ["src"])]
+        all_impl_files = collect_implementation_files(project_root, impl_roots)
+        referenced_files: set[str] = set()
+        for rows in spec_contract_rows.values():
+            for row in rows:
+                impl_file = row.get("実装ファイル", "").replace("\\", "/")
+                if impl_file:
+                    referenced_files.add(impl_file)
+        orphan_files = all_impl_files - referenced_files
+        for orphan in sorted(orphan_files):
+            findings.append(
+                Finding(
+                    "High",
+                    f"implementation file not referenced by any SPEC contract: {orphan}",
+                )
+            )
+
     return findings
 
 
-def print_findings(findings: Sequence[Finding]) -> int:
+def print_findings(findings: Sequence[Finding], fmt: str = "text") -> int:
+    if fmt == "json":
+        result = {
+            "ok": len(findings) == 0,
+            "findings": [{"severity": f.severity, "message": f.message} for f in findings],
+        }
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if not findings else 1
+
     if not findings:
         print("OK: spec consistency check passed.")
         return 0
@@ -485,12 +529,83 @@ def print_findings(findings: Sequence[Finding]) -> int:
     return 1
 
 
+def generate_report(project_root: Path, config: Dict[str, object], fmt: str = "text") -> str:
+    """Generate a summary report of all SPECs and their implementation status."""
+    spec_dir = project_root / str(config.get("spec_dir", "docs/specs"))
+    if not spec_dir.exists():
+        return "No spec directory found."
+
+    rows: List[Dict[str, str | int]] = []
+    for spec_path in sorted(spec_dir.glob("*.md")):
+        markdown = read_text(spec_path)
+        spec_id = extract_frontmatter_spec_id(markdown)
+        if not spec_id:
+            continue
+
+        status_match = re.search(r"^status:\s*(\S+)", markdown, re.MULTILINE)
+        status = status_match.group(1) if status_match else "unknown"
+
+        feature_ids = collect_feature_ids(markdown)
+        contract_rows = extract_table(markdown, "実装トレーサビリティ契約")
+
+        total_fr = len(feature_ids)
+        implemented = 0
+        tested = 0
+        for feature_id in feature_ids:
+            fr_rows = [r for r in contract_rows if r.get("機能ID") == feature_id]
+            for row in fr_rows:
+                impl_file = row.get("実装ファイル", "")
+                if impl_file and (project_root / impl_file).exists():
+                    implemented += 1
+                    break
+            for row in fr_rows:
+                test_file = row.get("テストファイル", "")
+                if test_file and (project_root / test_file).exists():
+                    tested += 1
+                    break
+
+        rows.append({
+            "spec_id": spec_id,
+            "status": status,
+            "total_fr": total_fr,
+            "implemented": implemented,
+            "tested": tested,
+        })
+
+    if fmt == "json":
+        return json.dumps(rows, ensure_ascii=False, indent=2)
+
+    if not rows:
+        return "No SPEC documents found."
+
+    lines = [
+        "| SPEC | Status | FR Total | Implemented | Tested |",
+        "|------|--------|----------|-------------|--------|",
+    ]
+    for row in rows:
+        lines.append(
+            f"| {row['spec_id']} | {row['status']} | {row['total_fr']} | {row['implemented']} | {row['tested']} |"
+        )
+
+    total_fr = sum(r["total_fr"] for r in rows)
+    total_impl = sum(r["implemented"] for r in rows)
+    total_test = sum(r["tested"] for r in rows)
+    lines.append(f"| **Total** | | **{total_fr}** | **{total_impl}** | **{total_test}** |")
+
+    return "\n".join(lines)
+
+
 def main() -> int:
     args = parse_args()
     project_root = Path(args.project_root).resolve()
     config = load_config(project_root, args.config)
-    findings = validate(project_root, config)
-    return print_findings(findings)
+
+    if args.report:
+        print(generate_report(project_root, config, fmt=args.format))
+        return 0
+
+    findings = validate(project_root, config, orphan_check=args.orphan_check)
+    return print_findings(findings, fmt=args.format)
 
 
 if __name__ == "__main__":

@@ -7,7 +7,8 @@
 - コード変更後は確認する
 - 仕様書変更後も確認する
 - `requirements.md`、`SPEC-XXX`、コード、テスト、マトリクスのうち変更に関係するものをすべて対象にする
-- `verify_spec_consistency.py` と `project_test_commands` の結果を監査根拠に含める
+- **`verify_spec_consistency.py`（`--orphan-check` 有効）を Claude が自動実行し、結果を監査根拠に含める**
+- `project_test_commands` の結果を監査根拠に含める
 - `High` / `Medium` の不整合が残る場合は `clean` としない
 - 最終の `## 最終整合性監査` による close out は外側の実行主体が組み立てる
 
@@ -22,6 +23,7 @@
 ## 2. 仕様書の完全性
 
 - 対象仕様に `spec_id`、タイトル、ステータス、更新日があるか
+- **`status` が適切に設定されているか（draft / review / approved / implemented / deprecated）**
 - `対応要件（requirements.md）` 表があるか
 - FR / NFR の ID が重複していないか
 - `実装トレーサビリティ契約` があり、すべての `FR-` / `NFR-` をカバーしているか
@@ -45,14 +47,20 @@
 - データモデルやレスポンス形式が仕様どおりか
 - 仕様書に書かれたファイル名、関数名、クラス名が現実のコードと一致するか
 - ステータスやコメントが現状に追従しているか
+- **SPEC から参照されない孤立した実装ファイルがないか**（`--orphan-check`）
 
-## 5. Findings の分類
+## 5. テスト仕様の種別充足
+
+- **各 `FR-` / `NFR-` のテスト仕様に正常系・異常系・境界値の 3 種別が最低 1 件ずつあるか**
+- テスト種別が不足していれば Finding として報告する
+
+## 6. Findings の分類
 
 - `implementation-fix`: コード / テスト / マトリクス側の修正で解消すべき差分
 - `spec-fix`: requirements / specs / matrix の記述修正で解消すべき差分
 - `needs-user-decision`: product decision や外部仕様が未確定で、その場で閉じられない差分
 
-## 6. レポートの返し方
+## 7. レポートの返し方
 
 不整合は次の形で返す。
 
@@ -63,6 +71,11 @@
    - 根拠: `実装トレーサビリティ契約` にある `src/foo.ts` の行が matrix にない
    - 影響: 仕様から実装を追跡できない
    - 必要な更新: matrix に対応行を追加する
+
+2. Medium / spec-fix: SPEC-001 / FR-002 のテスト仕様に境界値テストが未定義
+   - 根拠: テスト仕様セクションに正常系と異常系のみ
+   - 影響: 境界条件のバグを見逃すリスク
+   - 必要な更新: 境界値テストケースを追加
 ```
 
 重大度は `High`、`Medium`、`Low` の 3 段階で十分。差分がなければ `## Findings` に `なし` と書き、監査サマリーで `clean` を返す。

@@ -4,11 +4,11 @@ param(
 )
 
 $resolvedProjectRoot = (Resolve-Path $ProjectRoot).Path
-$skillDir = Split-Path -Parent $PSScriptRoot
+$pluginRoot = Split-Path -Parent $PSScriptRoot
 
 docker run --rm `
   -v "${resolvedProjectRoot}:/workspace" `
-  -v "${skillDir}:/skill" `
+  -v "${pluginRoot}:/plugin" `
   -w /workspace `
   $Image `
-  python /skill/scripts/verify_spec_consistency.py --project-root /workspace
+  python /plugin/scripts/verify_spec_consistency.py --project-root /workspace
