@@ -16,8 +16,13 @@ claude --plugin-dir ./spec-driven-dev
 spec-driven-dev/
 ├── .claude-plugin/
 │   └── plugin.json           # プラグインマニフェスト
+├── agents/                   # エージェントチーム定義（チームモード用）
+│   ├── orchestrator.md       # オーケストレーターエージェント
+│   └── auditor.md            # 独立監査エージェント
+├── protocols/                # エージェント間メッセージプロトコル
+│   └── orchestrator-audit.md # orchestrator ↔ auditor 通信仕様
 ├── skills/
-│   ├── main/                 # 親ルーター兼オーケストレーター
+│   ├── main/                 # 親ルーター兼オーケストレーター（シングルモード用）
 │   ├── spec-impact-analysis/ # 変更影響判定（既存仕様なしなら自動bootstrap）
 │   ├── spec-authoring/       # 仕様作成・更新（マトリクス初期行も自動記載）
 │   ├── spec-implementation/  # 実装・機械検証（途中検証あり）
@@ -55,6 +60,29 @@ spec-driven-dev/
 - `needs-user-decision` でも整合性チェックはバイパス不可
 - block 理由に Findings 詳細が含まれる
 - 全ての Python 処理は Docker 内で実行（ホストに Python 不要）
+
+## 動作モード
+
+### シングルエージェントモード（デフォルト）
+
+従来通り `/spec-driven-dev:main` でルーティング。1つの会話スレッド内で child skill を順番に実行する。
+
+### チームモード
+
+orchestrator + auditor の2エージェントで動作。監査が独立コンテキストで実行されるため、実装バイアスのない検証が可能。
+
+```
+orchestrator agent
+  ├─ spec-impact-analysis（直接実行）
+  ├─ spec-authoring（直接実行）
+  ├─ spec-implementation（直接実行）
+  └─ SendMessage → auditor agent（独立監査）
+        └─ 構造化 Findings を返す
+```
+
+チームモードでも hooks（Stop/SubagentStop/PostToolUse）は同じように発火する。整合性チェックのバイパス不可も変わらない。
+
+エージェント間の通信プロトコルは `protocols/orchestrator-audit.md` を参照。
 
 ## プロジェクト側の前提
 

@@ -34,7 +34,6 @@ skills/
 
 ## 既存スキル
 
-- `git-flow-commit`: Git Flowに基づくブランチ運用とコミットワークフローを支援
 - `spec-driven-dev`: 仕様系作業の総合窓口ルーター。迷ったときの入口であり、hooks / reviewer / verification scripts の共通基盤もここに置く
 - `spec-impact-analysis`: コード変更前に、仕様影響あり / なしを判定する
 - `spec-authoring`: `requirements.md` と `SPEC-XXX` を作成 / 更新する
