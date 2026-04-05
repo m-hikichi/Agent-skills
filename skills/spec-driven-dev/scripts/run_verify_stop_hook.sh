@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 # Stop/SubagentStop hook: run spec-driven-dev completion gate.
 # No local Python required. All Python runs inside Docker.
 #
@@ -12,14 +12,26 @@ SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 PLUGIN_ROOT="$(dirname "$SCRIPT_DIR")"
 IMAGE="${VERIFY_SPEC_IMAGE:-python:3.12}"
 
+# Convert paths for Docker volume mounts on Windows (Git Bash / MSYS2)
+to_docker_path() {
+  if command -v cygpath >/dev/null 2>&1; then
+    cygpath -w "$1"
+  else
+    printf '%s' "$1"
+  fi
+}
+
+DOCKER_PROJECT_ROOT="$(to_docker_path "$PROJECT_ROOT")"
+DOCKER_PLUGIN_ROOT="$(to_docker_path "$PLUGIN_ROOT")"
+
 # Read hook input from stdin
 HOOK_INPUT="$(cat)"
 
 # --- Step 1: Run review_stop_gate.py inside Docker ---
 # This handles: audit format check + verify_spec_consistency.py
 if ! OUTPUT="$(printf "%s" "${HOOK_INPUT}" | docker run --rm -i \
-  -v "${PROJECT_ROOT}:/workspace" \
-  -v "${PLUGIN_ROOT}:/plugin" \
+  -v "${DOCKER_PROJECT_ROOT}:/workspace" \
+  -v "${DOCKER_PLUGIN_ROOT}:/plugin" \
   -w /workspace \
   "${IMAGE}" \
   python /plugin/scripts/review_stop_gate.py --project-root /workspace 2>&1)"; then
@@ -53,7 +65,7 @@ fi
 
 # Extract project_test_commands using Docker (no local Python/jq needed)
 COMMANDS="$(docker run --rm -i \
-  -v "${PROJECT_ROOT}:/workspace" \
+  -v "${DOCKER_PROJECT_ROOT}:/workspace" \
   -w /workspace \
   "${IMAGE}" \
   python -c "
@@ -71,17 +83,19 @@ if [ -z "${COMMANDS}" ]; then
   exit 0
 fi
 
-# Run each command on the host
-printf "%s\n" "${COMMANDS}" | while IFS= read -r CMD; do
+# Run each command on the host (here-doc avoids piped subshell so exit works)
+while IFS= read -r CMD; do
   if [ -z "${CMD}" ]; then
     continue
   fi
-  if ! CMD_OUTPUT="$(/bin/sh -lc "${CMD}" 2>&1)"; then
+  if ! CMD_OUTPUT="$(bash -c "${CMD}" 2>&1)"; then
     # Truncate output for block reason
     SUMMARY="$(printf "%s" "${CMD_OUTPUT}" | head -10)"
     printf '{"decision":"block","reason":"reviewer NG: project_test_commands が失敗しました。\\n`%s` failed:\\n%s"}\n' "${CMD}" "${SUMMARY}"
     exit 0
   fi
-done
+done <<EOF
+${COMMANDS}
+EOF
 
 exit 0

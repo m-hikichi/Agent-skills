@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/run_verify_stop_hook.sh\" \"${CLAUDE_PROJECT_DIR}\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run_verify_stop_hook.sh\" \"${CLAUDE_PROJECT_DIR}\"",
             "timeout": 120
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/run_verify_stop_hook.sh\" \"${CLAUDE_PROJECT_DIR}\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run_verify_stop_hook.sh\" \"${CLAUDE_PROJECT_DIR}\"",
             "timeout": 120
           }
         ]
@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/check_spec_coverage.sh\" \"${CLAUDE_PROJECT_DIR}\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/check_spec_coverage.sh\" \"${CLAUDE_PROJECT_DIR}\"",
             "timeout": 15
           }
         ]
