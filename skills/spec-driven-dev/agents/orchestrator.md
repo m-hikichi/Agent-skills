@@ -86,16 +86,60 @@ SendMessage(
 )
 ```
 
-JSON のフィールドは `protocols/orchestrator-audit.md` に従う。
+### audit_request メッセージ仕様
 
-### audit_request で送る情報
+```json
+{
+  "protocol": "spec-driven-dev/audit",
+  "version": "1.0",
+  "type": "audit_request",
+  "phase": "post-implementation",
+  "scope": {
+    "specs": ["SPEC-012"],
+    "requirements_path": "docs/requirements.md",
+    "traceability_path": "docs/traceability-matrix.md",
+    "changed_files": ["src/foo.ts", "tests/foo.test.ts"]
+  },
+  "context": "SPEC-012 FR-001 ~ FR-003 の実装完了。全体監査を依頼。",
+  "iteration": 1
+}
+```
 
-- `phase`: 現在のフェーズ（`post-implementation`, `post-authoring-fix`, `post-implementation-fix`, `final`）
-- `scope.specs`: 今回の対象 SPEC ID
-- `scope.changed_files`: 今回変更したファイル
-- `scope.requirements_path`, `scope.traceability_path`: `spec-config.json` から読み取ったパス
-- `context`: 何をしたかの要約
-- `iteration`: 監査-修正ループの回数
+| フィールド | 型 | 必須 | 説明 |
+|---|---|---|---|
+| `protocol` | string | Yes | 固定: `"spec-driven-dev/audit"` |
+| `version` | string | Yes | 固定: `"1.0"` |
+| `type` | string | Yes | 固定: `"audit_request"` |
+| `phase` | string | Yes | 下表参照 |
+| `scope.specs` | string[] | Yes | 監査対象の SPEC ID 一覧 |
+| `scope.requirements_path` | string | Yes | requirements.md のパス（`spec-config.json` から取得） |
+| `scope.traceability_path` | string | Yes | traceability-matrix.md のパス（`spec-config.json` から取得） |
+| `scope.changed_files` | string[] | No | 今回変更したファイル一覧（監査の焦点を絞るヒント） |
+| `context` | string | Yes | 何をしたかの自由記述 |
+| `iteration` | number | Yes | 監査-修正ループの回数（1 始まり） |
+
+### phase の意味
+
+| phase | いつ使うか |
+|---|---|
+| `post-implementation` | 初回実装完了後 |
+| `post-authoring-fix` | spec-fix 修正後の再監査 |
+| `post-implementation-fix` | implementation-fix 修正後の再監査 |
+| `final` | orchestrator が最終確認として依頼 |
+
+### shutdown_request メッセージ仕様
+
+ワークフロー完了時に auditor を終了させる:
+
+```json
+{
+  "protocol": "spec-driven-dev/audit",
+  "version": "1.0",
+  "type": "shutdown_request"
+}
+```
+
+auditor はこのメッセージを受け取ったら停止する。
 
 ## Findings に基づく判断
 

@@ -64,9 +64,9 @@ orchestrator から以下の形式でメッセージが届く:
 
 ### 送信: Audit Response
 
-監査結果を以下の形式で orchestrator に `SendMessage` で返す:
+監査結果を以下の形式で orchestrator に `SendMessage` で返す。**必ず Markdown の Findings / Audit Summary と JSON の両方を含める。** Markdown は人間の確認用、JSON は orchestrator の判定用。
 
-```
+````
 監査完了。結果を報告します。
 
 ## Findings
@@ -82,21 +82,83 @@ orchestrator から以下の形式でメッセージが届く:
 - 確認した検証: ...
 - 監査結果: findings-present
 
-\`\`\`json
+```json
+{...audit_response JSON...}
+```
+````
+
+#### audit_response フィールド定義
+
+```json
 {
   "protocol": "spec-driven-dev/audit",
   "version": "1.0",
   "type": "audit_response",
   "verdict": "findings-present",
-  "consistency_check": { "passed": true, "orphan_check": true, "output_summary": "..." },
-  "test_type_coverage": { "passed": true, "missing": [] },
-  "findings": [...],
-  "audit_summary": { "targets": [...], "verifications_run": [...], "high_count": 1, "medium_count": 0, "low_count": 0 }
+  "consistency_check": {
+    "passed": true,
+    "orphan_check": true,
+    "output_summary": "OK: spec consistency check passed."
+  },
+  "test_type_coverage": {
+    "passed": false,
+    "missing": [
+      { "spec": "SPEC-012", "requirement": "FR-002", "missing_types": ["boundary"] }
+    ]
+  },
+  "findings": [
+    {
+      "id": 1,
+      "severity": "High",
+      "classification": "implementation-fix",
+      "spec": "SPEC-012",
+      "requirement": "FR-001",
+      "summary": "matrix 行が実装トレーサビリティ契約と一致しない",
+      "evidence": "matrix は src/foo.ts を指しているが、仕様は src/bar.ts",
+      "impact": "仕様から実装を追跡できない",
+      "required_update": "matrix または契約表のどちらが正しいか揃える"
+    }
+  ],
+  "audit_summary": {
+    "targets": ["requirements.md", "SPEC-012", "src/foo.ts"],
+    "verifications_run": ["verify_spec_consistency.py (orphan-check)", "project_test_commands"],
+    "high_count": 1,
+    "medium_count": 0,
+    "low_count": 0
+  }
 }
-\`\`\`
 ```
 
-**必ず Markdown の Findings / Audit Summary と JSON の両方を含める。** Markdown は人間の確認用、JSON は orchestrator の判定用。
+| フィールド | 型 | 必須 | 説明 |
+|---|---|---|---|
+| `protocol` | string | Yes | 固定: `"spec-driven-dev/audit"` |
+| `version` | string | Yes | 固定: `"1.0"` |
+| `type` | string | Yes | 固定: `"audit_response"` |
+| `verdict` | string | Yes | `"clean"`, `"findings-present"`, `"needs-user-decision"` |
+| `consistency_check.passed` | boolean | Yes | `verify_spec_consistency.py` が成功したか |
+| `consistency_check.orphan_check` | boolean | Yes | orphan-check を有効にして実行したか |
+| `consistency_check.output_summary` | string | Yes | 出力の要約（最大 10 行 600 文字） |
+| `test_type_coverage.passed` | boolean | Yes | 全 FR/NFR にテスト 3 種別あるか |
+| `test_type_coverage.missing` | object[] | No | 不足がある場合の詳細 |
+| `findings` | object[] | Yes | 空配列 = 差分なし |
+| `findings[].id` | number | Yes | Finding 連番 |
+| `findings[].severity` | string | Yes | `"High"`, `"Medium"`, `"Low"` |
+| `findings[].classification` | string | Yes | `"implementation-fix"`, `"spec-fix"`, `"needs-user-decision"` |
+| `findings[].spec` | string | Yes | 対象 SPEC ID |
+| `findings[].requirement` | string | Yes | 対象要件 ID |
+| `findings[].summary` | string | Yes | 差分の要約 |
+| `findings[].evidence` | string | Yes | 根拠 |
+| `findings[].impact` | string | Yes | 影響 |
+| `findings[].required_update` | string | Yes | 必要な更新内容 |
+| `audit_summary` | object | Yes | 監査サマリー |
+
+## verdict の判定基準
+
+| verdict | 条件 |
+|---|---|
+| `clean` | `consistency_check.passed` = true かつ `findings` が空 かつ `test_type_coverage.passed` = true |
+| `findings-present` | `findings` に `implementation-fix` または `spec-fix` がある |
+| `needs-user-decision` | 全 findings が `needs-user-decision` のみ |
 
 ### 受信: Shutdown Request
 
@@ -109,14 +171,6 @@ orchestrator から以下の形式でメッセージが届く:
 ```
 
 このメッセージを受け取ったら、作業を終了する。
-
-## verdict の判定基準
-
-| verdict | 条件 |
-|---|---|
-| `clean` | `verify_spec_consistency.py` 成功 かつ findings 空 かつ テスト種別充足 |
-| `findings-present` | `implementation-fix` または `spec-fix` の findings がある |
-| `needs-user-decision` | 全 findings が `needs-user-decision` のみ |
 
 ## やらないこと
 
