@@ -4,24 +4,22 @@
 # Outputs a warning message if the file is not covered by any SPEC.
 set -eu
 
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+if ! . "${SCRIPT_DIR}/_docker_helpers.sh" 2>/dev/null; then
+  printf "ERROR: _docker_helpers.sh not found in %s\n" "${SCRIPT_DIR}" >&2
+  exit 1
+fi
+
 PROJECT_ROOT="${1:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"
 IMAGE="${VERIFY_SPEC_IMAGE:-python:3.12}"
 HOOK_INPUT="$(cat)"
 
-# Convert paths for Docker volume mounts on Windows (Git Bash / MSYS2)
-to_docker_path() {
-  if command -v cygpath >/dev/null 2>&1; then
-    cygpath -w "$1"
-  else
-    printf '%s' "$1"
-  fi
-}
-
 DOCKER_PROJECT_ROOT="$(to_docker_path "$PROJECT_ROOT")"
 
 # Use Docker to extract file_path from hook input and check SPEC coverage
-OUTPUT="$(printf '%s' "${HOOK_INPUT}" | docker run --rm -i \
+OUTPUT="$(printf '%s' "${HOOK_INPUT}" | docker_run run --rm -i \
   -v "${DOCKER_PROJECT_ROOT}:/workspace" \
+  -e "HOST_PROJECT_ROOT=${DOCKER_PROJECT_ROOT}" \
   -w /workspace \
   "${IMAGE}" \
   python -c "
@@ -38,22 +36,28 @@ _, ext = os.path.splitext(fp)
 if ext in skip_ext:
     sys.exit(0)
 
-# Normalize path: handle Windows-style paths (C:\..., /c/Users/...)
-# Convert backslashes to forward slashes
-fp = fp.replace(os.sep, '/').replace('\\\\', '/')
-# Strip Windows drive letter prefix (e.g., C:/ or /c/)
-fp = re.sub(r'^[A-Za-z]:/', '', fp)
-fp = re.sub(r'^/[A-Za-z]/', '', fp)
+# Normalize path: convert backslashes to forward slashes and strip drive letter.
+# HOST_PROJECT_ROOT is passed via to_docker_path (forward-slash mixed format),
+# but fp from Claude Code may contain backslashes on Windows.
+def normalize(p):
+    p = p.replace(chr(92), '/')
+    p = re.sub(r'^[A-Za-z]:/', '', p)
+    p = re.sub(r'^/[A-Za-z]/', '', p)
+    return p.rstrip('/')
+
+host_root = normalize(os.environ.get('HOST_PROJECT_ROOT', ''))
+fp_norm = normalize(fp)
+
+# Strip project root prefix to get relative path
+if host_root and fp_norm.startswith(host_root + '/'):
+    rel = fp_norm[len(host_root) + 1:]
+else:
+    rel = fp_norm
 
 # Skip docs/config directories
 for prefix in ('docs/', '.claude/', 'spec-config'):
-    if fp.startswith(prefix):
+    if rel.startswith(prefix):
         sys.exit(0)
-
-# Try to extract a project-relative path
-# Look for common project root markers to find relative portion
-# If the path contains known project structure directories, use from there
-rel = fp
 
 # Find spec directory from spec-config.json
 spec_dir = 'docs/specs'
@@ -62,26 +66,8 @@ if os.path.exists(cfg_path):
     try:
         cfg = json.load(open(cfg_path, encoding='utf-8'))
         spec_dir = cfg.get('spec_dir', 'docs/specs')
-        # Use source_roots from config to extract relative path
-        src_roots = cfg.get('source_roots', [])
-        for root in src_roots:
-            root = root.rstrip('/')
-            idx = fp.find(root + '/')
-            if idx >= 0:
-                rel = fp[idx:]
-                break
     except Exception:
         pass
-
-# If rel still looks like an absolute path, try to make it relative to workspace contents
-if '/' in rel:
-    # Check if any suffix of the path exists under /workspace
-    parts = rel.split('/')
-    for i in range(len(parts)):
-        candidate = '/'.join(parts[i:])
-        if os.path.exists(os.path.join('/workspace', candidate)):
-            rel = candidate
-            break
 
 spec_path = os.path.join('/workspace', spec_dir)
 if not os.path.isdir(spec_path):

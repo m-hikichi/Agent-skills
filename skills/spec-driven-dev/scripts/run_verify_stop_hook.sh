@@ -7,19 +7,15 @@
 #   2. Run project_test_commands on the host (they typically use docker compose)
 set -eu
 
-PROJECT_ROOT="${1:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+if ! . "${SCRIPT_DIR}/_docker_helpers.sh" 2>/dev/null; then
+  printf "ERROR: _docker_helpers.sh not found in %s\n" "${SCRIPT_DIR}" >&2
+  exit 1
+fi
+
+PROJECT_ROOT="${1:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"
 PLUGIN_ROOT="$(dirname "$SCRIPT_DIR")"
 IMAGE="${VERIFY_SPEC_IMAGE:-python:3.12}"
-
-# Convert paths for Docker volume mounts on Windows (Git Bash / MSYS2)
-to_docker_path() {
-  if command -v cygpath >/dev/null 2>&1; then
-    cygpath -w "$1"
-  else
-    printf '%s' "$1"
-  fi
-}
 
 DOCKER_PROJECT_ROOT="$(to_docker_path "$PROJECT_ROOT")"
 DOCKER_PLUGIN_ROOT="$(to_docker_path "$PLUGIN_ROOT")"
@@ -29,7 +25,7 @@ HOOK_INPUT="$(cat)"
 
 # --- Step 1: Run review_stop_gate.py inside Docker ---
 # This handles: audit format check + verify_spec_consistency.py
-if ! OUTPUT="$(printf "%s" "${HOOK_INPUT}" | docker run --rm -i \
+if ! OUTPUT="$(printf "%s" "${HOOK_INPUT}" | docker_run run --rm -i \
   -v "${DOCKER_PROJECT_ROOT}:/workspace" \
   -v "${DOCKER_PLUGIN_ROOT}:/plugin" \
   -w /workspace \
@@ -64,7 +60,7 @@ if [ ! -f "${CONFIG_FILE}" ]; then
 fi
 
 # Extract project_test_commands using Docker (no local Python/jq needed)
-COMMANDS="$(docker run --rm -i \
+COMMANDS="$(docker_run run --rm -i \
   -v "${DOCKER_PROJECT_ROOT}:/workspace" \
   -w /workspace \
   "${IMAGE}" \
@@ -89,9 +85,9 @@ while IFS= read -r CMD; do
     continue
   fi
   if ! CMD_OUTPUT="$(bash -c "${CMD}" 2>&1)"; then
-    # Truncate output for block reason
-    SUMMARY="$(printf "%s" "${CMD_OUTPUT}" | head -10)"
-    printf '{"decision":"block","reason":"reviewer NG: project_test_commands が失敗しました。\\n`%s` failed:\\n%s"}\n' "${CMD}" "${SUMMARY}"
+    # Truncate and escape output for JSON block reason
+    SUMMARY="$(printf "%s" "${CMD_OUTPUT}" | head -10 | tr '\n' ' ' | tr '\r' ' ')"
+    printf '{"decision":"block","reason":"reviewer NG: project_test_commands が失敗しました。 `%s` failed: %s"}\n' "${CMD}" "${SUMMARY}"
     exit 0
   fi
 done <<EOF
