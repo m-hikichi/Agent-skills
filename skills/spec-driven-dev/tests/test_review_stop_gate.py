@@ -128,6 +128,67 @@ class ReviewStopGateTests(unittest.TestCase):
         self.assertIn("SPEC-001", verdict.reason)
         self.assertIn("FR-001", verdict.reason)
 
+    # --- skip_audit_check tests (SubagentStop) ---
+
+    def test_skip_audit_check_allows_stop_without_audit_section(self) -> None:
+        """SubagentStop: 最終整合性監査セクションなしでも整合性チェックが通れば停止できる"""
+        verdict = MODULE.review_stop_request(
+            hook_input={"last_assistant_message": "監査完了。findings なし。"},
+            project_root=Path("."),
+            config={"verification": {"consistency_runner": "docker", "project_test_commands": ["echo ok"]}},
+            config_path=Path("spec-config.json"),
+            plugin_root=Path("."),
+            run_consistency=ok_consistency,
+            run_project_tests=ok_tests,
+            skip_audit_check=True,
+        )
+        self.assertTrue(verdict.allow_stop)
+
+    def test_skip_audit_check_blocks_on_consistency_failure(self) -> None:
+        """SubagentStop: 整合性チェック失敗時はブロックする"""
+        verdict = MODULE.review_stop_request(
+            hook_input={"last_assistant_message": "作業完了。"},
+            project_root=Path("."),
+            config={"verification": {"consistency_runner": "docker", "project_test_commands": ["echo ok"]}},
+            config_path=Path("spec-config.json"),
+            plugin_root=Path("."),
+            run_consistency=fail_consistency,
+            run_project_tests=ok_tests,
+            skip_audit_check=True,
+        )
+        self.assertFalse(verdict.allow_stop)
+        self.assertIn("verify_spec_consistency.py", verdict.reason)
+
+    def test_skip_audit_check_blocks_when_config_missing(self) -> None:
+        """SubagentStop: spec-config.json がない場合はブロックする"""
+        verdict = MODULE.review_stop_request(
+            hook_input={"last_assistant_message": "完了。"},
+            project_root=Path("."),
+            config=None,
+            config_path=Path("spec-config.json"),
+            plugin_root=Path("."),
+            run_consistency=ok_consistency,
+            run_project_tests=ok_tests,
+            skip_audit_check=True,
+        )
+        self.assertFalse(verdict.allow_stop)
+        self.assertIn("spec-config.json", verdict.reason)
+
+    def test_skip_audit_check_blocks_when_runner_not_docker(self) -> None:
+        """SubagentStop: consistency_runner が docker でない場合はブロックする"""
+        verdict = MODULE.review_stop_request(
+            hook_input={"last_assistant_message": "完了。"},
+            project_root=Path("."),
+            config={"verification": {"consistency_runner": "local", "project_test_commands": ["echo ok"]}},
+            config_path=Path("spec-config.json"),
+            plugin_root=Path("."),
+            run_consistency=ok_consistency,
+            run_project_tests=ok_tests,
+            skip_audit_check=True,
+        )
+        self.assertFalse(verdict.allow_stop)
+        self.assertIn("docker", verdict.reason)
+
 
 if __name__ == "__main__":
     unittest.main()

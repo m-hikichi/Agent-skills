@@ -9,11 +9,20 @@ set -eu
 
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 if ! . "${SCRIPT_DIR}/_docker_helpers.sh" 2>/dev/null; then
-  printf "ERROR: _docker_helpers.sh not found in %s\n" "${SCRIPT_DIR}" >&2
-  exit 1
+  printf '{"decision":"block","reason":"reviewer NG: _docker_helpers.sh not found in %s (deployment error)"}\n' "${SCRIPT_DIR}"
+  exit 0
 fi
 
-PROJECT_ROOT="${1:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"
+# Parse arguments: first positional is PROJECT_ROOT, --skip-audit-check is optional
+PROJECT_ROOT=""
+SKIP_AUDIT_CHECK=""
+for arg in "$@"; do
+  case "${arg}" in
+    --skip-audit-check) SKIP_AUDIT_CHECK="--skip-audit-check" ;;
+    *) [ -z "${PROJECT_ROOT}" ] && PROJECT_ROOT="${arg}" ;;
+  esac
+done
+PROJECT_ROOT="${PROJECT_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"
 PLUGIN_ROOT="$(dirname "$SCRIPT_DIR")"
 IMAGE="${VERIFY_SPEC_IMAGE:-python:3.12}"
 
@@ -30,14 +39,15 @@ if ! OUTPUT="$(printf "%s" "${HOOK_INPUT}" | docker_run run --rm -i \
   -v "${DOCKER_PLUGIN_ROOT}:/plugin" \
   -w /workspace \
   "${IMAGE}" \
-  python /plugin/scripts/review_stop_gate.py --project-root /workspace 2>&1)"; then
-  # Docker execution failed
+  python /plugin/scripts/review_stop_gate.py --project-root /workspace ${SKIP_AUDIT_CHECK} 2>&1)"; then
+  # Docker execution failed — emit JSON block and exit 0 for consistent error handling
   if [ -n "${OUTPUT}" ]; then
-    printf "%s\n" "${OUTPUT}" >&2
+    SUMMARY="$(printf "%s" "${OUTPUT}" | head -5 | tr '\n' ' ')"
+    printf '{"decision":"block","reason":"reviewer NG: review_stop_gate.py がエラーで終了しました: %s"}\n' "${SUMMARY}"
   else
-    printf "spec-driven-dev stop reviewer failed.\n" >&2
+    printf '{"decision":"block","reason":"reviewer NG: review_stop_gate.py がエラーで終了しました。"}\n'
   fi
-  exit 2
+  exit 0
 fi
 
 # If review_stop_gate.py output a block decision, pass it through
@@ -52,6 +62,10 @@ if [ -n "${OUTPUT}" ]; then
 fi
 
 # --- Step 2: Run project_test_commands on the host ---
+# Skip for SubagentStop (--skip-audit-check): subagents may stop mid-workflow
+if [ -n "${SKIP_AUDIT_CHECK}" ]; then
+  exit 0
+fi
 # These commands typically use docker compose themselves
 CONFIG_FILE="${PROJECT_ROOT}/spec-config.json"
 if [ ! -f "${CONFIG_FILE}" ]; then

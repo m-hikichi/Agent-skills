@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run_verify_stop_hook.sh\" \"${CLAUDE_PROJECT_DIR}\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run_verify_stop_hook.sh\" \"${CLAUDE_PROJECT_DIR}\" --skip-audit-check",
             "timeout": 120
           }
         ]

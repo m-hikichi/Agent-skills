@@ -45,6 +45,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--project-root", default=None, help="Project root directory")
     parser.add_argument("--config", default="spec-config.json", help="Path to spec-config.json")
     parser.add_argument("--hook-input", default=None, help="Hook input JSON for testing")
+    parser.add_argument(
+        "--skip-audit-check",
+        action="store_true",
+        help="Skip final audit section check (for SubagentStop)",
+    )
     return parser.parse_args()
 
 
@@ -197,7 +202,27 @@ def review_stop_request(
     plugin_root: Path,
     run_consistency: Callable[..., CommandResult] = run_consistency_check,
     run_project_tests: Callable[[Path, Sequence[str]], CommandResult] = run_project_test_commands,
+    skip_audit_check: bool = False,
 ) -> ReviewVerdict:
+    # --- skip-audit-check モード（SubagentStop 用） ---
+    # 最終整合性監査セクションの書式チェックをスキップし、整合性チェックのみ実行する。
+    # サブエージェントは最終整合性監査を書く責務がないため。
+    if skip_audit_check:
+        if config is None:
+            return block(f"reviewer NG: spec-config.json が見つかりません: {config_path}")
+
+        consistency_block = _run_consistency_gate(
+            project_root=project_root,
+            plugin_root=plugin_root,
+            config=config,
+            config_path=config_path,
+            run_consistency=run_consistency,
+        )
+        if consistency_block is not None:
+            return consistency_block
+
+        return ReviewVerdict(allow_stop=True)
+
     audit = parse_final_audit(str(hook_input.get("last_assistant_message", "")))
 
     if not audit.present:
@@ -279,6 +304,7 @@ def main() -> int:
             config=config,
             config_path=config_path,
             plugin_root=plugin_root,
+            skip_audit_check=args.skip_audit_check,
         )
         if verdict.allow_stop:
             return 0

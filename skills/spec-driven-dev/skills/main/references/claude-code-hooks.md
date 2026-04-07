@@ -7,7 +7,7 @@ spec-driven-dev プラグインの完了保証と早期警告の仕組み。
 | hook | タイミング | 目的 |
 |------|-----------|------|
 | Stop | メインエージェント完了時 | review_stop_gate.py で整合性チェック + テスト + 最終監査フォーマットを強制 |
-| SubagentStop | サブエージェント完了時 | 同上（サブエージェント経由の迂回を防ぐ） |
+| SubagentStop | サブエージェント完了時 | review_stop_gate.py（`--skip-audit-check`）で整合性チェックのみ実行 |
 | PostToolUse (Write\|Edit) | コードファイル変更の都度 | check_spec_coverage.sh で SPEC 未登録ファイルの早期警告 |
 
 ## 役割分担
@@ -16,12 +16,17 @@ spec-driven-dev プラグインの完了保証と早期警告の仕組み。
   - コード変更のたびに、そのファイルが SPEC の実装トレーサビリティ契約に載っているか確認
   - 載っていなければ警告メッセージを Claude のコンテキストに注入（block ではない）
   - .md / .json / 設定ファイルは除外。SPEC 文書(.md)の変更時は verify_spec_consistency.py を軽量実行して契約表の破壊を検出
-- **Stop / SubagentStop hook (review_stop_gate.py)**
+- **Stop hook (review_stop_gate.py)** — メインエージェント（orchestrator）完了時
   - 完了直前に verify_spec_consistency.py（`--orphan-check` 有効）を実行
   - project_test_commands を実行
   - 最終メッセージに `## 最終整合性監査` の `判定: clean` または `判定: needs-user-decision` があるか確認
   - **`needs-user-decision` でも整合性チェックは必ず実行する**（チェックバイパス不可）
   - NG なら block して Claude を作業に戻す
+- **SubagentStop hook (review_stop_gate.py `--skip-audit-check`)** — サブエージェント完了時
+  - verify_spec_consistency.py（`--orphan-check` 有効）のみ実行
+  - `## 最終整合性監査` セクションは要求しない（orchestrator の責務のため）
+  - project_test_commands は実行しない（サブエージェントはワークフロー途中で停止しうるため）
+  - 整合性チェック NG なら block して Claude を作業に戻す
 - **親 `main` skill の frontmatter Stop hook**
   - 最終メッセージの書式崩れを減らす補助（prompt 型）
 
@@ -64,7 +69,7 @@ review_stop_gate.py は block 時に verify_spec_consistency.py の Findings 詳
 
 - `verify_spec_consistency.py` を回さずに完了すること
 - プロジェクト固有テストを回さずに完了すること
-- `最終整合性監査` を書かずに完了すること
-- サブエージェントだけが先に抜けること
+- `最終整合性監査` を書かずに完了すること（Stop hook で強制）
+- サブエージェントが整合性チェックを通さずに抜けること（SubagentStop hook で強制）
 - `needs-user-decision` で整合性チェックをバイパスすること
 - SPEC に未登録のコードファイルを気づかずに追加すること（PostToolUse 警告）
