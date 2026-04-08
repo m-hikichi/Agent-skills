@@ -36,12 +36,12 @@ docker run --rm \
   -v "$(pwd):/workspace" \
   --entrypoint marp \
   marp-mcp-server \
-  "スライドファイル.md" --html --pdf -o "出力ファイル.pdf"
+  "スライドファイル.md" --html --allow-local-files --pdf -o "出力ファイル.pdf"
 ```
 
 > **Note:** Windows (PowerShell) の場合は `$(pwd)` を `${PWD}` に置き換えてください。
 > ```powershell
-> docker run --rm -v "${PWD}:/workspace" --entrypoint marp marp-mcp-server "スライドファイル.md" --html --pdf -o "出力ファイル.pdf"
+> docker run --rm -v "${PWD}:/workspace" --entrypoint marp marp-mcp-server "スライドファイル.md" --html --allow-local-files --pdf -o "出力ファイル.pdf"
 > ```
 
 ### PDF にエクスポート
@@ -51,7 +51,7 @@ docker run --rm \
   -v "$(pwd):/workspace" \
   --entrypoint marp \
   marp-mcp-server \
-  "slides/presentation.md" --html --pdf -o "output/presentation.pdf"
+  "slides/presentation.md" --html --allow-local-files --pdf -o "output/presentation.pdf"
 ```
 
 ### PPTX (PowerPoint) にエクスポート
@@ -61,7 +61,7 @@ docker run --rm \
   -v "$(pwd):/workspace" \
   --entrypoint marp \
   marp-mcp-server \
-  "slides/presentation.md" --html --pptx -o "output/presentation.pptx"
+  "slides/presentation.md" --html --allow-local-files --pptx -o "output/presentation.pptx"
 ```
 
 ### HTML にエクスポート
@@ -71,7 +71,7 @@ docker run --rm \
   -v "$(pwd):/workspace" \
   --entrypoint marp \
   marp-mcp-server \
-  "slides/presentation.md" --html -o "output/presentation.html"
+  "slides/presentation.md" --html --allow-local-files -o "output/presentation.html"
 ```
 
 ### PNG (スライド単位の画像) にエクスポート
@@ -81,7 +81,7 @@ docker run --rm \
   -v "$(pwd):/workspace" \
   --entrypoint marp \
   marp-mcp-server \
-  "slides/presentation.md" --html --images png -o "output/slide.png"
+  "slides/presentation.md" --html --allow-local-files --images png -o "output/slide.png"
 ```
 
 スライドが複数ページある場合、`slide.001.png`、`slide.002.png`、... のように連番ファイルが生成されます。

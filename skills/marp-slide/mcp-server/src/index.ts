@@ -129,7 +129,7 @@ server.tool(
 
     const formatFlag =
       format === "html" ? "" : format === "png" ? "--images png" : `--${format}`;
-    const cmd = `marp "${sourcePath}" --html ${formatFlag} -o "${outputPath}"`;
+    const cmd = `marp "${sourcePath}" --html --allow-local-files ${formatFlag} -o "${outputPath}"`;
 
     try {
       const result = execSync(cmd, {

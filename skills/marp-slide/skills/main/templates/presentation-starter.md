@@ -742,6 +742,31 @@ style: |
 
 ---
 
+<!-- _class: title-content -->
+
+## Use images to reinforce the message visually
+
+![bg right:40% contain](1.png)
+
+<div class="content-panel flat">
+<div class="panel-head">
+<div class="icon-box">📷</div>
+<div>
+<div class="pill">Image + text layout</div>
+<h3>Place visuals alongside supporting text</h3>
+</div>
+</div>
+<ul>
+<li>Use <code>![bg right](image.png)</code> for right-side placement.</li>
+<li>Use <code>![bg left](image.png)</code> for left-side placement.</li>
+<li>Add <code>contain</code> to fit the image without cropping.</li>
+<li>Adjust size with <code>right:40%</code> or <code>left:50%</code>.</li>
+</ul>
+<div class="quiet-note">Choose images that add information, not decoration. One strong visual beats three weak ones.</div>
+</div>
+
+---
+
 <!-- _class: section-divider -->
 
 <div class="section-kicker">SECTION</div>
