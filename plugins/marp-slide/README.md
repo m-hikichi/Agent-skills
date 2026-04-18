@@ -7,7 +7,7 @@ Claude Code の plugin として共有できる Marp スライド作成支援パ
 ## 構成
 
 ```text
-skills/marp-slide/
+plugins/marp-slide/
 |-- .claude-plugin/
 |   \-- plugin.json
 |-- .mcp.json
@@ -52,14 +52,14 @@ skills/marp-slide/
 1. Docker イメージをビルドします
 
 ```bash
-cd <path-to-this-repo>/skills/marp-slide/mcp-server
+cd <path-to-this-repo>/plugins/marp-slide/mcp-server
 docker build -t marp-mcp-server .
 ```
 
 2. plugin をローカルで読み込みます
 
 ```bash
-claude --plugin-dir <path-to-this-repo>/skills/marp-slide
+claude --plugin-dir <path-to-this-repo>/plugins/marp-slide
 ```
 
 3. Claude Code で plugin のスキルを実行します
@@ -72,7 +72,7 @@ claude --plugin-dir <path-to-this-repo>/skills/marp-slide
 
 ## 共有方法
 
-このフォルダ全体 `skills/marp-slide/` をそのまま共有すれば plugin として配布できます。plugin docs の推奨どおり、`.claude-plugin/` の中には `plugin.json` だけを置き、それ以外の component はすべて plugin root レベルにあります。
+このフォルダ全体 `plugins/marp-slide/` をそのまま共有すれば plugin として配布できます。plugin docs の推奨どおり、`.claude-plugin/` の中には `plugin.json` だけを置き、それ以外の component はすべて plugin root レベルにあります。
 
 ## 生成される作業ファイル
 

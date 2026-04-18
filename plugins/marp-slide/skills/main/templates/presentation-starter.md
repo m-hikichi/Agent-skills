@@ -35,8 +35,8 @@ style: |
     --radius-sm: 10px;
     --shadow-card: 0 14px 30px rgba(0, 0, 0, 0.22);
     --shadow-panel: 0 10px 20px rgba(0, 0, 0, 0.14);
-    --font-title: "BIZ UDPGothic", "Yu Gothic UI", "Segoe UI", sans-serif;
-    --font-body: "Aptos", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+    --font-title: "BIZ UDPGothic", "Noto Sans CJK JP", sans-serif;
+    --font-body: "Noto Sans CJK JP", sans-serif;
   }
 
   /* ============================================================
@@ -110,7 +110,7 @@ style: |
   strong { color: var(--text-main); text-shadow: 0 0 12px rgba(67,211,255,0.15); }
 
   code {
-    font-family: "Cascadia Code", "Consolas", monospace;
+    font-family: "Source Code Pro", "Noto Sans Mono CJK JP", monospace;
     background: rgba(3, 10, 24, 0.94);
     color: #dff7ff;
     padding: 0.08em 0.24em;
@@ -286,7 +286,7 @@ style: |
   .quote-block::before {
     content: "\201C"; position: absolute; top: 16px; left: 16px;
     font-size: 3em; color: var(--accent-gold); opacity: 0.6;
-    font-family: Georgia, "Times New Roman", serif; line-height: 1;
+    font-family: "Noto Serif CJK JP", serif; line-height: 1;
   }
   .quote-block p { font-size: 1.08em; line-height: 1.52; color: var(--text-main); font-style: italic; margin: 0; }
   .quote-attribution { margin-top: 16px; color: var(--text-muted); font-size: 0.74em; font-style: normal; }
@@ -738,6 +738,31 @@ style: |
 
 <div class="quote-interpretation">
 <strong>Why this matters:</strong> Use quotes to anchor a principle, validate a direction, or add a human voice to data-heavy decks. Keep the interpretation brief.
+</div>
+
+---
+
+<!-- _class: title-content -->
+
+## Use images to reinforce the message visually
+
+![bg right:40% contain](1.png)
+
+<div class="content-panel flat">
+<div class="panel-head">
+<div class="icon-box">📷</div>
+<div>
+<div class="pill">Image + text layout</div>
+<h3>Place visuals alongside supporting text</h3>
+</div>
+</div>
+<ul>
+<li>Use <code>![bg right](image.png)</code> for right-side placement.</li>
+<li>Use <code>![bg left](image.png)</code> for left-side placement.</li>
+<li>Add <code>contain</code> to fit the image without cropping.</li>
+<li>Adjust size with <code>right:40%</code> or <code>left:50%</code>.</li>
+</ul>
+<div class="quiet-note">Choose images that add information, not decoration. One strong visual beats three weak ones.</div>
 </div>
 
 ---
