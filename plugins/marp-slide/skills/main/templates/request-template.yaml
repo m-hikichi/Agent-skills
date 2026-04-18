@@ -1,4 +1,3 @@
-title:
 topic:
 audience:
 audience_knowledge:
@@ -7,13 +6,5 @@ presentation_type:
 goal:
 target_slide_count:
 output_formats: []
-design_reference:
 must_include: []
-nice_to_have: []
 source_materials: []
-assumptions: []
-missing_required: []
-open_questions: []
-approval:
-  outline_approved: false
-  draft_approved: false

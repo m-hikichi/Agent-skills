@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import {
   existsSync,
   mkdirSync,
@@ -10,7 +10,7 @@ import {
   renameSync,
   rmSync,
 } from "node:fs";
-import { basename, dirname, extname, resolve } from "node:path";
+import { basename, dirname, extname, relative, resolve } from "node:path";
 
 const WORKSPACE = process.env.WORKSPACE_DIR || "/workspace";
 
@@ -127,22 +127,26 @@ server.tool(
 
     prepareOutputPath(outputPath, format);
 
-    const formatFlag =
-      format === "html" ? "" : format === "png" ? "--images png" : `--${format}`;
-    const cmd = `marp "${sourcePath}" --html --allow-local-files ${formatFlag} -o "${outputPath}"`;
+    const marpArgs: string[] = [sourcePath, "--html", "--allow-local-files"];
+    if (format === "png") {
+      marpArgs.push("--images", "png");
+    } else if (format !== "html") {
+      marpArgs.push(`--${format}`);
+    }
+    marpArgs.push("-o", outputPath);
 
     try {
-      const result = execSync(cmd, {
+      const result = execFileSync("marp", marpArgs, {
         encoding: "utf-8",
         timeout: 120_000,
         cwd: WORKSPACE,
       });
 
-      const relativeOutput = output || outputPath.replace(`${WORKSPACE}/`, "");
+      const relativeOutput = output || relative(WORKSPACE, outputPath);
       if (format === "png") {
         normalizePngOutputNames(outputPath);
         const outputs = collectPngOutputs(outputPath).map((filePath) =>
-          filePath.replace(`${WORKSPACE}/`, "")
+          relative(WORKSPACE, filePath)
         );
 
         if (outputs.length === 0) {

@@ -1,119 +1,99 @@
 # marp-slide プラグイン
 
-Claude Code の plugin として共有できる Marp スライド作成支援パッケージです。公式 docs の plugin 構造に合わせて、plugin root 直下に `skills/`、`agents/`、`hooks/`、`.mcp.json`、`.claude-plugin/plugin.json` を配置しています。
+Claude Code の plugin として配布できる Marp スライド作成支援パッケージです。要件をヒアリングしてスライドを作り、作成した AI とは別の reviewer サブエージェントが批判的に審査し、PDF/PNG までエクスポートします。
 
-このプラグインは、要件整理、構成検証、design system 設計、slide plan 作成、Marp 本文作成、technical review、critical review、PDF/PNG export までを一連のワークフローとして扱います。technical reviewer と devil's advocate reviewer の両方が `pass` を返すまでタスクは完了できません。シングルエージェント、マルチエージェント、エージェントチームのいずれでも動作します。
+レビューでは 10 個のハードゲート（ストーリー 5 + ビジュアル 5）だけを見ます。「まあ悪くない」は fail、「文句のつけようがない」だけが pass。`.slide-work/review.json.status == "pass"` になるまで完了しません。
 
-## 構成
+## 何ができるか
 
-```text
-plugins/marp-slide/
-|-- .claude-plugin/
-|   \-- plugin.json
-|-- .mcp.json
-|-- agents/
-|   |-- devil-advocate-reviewer.md
-|   |-- slide-reviewer.md
-|   \-- structure-consultant.md
-|-- hooks/
-|   \-- hooks.json
-|-- skills/
-|   \-- main/
-|       |-- SKILL.md
-|       |-- references/
-|       |   |-- design-reference-playbook.md
-|       |   |-- layout-patterns.md
-|       |   \-- presentation-structures.md
-|       \-- templates/
-|           |-- design-system-template.yaml
-|           |-- outline-template.yaml
-|           |-- presentation-starter.md
-|           |-- request-template.yaml
-|           |-- review-template.json
-|           \-- slide-plan-template.yaml
-|-- mcp-server/
-|   |-- Dockerfile
-|   |-- package.json
-|   |-- tsconfig.json
-|   \-- src/
-|       \-- index.ts
-\-- README.md
-```
+- **要件からスライドを作る**: 聞き手・目的・枚数などを対話で聞き取り、Marp のソースを生成します
+- **別の AI に批判的にレビューさせる**: 作成者ではない `reviewer` サブエージェントが、PNG 画像と Markdown の両面からチェックします
+- **PDF / PNG / HTML / PPTX で出力する**: レビュー時に生成した PDF/PNG に加え、要求に応じて追加フォーマットも出力できます
+- **既定のデザインを引き継げる**: `templates/presentation-starter.md` のデザインリファレンスを土台にして見た目の一貫性を保ちます
 
 ## 必要なもの
 
 - Claude Code 1.0.33 以降
-- Docker
-
-ローカルの Node.js や Marp CLI は不要です。Marp CLI、Chromium、日本語フォントは Docker イメージ内で動作します。
+- Docker（Marp CLI・Chromium・日本語フォントは Docker イメージ内で動作します。ローカルに Node.js や Marp CLI を入れる必要はありません）
 
 ## セットアップ
 
-1. Docker イメージをビルドします
+1. Docker イメージをビルドする（初回のみ）
 
 ```bash
 cd <path-to-this-repo>/plugins/marp-slide/mcp-server
 docker build -t marp-mcp-server .
 ```
 
-2. plugin をローカルで読み込みます
+2. plugin をローカルで読み込む
 
 ```bash
 claude --plugin-dir <path-to-this-repo>/plugins/marp-slide
 ```
 
-3. Claude Code で plugin のスキルを実行します
+3. Claude Code 内でスキルを呼ぶ
 
 ```text
 /marp-slide:main
 ```
 
-`/help` を実行すると、`marp-slide` 名前空間の下にスキルが表示されます。
+`/help` を実行すると `marp-slide` 名前空間の下にスキルが表示されます。
 
-## 共有方法
+## 使い方
 
-このフォルダ全体 `plugins/marp-slide/` をそのまま共有すれば plugin として配布できます。plugin docs の推奨どおり、`.claude-plugin/` の中には `plugin.json` だけを置き、それ以外の component はすべて plugin root レベルにあります。
+`/marp-slide:main` を実行すると、以下のワークフローで進行します。
 
-## 生成される作業ファイル
+```
+S1. Gather   : 聞き手・目的・枚数・必須要素などを対話で埋める
+S2. Draft    : slides/presentation.md を生成する
+S3. Review   : 別の AI（reviewer サブエージェント）が MCP で PDF/PNG を出力し、
+               PNG 目視と Markdown 内容の両面で 10 ゲート判定する。fail なら修正して再実行（最大 3 回）
+S4. Export   : 最終確認。必要に応じて HTML/PPTX を追加出力する
+```
+
+会話の途中で切れても、`.slide-work/` の状態から自動的に再開ポイントを判定します。
+
+## 10 個のレビュー基準
+
+### ストーリー・タイトル品質
+- G1. タイトルが topic label ではなく takeaway（結論）になっている
+- G2. 冒頭に聞き手のフック／executive summary がある
+- G3. 最終スライドに具体的なアクション／判断要求がある
+- G4. bullet がタイトルの言い換えではなく独自情報を持つ
+- G5. 「必ず入れてほしい内容」（`must_include`）が全て反映されている
+
+### ビジュアル品質
+- G6. 全ページの PNG ではみ出し・切れがない
+- G7. タイトル除くテキスト 6 行以下、bullet 3 つ以下、各 bullet 2 行以下
+- G8. 同じレイアウトが 3 枚以上連続しない
+- G9. デフォルトの Marp スタイルではなく custom theme が適用されている
+- G10. 実際の枚数が target_slide_count の ±3 枚以内
+
+## 作業ファイル
+
+スキル実行中は `.slide-work/` 以下に状態が作られます。
 
 ```text
 .slide-work/
-|-- request.yaml
-|-- outline.yaml
-|-- design-system.yaml
-|-- slide-plan.yaml
-|-- review.json
-|-- preview.html
-|-- presentation.pdf
-|-- presentation.pptx
-\-- rendered-pages/
+|-- request.yaml              # 要件
+|-- review.json               # reviewer の判定結果
+|-- presentation.pdf          # PDF 出力
+|-- preview.html              # HTML プレビュー（要求時）
+`-- rendered-pages/
     |-- page-001.png
     |-- page-002.png
-    \-- ...
+    `-- ...
+slides/
+`-- presentation.md           # Marp ソース（編集対象）
 ```
 
-## 主なコンポーネント
+## デザインをカスタマイズしたいとき
 
-- `skills/main/SKILL.md`
-  - ワークフロー、状態機械、完了条件の正本
-- `agents/slide-reviewer.md`
-  - technical review 判定と `review.json` 更新の正本
-- `agents/devil-advocate-reviewer.md`
-  - 聞き手の立場からのクリティカルレビュー。「文句のつけようがない」が pass の基準
-- `agents/structure-consultant.md`
-  - 批判的な視点での要件分析、ストーリーアーク提案、アウトライン検証
-- `hooks/hooks.json`
-  - review refresh と completion gate の hook 定義
-- `.mcp.json`
-  - `marp` MCP サーバー定義
-- `mcp-server/`
-  - Docker で動かす MCP サーバー実装
+- `skills/main/templates/presentation-starter.md` の style ブロック・archetype クラスを変えると、全スライドの見た目が変わります
+- 既存デッキのデザインを踏襲したい場合は、`request.yaml.design_reference` にそのファイルパスを指定できます
 
 ## 補足
 
-- visual review のロジックは MCP の外にあります
-- reviewer は生の Markdown ではなく、レンダリングしたページ画像を見て判定します
-- 構成段階（S2-S3）で構成コンサルタントによる批判的検証を行い、検証を通過してからユーザーに提示します
-- ドラフト完成後は technical review（構文・デザイン整合性・visual review）→ critical review（聞き手シミュレーション・So what テスト・説得力）の二段階で審査します
-- シングルエージェントモードでは、メインエージェントが各 agent ファイルを読み、その手順を自分で実行します
-- plugin 構造は Claude Code docs の「プラグインを作成する」に合わせています
+- レビューは Markdown ソースだけでなく、レンダリング後の PNG 画像を Read ツールで目視します（視覚的なはみ出しやレイアウト崩れはソースだけでは判定できないため）
+- Docker が起動していない状態で実行すると、MCP からの export がエラーになります。Docker Desktop を起動してから試してください
+- `.mcp.json` は `claude` を起動した作業ディレクトリ（カレントディレクトリ）を Docker の `/workspace` に mount します。プロジェクトのルートで `claude` を起動してください
