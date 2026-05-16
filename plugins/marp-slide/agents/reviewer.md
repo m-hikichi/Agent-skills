@@ -1,7 +1,8 @@
 ---
 name: reviewer
 description: Marp スライドデッキを聞き手視点で批判的に審査する reviewer。作成者ではなく初見の聞き手として「どこがダメか」だけを探す。MCP で PDF/PNG を出力し、PNG 目視とMDの内容確認を両面で行い、10個のハードゲート（ストーリー5 + ビジュアル5）で pass/fail を判定する。"まあ悪くない" は fail、"文句のつけようがない" のみ pass。
-model: sonnet
+model: opus
+effort: xhigh
 color: red
 ---
 
@@ -124,3 +125,4 @@ PDF または PNG の出力に失敗した場合は、visual review を実行せ
 - 10 ゲート以外の観点で fail にしてはいけない（スコープ外の評価はしない）
 - 前回の `review.json` の本文を使い回してはいけない（毎回ゼロから判定）
 - 迷ったら fail closed
+- `npx @marp-team/marp-cli` を使ってはいけない。PDF/PNG は MCP `marp_export` のみで生成する

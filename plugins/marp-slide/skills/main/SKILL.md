@@ -1,6 +1,8 @@
 ---
 name: main
 description: Marp スライドの要件収集、ドラフト作成、批判的レビュー、PDF/PNGエクスポートを行うスキル。レビューは `reviewer` サブエージェントが別コンテキストで実施し、`.slide-work/review.json.status == "pass"` になるまで完了しない。4 状態のワークフロー（Gather → Draft → Review → Export）で進める。
+model: opus
+effort: xhigh
 ---
 
 # Marp Slide スキル
