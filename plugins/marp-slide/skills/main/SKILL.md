@@ -1,6 +1,6 @@
 ---
 name: main
-description: Marp スライドの要件収集、ドラフト作成、批判的レビュー、PDF/PNGエクスポートを行うスキル。レビューは `reviewer` サブエージェントが別コンテキストで実施し、`.slide-work/review.json.status == "pass"` になるまで完了しない。4 状態のワークフロー（Gather → Draft → Review → Export）で進める。
+description: Marp スライドの要件収集、ドラフト作成、批判的レビュー、PDF/PNGエクスポートを行うスキル。レビューは `reviewer` サブエージェントが別コンテキストで実施し、現在の `slides/presentation.md` と一致する `.slide-work/review.json.status == "pass"` になるまで完了しない。4 状態のワークフロー（Gather → Draft → Review → Export）で進める。
 model: opus
 effort: xhigh
 ---
@@ -16,11 +16,12 @@ Marp スライドを 4 状態のワークフローで作成する:
 3. **S3. Review** — `reviewer` サブエージェントが批判的に審査し、必要なら main agent が修正して再実行する（最大 3 回）
 4. **S4. Export & Approve** — PDF/PNG を最終確認し、ユーザーに完了報告する
 
-**完了の唯一の条件は `.slide-work/review.json.status == "pass"`** です。他の条件で完了扱いにしてはいけません。
+**完了の唯一の条件は、現在の `slides/presentation.md` の `source_sha256` と一致する `.slide-work/review.json.status == "pass"`** です。他の条件で完了扱いにしてはいけません。
 
 ## 重要な設計原則
 
 - **レビューは別 AI が行う**: ドラフトを作った main agent ではなく、`reviewer` サブエージェントが判定します。Claude Code の Agent ツールで `subagent_type: reviewer` を指定して呼び出します
+- **サブエージェント不可時は完了不可**: `reviewer` サブエージェントを起動できない環境では、既存の `exact_fix_instructions` が具体的なら main agent が `slides/presentation.md` に適用してよい。その後 `.slide-work/review-blocked.json` を書いて停止し、`.slide-work/review.json.status = "pass"` を自分で作って完了扱いにしてはいけません。ユーザーに「reviewer を起動できないため完了ゲートを通せない」と報告します
 - **ゲートは 10 個だけ**: reviewer は 10 個のハードゲート（ストーリー 5 + ビジュアル 5）だけを見ます。詳細は `../../agents/reviewer.md`
 - **修正ループは最大 3 回**: S3 で 3 回連続 fail ならユーザーに相談して判断を仰ぐ（無限ループ防止）
 - **デザインの既定は `templates/presentation-starter.md`**: ユーザーが別のデザインリファレンスを指定していない限り、これを土台にする
@@ -42,11 +43,31 @@ Marp スライドを 4 状態のワークフローで作成する:
    - `must_include`, `source_materials`（あれば）
 4. `references/presentation-structures.md` を見て、`presentation_type` に合った構成パターンを提示し、大まかな流れ（章立て）をユーザーと合意する
 
+### 正規化と既定値
+
+- `presentation_type` は目的から選ぶ:
+  - 承認・予算・導入判断を求める → `proposal`
+  - 進捗・結果・分析報告 → `report`
+  - 経営層向けの現状共有と判断要求 → `executive-update`
+  - 学習・手順習得 → `training`
+  - 調査結果・仮説検証 → `research`
+- 優先順位: 承認・予算・導入・PoC 可否が主目的なら、聞き手が経営層でも `proposal` を選ぶ。`executive-update` は主目的が現状共有・進捗報告で、その一部として判断を求める場合に使う
+- `target_slide_count` は「7枚くらい」などの自然表現から整数化する。範囲指定なら中央値を使い、未指定なら `presentation_type` に合う 7 枚を既定にする
+- `output_formats` はユーザーが指定した形式を小文字配列にする。未指定なら `["pdf"]`
+- `audience_knowledge` が未指定なら、聞き手から妥当な前提を置く:
+  - 経営層・役員: 業務課題と投資判断は理解、実装詳細は不要
+  - 現場部門: 現行業務は理解、技術詳細は最小限
+  - 技術者: 実装・制約も理解可能
+  - 一般/不明: 前提知識は浅めに置き、専門語は説明する
+- `source_materials` がない数値・ROI は実績値を捏造しない。優先順は 1) 計算式 + 空欄、2) 入力欄つきの要確認プレースホルダー、3) 必要な場合だけ明示ラベル付きの仮説レンジ。ユーザーが「おまかせ」と言っている場合はこの優先順で進めてよい。実績値そのものが承認判断の根拠になる場合、またはユーザーが実数精度を求めている場合だけ確認する
+
 ### 対話の原則
 - 1 回に聞く質問は 2〜3 個まで。大量質問は避ける
 - ユーザーの発話から推測できることは推測し、確認だけを求める（「〜ということは、聞き手は○○の前提知識がある方々ですか？」のように仮説確認型）
 - 骨格（誰に・何のために・何を判断してもらうか）を先に固め、枚数やフォーマットは後
 - 「おまかせ」と言われた部分は妥当なデフォルトを置き、理由を一言添える
+- 必須項目と章立てが十分に推測でき、ユーザーが「おまかせ」「進めて」など裁量を明示している場合は、仮定と章立てを短く提示し、ユーザー返信を待たずに S2 に進んでよい。この提示を S1 の「合意」とみなす
+- ただし、目的・聞き手・判断要求・必須項目のいずれかが曖昧、または数値の捏造リスクが高い場合は S2 に進まず確認する
 
 ### 抜ける条件
 - `request.yaml` の必須項目がすべて埋まっている
@@ -77,6 +98,7 @@ Marp スライドを 4 状態のワークフローで作成する:
 ### 入る条件
 - `slides/presentation.md` が存在する、または直近で変更された
 - `.slide-work/review.json` が存在しない、または status != "pass"
+- `review.json.status == "pass"` でも `source_sha256` が現在の `slides/presentation.md` と一致しない
 
 ### 行うこと
 1. **reviewer サブエージェントを呼び出す**:
@@ -84,30 +106,57 @@ Marp スライドを 4 状態のワークフローで作成する:
    - reviewer は別コンテキストで `slides/presentation.md` と `request.yaml` を読み、MCP で PDF/PNG を出力し、PNG を目視し、10 ゲートで判定して `.slide-work/review.json` を書き込む
    - 詳細は `../../agents/reviewer.md` を参照
 2. **`review.json.status` を確認する**:
-   - `pass` → S4 へ
+   - `pass` → `source_sha256` が現在の `slides/presentation.md` と一致することを確認して S4 へ
    - `missing_info` → `questions_for_user` をユーザーに確認し、`request.yaml` を更新、S3 を再実行
    - `fail` → `exact_fix_instructions` に従って `slides/presentation.md` を修正、S3 を再実行
 
+### fail の消費ルール
+
+- `exact_fix_instructions` は上から順にすべて適用する。勝手に選別しない
+- 修正は 1 回の revision pass にまとめ、`slides/presentation.md` 以外を変更しない
+- 指示が空、曖昧、矛盾、または適用不能な場合は、同じ reviewer を再利用せず S3 を 1 回だけ再実行する。再実行後も malformed なら、問題のある指示を具体的に示してユーザーに判断を仰ぐ
+- `slides/presentation.md` を変更した時点で古い pass は無効になる。次の reviewer が新しい `source_sha256` を記録するまで S4 に進まない
+- reviewer サブエージェントを起動できない環境で既存の `exact_fix_instructions` がある場合は、具体的な指示だけを適用してから `.slide-work/review-blocked.json` を書いて停止する。新しい判定・pass・`review.json` 更新は行わない
+
+### reviewer 不可時の停止マーカー
+
+`reviewer` サブエージェントを起動できず正当に停止する場合、main agent は `.slide-work/review-blocked.json` を書く:
+
+```json
+{
+  "status": "blocked",
+  "reason": "reviewer_unavailable",
+  "source_sha256": "sha256-of-current-slides/presentation.md",
+  "message": "reviewer サブエージェントを起動できないため、完了ゲートを通せません。"
+}
+```
+
+- `source_sha256` は停止時点の `slides/presentation.md` の SHA-256
+- これは未完了マーカーであり、pass ではない。次回再開時は S3 から続ける
+- 予備セルフチェックは、適用済みの `exact_fix_instructions` の確認だけに限定する。gate verdict、pass/fail 判定、`review.json` 更新、完了報告は行わない
+
 ### 再試行上限
 - S3 の fail → 修正 → S3 再実行 のループは **最大 3 回**
+- 直近の `.slide-work/review.json.review_attempt` を確認し、3 回目の fail 後は自動修正を続けない
 - 3 回連続で fail になったら、`review.json` の内容をユーザーに共有し、方針の判断を仰ぐ（要件の見直しか、デザインの妥協か、など）
 
 ### 抜ける条件
-- `review.json.status == "pass"`
+- `review.json.status == "pass"` かつ `review.json.source_sha256` が現在の `slides/presentation.md` の SHA-256 と一致している
 
 ## S4. Export & Approve（最終確認）
 
 ### 入る条件
-- `review.json.status == "pass"`
+- `review.json.status == "pass"` かつ `review.json.source_sha256` が現在の `slides/presentation.md` の SHA-256 と一致している
 
 ### 行うこと
-1. `review.json.artifacts.pdf` と `page_images` のパスを確認する（既に S3 で reviewer が出力済み）
-2. ユーザーに完了を報告する:
+1. 現在の `slides/presentation.md` の SHA-256 と `review.json.source_sha256` が一致することを確認する。不一致・欠落・計算不能なら S3 に戻る
+2. `review.json.artifacts.pdf` と `page_images` のパスを確認する（既に S3 で reviewer が出力済み）
+3. ユーザーに完了を報告する:
    - PDF のパス: `.slide-work/presentation.pdf`
    - スライド枚数
    - 主な takeaway（章立て）
-3. 追加で HTML や PPTX が要求されている場合（`request.yaml.output_formats`）は、MCP `marp_export` で追加出力する
-4. ユーザーの承認を待つ
+4. 追加で HTML や PPTX が要求されている場合（`request.yaml.output_formats`）は、MCP `marp_export` で追加出力する
+5. ユーザーの承認を待つ
 
 ### 抜ける条件
 - ユーザーが完成を承認した
@@ -121,7 +170,8 @@ Marp スライドを 4 状態のワークフローで作成する:
 | `.slide-work/` が存在しない、または `request.yaml` の必須項目が不足 | S1 |
 | `request.yaml` 埋まっているが `slides/presentation.md` が存在しない | S2 |
 | `slides/presentation.md` が存在するが `review.json.status != "pass"` | S3 |
-| `review.json.status == "pass"` だがユーザー承認がまだ | S4 |
+| `review.json.status == "pass"` だが `review.json.source_sha256` が欠落、または現在の `slides/presentation.md` の SHA-256 と一致しない | S3 |
+| `review.json.status == "pass"` かつ `source_sha256` が一致しているがユーザー承認がまだ | S4 |
 
 再開時は「前回の作業を確認しました。現在 S○ の段階です」と一言伝えてから続ける。
 
@@ -129,12 +179,13 @@ Marp スライドを 4 状態のワークフローで作成する:
 
 - `marp_export`（MCP）を呼ぶのは **reviewer サブエージェントの中** が基本。main agent も追加フォーマット出力時には呼んでよい
 - visual review（PNG 目視）は reviewer だけが行う
-- main agent は `slides/presentation.md` の作成・修正を行い、`.slide-work/review.json` は読み取り専用
+- main agent は `slides/presentation.md` の作成・修正を行い、`.slide-work/review.json` は読み取り専用。サブエージェント不可時でも main agent が pass を書いてはいけない
 
 ## 作業ファイル
 
 - `.slide-work/request.yaml` — 要件
-- `.slide-work/review.json` — reviewer の判定結果（source of truth）
+- `.slide-work/review.json` — reviewer の判定結果（source of truth）。`source_sha256` と `review_attempt` を含む
+- `.slide-work/review-blocked.json` — reviewer 不可で正当に停止した未完了マーカー
 - `.slide-work/presentation.pdf` — PDF 出力
 - `.slide-work/rendered-pages/page-###.png` — ページ画像
 - `slides/presentation.md` — Marp ソース（最終成果物の本体）
@@ -150,9 +201,10 @@ Marp スライドを 4 状態のワークフローで作成する:
 
 ## 運用ルール
 
-- 完了条件は `review.json.status == "pass"` の 1 つだけ。他の条件で完了にしてはいけない
+- 完了条件は `review.json.status == "pass"` かつ `source_sha256` が現在の `slides/presentation.md` と一致すること。他の条件で完了にしてはいけない
+- `review.json.status == "pass"` でも、`source_sha256` が現在の `slides/presentation.md` と一致しなければ未レビュー扱いにする
 - reviewer が fail を返したら、`exact_fix_instructions` に従って修正する。指示を読まずに stop してはいけない
 - reviewer が missing_info を返したら、`questions_for_user` をユーザーに確認する。推測で先に進めない
 - 3 回リトライしても pass しないときは、ユーザーに判断を仰ぐ
 - ユーザーが pass 後に内容を変更した場合、古い pass は無効。S3 からやり直す
-- 本スキルはシングルエージェント環境でも動作する: サブエージェントが起動できない場合、main agent が `../../agents/reviewer.md` を読み、その手順を自分で実行する（ただし批判的な視点に切り替えること）
+- `reviewer` サブエージェントが起動できない場合、このスキルは完成まで進めない。main agent は既存 reviewer の具体的な fail 修正、適用済み修正の非権威的セルフチェック、修正案作成までは行ってよいが、完了ゲートを通過したと報告してはいけない

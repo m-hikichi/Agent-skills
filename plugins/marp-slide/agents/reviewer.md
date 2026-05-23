@@ -21,18 +21,20 @@ color: red
 
 1. `.slide-work/request.yaml` — 前提（audience, goal, target_slide_count, must_include）
 2. `slides/presentation.md` — デッキのソース
-3. `.slide-work/review.json` — 既存があれば前回の結果を参考にする（再利用はしない）
+3. `.slide-work/review.json` — 既存があれば `review_attempt` の算出だけに使う（判定本文は再利用しない）
 
 ## 必須ワークフロー
 
 以下を順番に実行する。途中で止めてはいけない。
 
 1. **入力ファイルを読む**（request.yaml, presentation.md）
-2. **MCP で PDF を出力する**: `mcp__marp__marp_export(source: "slides/presentation.md", format: "pdf", output: ".slide-work/presentation.pdf")`
-3. **MCP で PNG を出力する**: `mcp__marp__marp_export(source: "slides/presentation.md", format: "png", output: ".slide-work/rendered-pages/page.png")`
-4. **全 PNG を目視する**: `.slide-work/rendered-pages/page-001.png` から最終ページまで **1枚ずつ Read ツールで開いて内容を見る**。存在確認だけでは visual review ではない
-5. **10 ゲートで判定する**（下記）
-6. **`.slide-work/review.json` を上書きする**（下記スキーマ）
+2. **source hash を記録する**: `slides/presentation.md` の SHA-256 を計算し、`source_sha256` に入れる。計算できない場合は `status: "fail"` にし、`issues` に理由を書く
+3. **review_attempt を算出する**: 既存の `.slide-work/review.json.review_attempt` が数値なら +1、なければ 1
+4. **MCP で PDF を出力する**: `mcp__marp__marp_export(source: "slides/presentation.md", format: "pdf", output: ".slide-work/presentation.pdf")`
+5. **MCP で PNG を出力する**: `mcp__marp__marp_export(source: "slides/presentation.md", format: "png", output: ".slide-work/rendered-pages/page.png")`
+6. **全 PNG を目視する**: `.slide-work/rendered-pages/page-001.png` から最終ページまで **1枚ずつ Read ツールで開いて内容を見る**。存在確認だけでは visual review ではない
+7. **10 ゲートで判定する**（下記）
+8. **`.slide-work/review.json` を上書きする**（下記スキーマ）
 
 PDF または PNG の出力に失敗した場合は、visual review を実行せず `status: "fail"` を返して終了する。
 
@@ -79,6 +81,8 @@ PDF または PNG の出力に失敗した場合は、visual review を実行せ
 {
   "status": "pass|fail|missing_info",
   "reviewed_at": "ISO-8601",
+  "source_sha256": "sha256-of-slides/presentation.md",
+  "review_attempt": 1,
   "failed_gates": [],
   "missing_required": [],
   "issues": [],
@@ -111,6 +115,8 @@ PDF または PNG の出力に失敗した場合は、visual review を実行せ
 ### フィールド規約
 
 - `reviewed_at`: 判定時点の ISO 8601 タイムスタンプ
+- `source_sha256`: 判定対象にした `slides/presentation.md` の SHA-256。main agent と Stop hook はこれで古い pass を無効化する
+- `review_attempt`: S3 review を実行した累計回数。既存 review があれば +1、なければ 1
 - `failed_gates`: fail したゲート ID の配列（例: `["G1", "G7"]`）。pass なら `[]`
 - `issues`: 各 fail ゲートの具体的な問題（スライド番号を含む）
 - `exact_fix_instructions`: `issues` と同じ順序・同じ長さで対応する具体的修正指示

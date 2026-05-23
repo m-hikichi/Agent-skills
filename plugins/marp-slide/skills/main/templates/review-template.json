@@ -1,6 +1,8 @@
 {
   "status": "missing_info",
   "reviewed_at": "",
+  "source_sha256": "",
+  "review_attempt": 0,
   "failed_gates": [],
   "missing_required": [],
   "issues": [],

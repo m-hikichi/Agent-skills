@@ -10,9 +10,9 @@ import {
   renameSync,
   rmSync,
 } from "node:fs";
-import { basename, dirname, extname, relative, resolve } from "node:path";
+import { basename, dirname, extname, isAbsolute, relative, resolve } from "node:path";
 
-const WORKSPACE = process.env.WORKSPACE_DIR || "/workspace";
+const WORKSPACE = resolve(process.env.WORKSPACE_DIR || "/workspace");
 
 const server = new McpServer({
   name: "marp-mcp-server",
@@ -21,6 +21,38 @@ const server = new McpServer({
 
 function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function resolveWorkspacePath(input: string, fieldName: "source" | "output"): string {
+  if (input.trim() === "") {
+    throw new Error(`${fieldName} path must not be empty`);
+  }
+
+  if (isAbsolute(input)) {
+    throw new Error(`${fieldName} path must be relative to the workspace root`);
+  }
+
+  const resolvedPath = resolve(WORKSPACE, input);
+  const workspaceRelativePath = relative(WORKSPACE, resolvedPath);
+
+  if (
+    workspaceRelativePath === "" ||
+    workspaceRelativePath.startsWith("..") ||
+    isAbsolute(workspaceRelativePath)
+  ) {
+    throw new Error(`${fieldName} path must stay within the workspace root`);
+  }
+
+  return resolvedPath;
+}
+
+function hasMarpFrontmatter(content: string): boolean {
+  const match = content.match(/^\uFEFF?---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+  if (!match) {
+    return false;
+  }
+
+  return /^marp:\s*true\s*$/im.test(match[1]);
 }
 
 function prepareOutputPath(outputPath: string, format: "html" | "pdf" | "pptx" | "png") {
@@ -52,7 +84,11 @@ function collectPngOutputs(outputPath: string): string[] {
 
   return readdirSync(dirname(outputPath))
     .filter((name) => pngSequencePattern.test(name))
-    .sort()
+    .sort((a, b) => {
+      const aNumber = Number(a.match(/-(\d+)\.png$/)?.[1] ?? 0);
+      const bNumber = Number(b.match(/-(\d+)\.png$/)?.[1] ?? 0);
+      return aNumber - bNumber || a.localeCompare(b);
+    })
     .map((name) => resolve(dirname(outputPath), name));
 }
 
@@ -99,7 +135,34 @@ server.tool(
       ),
   },
   async ({ source, format, output }) => {
-    const sourcePath = resolve(WORKSPACE, source);
+    let sourcePath: string;
+    let outputPath: string;
+
+    try {
+      sourcePath = resolveWorkspacePath(source, "source");
+
+      if (extname(sourcePath).toLowerCase() !== ".md") {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text" as const,
+              text: `Source file must be a Markdown file: ${source}`,
+            },
+          ],
+        };
+      }
+
+      outputPath = output
+        ? resolveWorkspacePath(output, "output")
+        : sourcePath.replace(/\.md$/i, `.${format}`);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      return {
+        isError: true,
+        content: [{ type: "text" as const, text: `Invalid path: ${msg}` }],
+      };
+    }
 
     if (!existsSync(sourcePath)) {
       return {
@@ -109,7 +172,7 @@ server.tool(
     }
 
     const content = readFileSync(sourcePath, "utf-8");
-    if (!content.includes("marp: true")) {
+    if (!hasMarpFrontmatter(content)) {
       return {
         isError: true,
         content: [
@@ -120,10 +183,6 @@ server.tool(
         ],
       };
     }
-
-    const outputPath = output
-      ? resolve(WORKSPACE, output)
-      : sourcePath.replace(/\.md$/, `.${format}`);
 
     prepareOutputPath(outputPath, format);
 
