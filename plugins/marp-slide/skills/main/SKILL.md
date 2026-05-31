@@ -41,6 +41,7 @@ Marp スライドを 4 状態のワークフローで作成する:
    - `presentation_type`（`proposal`, `report`, `training`, `executive-update`, `research` のいずれかに正規化）
    - `goal`, `target_slide_count`, `output_formats`
    - `must_include`, `source_materials`（あれば）
+   - `design_reference`（任意）: 既存デッキのデザインを踏襲したい場合、その Marp ファイルのパス。未指定なら既定の `templates/presentation-starter.md` を使う
 4. `references/presentation-structures.md` を見て、`presentation_type` に合った構成パターンを提示し、大まかな流れ（章立て）をユーザーと合意する
 
 ### 正規化と既定値
@@ -59,7 +60,7 @@ Marp スライドを 4 状態のワークフローで作成する:
   - 現場部門: 現行業務は理解、技術詳細は最小限
   - 技術者: 実装・制約も理解可能
   - 一般/不明: 前提知識は浅めに置き、専門語は説明する
-- `source_materials` がない数値・ROI は実績値を捏造しない。優先順は 1) 計算式 + 空欄、2) 入力欄つきの要確認プレースホルダー、3) 必要な場合だけ明示ラベル付きの仮説レンジ。ユーザーが「おまかせ」と言っている場合はこの優先順で進めてよい。実績値そのものが承認判断の根拠になる場合、またはユーザーが実数精度を求めている場合だけ確認する
+- `source_materials` がない数値・ROI は実績値を捏造しない。優先順は 1) 計算式 + 空欄、2) 入力欄つきの要確認プレースホルダー、3) 必要な場合だけ明示ラベル付きの仮説レンジ。ユーザーが「おまかせ」と言っている場合はこの優先順で進めてよい。実績値そのものが承認判断の根拠になる場合、またはユーザーが実数精度を求めている場合だけ確認する。プレースホルダーのラベルは「未確認の見積もりである」ことを示す一語でデッキ内を統一し（日本語デッキなら「要確認」、それ以外はデッキの出力言語に合わせる）、仮説レンジを `big-number` など強調 archetype の主数字に置くときは同一スライドに「仮説・要確認」に相当するラベル（デッキ言語）を必ず併置する
 
 ### 対話の原則
 - 1 回に聞く質問は 2〜3 個まで。大量質問は避ける
@@ -79,15 +80,16 @@ Marp スライドを 4 状態のワークフローで作成する:
 - S1 の抜ける条件を満たした
 
 ### 行うこと
-1. `templates/presentation-starter.md` を土台として `slides/presentation.md` を作成する
+1. デザインの土台を選んで `slides/presentation.md` を作成する: `request.yaml.design_reference` が指定されていればそのファイルの style ブロック・archetype クラスを土台にし、未指定なら `templates/presentation-starter.md` を使う。style ブロックは未使用クラスも含めて丸ごと転記し、使う archetype だけに削らない（クラス欠落による表示崩れを防ぐ）
 2. `references/layout-patterns.md` を参照し、各スライドに適した archetype を選ぶ
 3. 以下のルールを守る:
-   - タイトルは topic label ではなく takeaway（結論）を断定的に書く
+   - タイトルは topic label ではなく takeaway（結論）を断定的に書く（`section-divider` の見出しは章ラベルでよく、この規則の対象外）
    - 2 枚目に executive summary を置き、最後に next action を置く
    - 7 枚以上のデッキには少なくとも 1 枚の `section-divider` を入れる
    - 1 スライド 1 メッセージ、タイトル除くテキスト 6 行以下、bullet 3 つ以下
    - 同一 archetype が 3 枚連続しないように並べる
    - `request.yaml.must_include` の全項目を盛り込む
+   - 構成パターンの枚数が `target_slide_count` と違うときは target ±3 枚に収める: パターンが target より多い場合は低優先の要素（背景・詳細）から圧縮し、少ない場合は中核要素を章に分割して `section-divider` で区切る（タイトル・エグゼクティブサマリー・next action は必ず残す）。15 枚以上では章ごとに divider を入れて構造を保つ
    - ユーザーの言語で書く（テンプレートが英語でも、日本語依頼なら日本語で）
 
 ### 抜ける条件
@@ -101,20 +103,22 @@ Marp スライドを 4 状態のワークフローで作成する:
 - `review.json.status == "pass"` でも `source_sha256` が現在の `slides/presentation.md` と一致しない
 
 ### 行うこと
-1. **reviewer サブエージェントを呼び出す**:
-   - Agent ツールで `subagent_type: reviewer` を指定
-   - reviewer は別コンテキストで `slides/presentation.md` と `request.yaml` を読み、MCP で PDF/PNG を出力し、PNG を目視し、10 ゲートで判定して `.slide-work/review.json` を書き込む
+1. **`review_attempt` を加算する**: reviewer を実際に呼び出すたびに `review_attempt` を 1 増やす責任は main agent にある。直前の `.slide-work/review.json.review_attempt`（無ければ 0）に +1 した値 `N` を求める。加算主体を main agent の一点に固定し、off-by-one や二重カウントを避ける。reviewer を呼ばない S3 再入（missing_info の確認待ち、infra_blocked からの環境復旧、reviewer 不可で判定が出ない場合）では加算しない
+2. **reviewer サブエージェントを呼び出す**:
+   - Agent ツールで `subagent_type: reviewer` を指定し、**呼び出しプロンプトに「今回は review_attempt = N」と明示して渡す**。reviewer はこの値を `review.json.review_attempt` にそのまま記録する
+   - reviewer は別コンテキストで `slides/presentation.md` と `request.yaml` を読み、`mcp__marp__marp_hash` で `source_sha256` を記録し、MCP で PDF/PNG を出力し、PNG を目視し、10 ゲートで判定して `.slide-work/review.json` を書き込む
    - 詳細は `../../agents/reviewer.md` を参照
-2. **`review.json.status` を確認する**:
-   - `pass` → `source_sha256` が現在の `slides/presentation.md` と一致することを確認して S4 へ
+3. **`review.json.status` を確認する**:
+   - `pass` → `mcp__marp__marp_hash(source: "slides/presentation.md")` の返り値と `review.json.source_sha256` が一致することを確認して S4 へ（**自分でハッシュを暗算しない**）
    - `missing_info` → `questions_for_user` をユーザーに確認し、`request.yaml` を更新、S3 を再実行
    - `fail` → `exact_fix_instructions` に従って `slides/presentation.md` を修正、S3 を再実行
+   - `infra_blocked` → 環境起因の停止。デッキは直さない。`issues` の原因（Docker 未起動など）をユーザーに案内し、環境が整ってから S3 を再実行する。Stop hook はこの状態（`source_sha256` 一致）での停止を許可する。既に `infra_blocked` が記録され reviewer も起動できない場合は infra_blocked の案内を優先し、別途 `review-blocked.json` は書かない
 
 ### fail の消費ルール
 
 - `exact_fix_instructions` は上から順にすべて適用する。勝手に選別しない
 - 修正は 1 回の revision pass にまとめ、`slides/presentation.md` 以外を変更しない
-- 指示が空、曖昧、矛盾、または適用不能な場合は、同じ reviewer を再利用せず S3 を 1 回だけ再実行する。再実行後も malformed なら、問題のある指示を具体的に示してユーザーに判断を仰ぐ
+- 指示が空、曖昧、矛盾、または適用不能な場合は、同じ reviewer を再利用せず S3 を再実行する（この再実行も `review_attempt` を 1 消費する）。再実行後も malformed なら、問題のある指示を具体的に示してユーザーに判断を仰ぐ
 - `slides/presentation.md` を変更した時点で古い pass は無効になる。次の reviewer が新しい `source_sha256` を記録するまで S4 に進まない
 - reviewer サブエージェントを起動できない環境で既存の `exact_fix_instructions` がある場合は、具体的な指示だけを適用してから `.slide-work/review-blocked.json` を書いて停止する。新しい判定・pass・`review.json` 更新は行わない
 
@@ -131,12 +135,14 @@ Marp スライドを 4 状態のワークフローで作成する:
 }
 ```
 
-- `source_sha256` は停止時点の `slides/presentation.md` の SHA-256
+- `source_sha256` は停止時点の `slides/presentation.md` の SHA-256（`mcp__marp__marp_hash` で取得する。暗算しない）。修正を適用した場合は適用後の SHA-256 を入れる（編集で旧ハッシュは無効になるため）。MCP 自体が使えずハッシュを取得できない場合は `source_sha256` を null にし `message` に理由を書く（Stop hook はこの marker では停止を許可しないので、ユーザーに手動確認を促す）
 - これは未完了マーカーであり、pass ではない。次回再開時は S3 から続ける
 - 予備セルフチェックは、適用済みの `exact_fix_instructions` の確認だけに限定する。gate verdict、pass/fail 判定、`review.json` 更新、完了報告は行わない
 
 ### 再試行上限
-- S3 の fail → 修正 → S3 再実行 のループは **最大 3 回**
+- S3 の fail → 修正 → S3 再実行 のループは **最大 3 回**。判定は単一述語で行う: **`review_attempt >= 3` かつ直近 status が `fail` なら、自動修正を止めてユーザーに相談する**。fail 消費ルールはこの上限に従属し、上限到達時は再修正より相談を優先する
+- カウントは `review_attempt` の一本だけを使う。malformed 指示による再実行（下記）も 1 attempt として消費する。別カウントを作らない
+- `infra_blocked`（環境起因）は品質 fail の 3 回上限には数えない。環境を直して再実行する
 - 直近の `.slide-work/review.json.review_attempt` を確認し、3 回目の fail 後は自動修正を続けない
 - 3 回連続で fail になったら、`review.json` の内容をユーザーに共有し、方針の判断を仰ぐ（要件の見直しか、デザインの妥協か、など）
 
@@ -149,7 +155,7 @@ Marp スライドを 4 状態のワークフローで作成する:
 - `review.json.status == "pass"` かつ `review.json.source_sha256` が現在の `slides/presentation.md` の SHA-256 と一致している
 
 ### 行うこと
-1. 現在の `slides/presentation.md` の SHA-256 と `review.json.source_sha256` が一致することを確認する。不一致・欠落・計算不能なら S3 に戻る
+1. `mcp__marp__marp_hash(source: "slides/presentation.md")` の返り値と `review.json.source_sha256` が一致することを確認する（自分で暗算しない）。不一致・欠落・取得不能なら S3 に戻る
 2. `review.json.artifacts.pdf` と `page_images` のパスを確認する（既に S3 で reviewer が出力済み）
 3. ユーザーに完了を報告する:
    - PDF のパス: `.slide-work/presentation.pdf`
@@ -172,12 +178,16 @@ Marp スライドを 4 状態のワークフローで作成する:
 | `slides/presentation.md` が存在するが `review.json.status != "pass"` | S3 |
 | `review.json.status == "pass"` だが `review.json.source_sha256` が欠落、または現在の `slides/presentation.md` の SHA-256 と一致しない | S3 |
 | `review.json.status == "pass"` かつ `source_sha256` が一致しているがユーザー承認がまだ | S4 |
+| `review-blocked.json` が現在の `slides/presentation.md` の SHA-256 と一致（reviewer 不可の未完了停止） | 停止を維持しユーザーに reviewer 起動を促す。再開可能になれば S3 |
+
+表は上から評価し、`review-blocked.json` が現在の `slides/presentation.md` の SHA-256 と一致する場合は、それより上の行より優先する。
 
 再開時は「前回の作業を確認しました。現在 S○ の段階です」と一言伝えてから続ける。
 
 ## ツール境界
 
 - `marp_export`（MCP）を呼ぶのは **reviewer サブエージェントの中** が基本。main agent も追加フォーマット出力時には呼んでよい
+- **SHA-256 は必ず `mcp__marp__marp_hash`（MCP）で取得する**。main agent も reviewer も自分で暗算しない。Stop hook の `validate_review_gate` も同じ計算を使うため、書き手と検証側のハッシュが必ず一致する
 - visual review（PNG 目視）は reviewer だけが行う
 - main agent は `slides/presentation.md` の作成・修正を行い、`.slide-work/review.json` は読み取り専用。サブエージェント不可時でも main agent が pass を書いてはいけない
 

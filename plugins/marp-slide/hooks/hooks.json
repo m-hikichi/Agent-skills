@@ -4,8 +4,16 @@
       {
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "あなたは marp-slide の completion gate です。以下の手順で判定してください。\n\n1. `slides/presentation.md` が存在するか確認する\n   - 存在しない → 正当な待機状態（まだドラフト未作成）とみなし、空オブジェクト `{}` を返して stop を許可する\n2. 現在の `slides/presentation.md` の SHA-256 を計算する\n3. `.slide-work/review-blocked.json` が存在する場合、内容を確認する\n   - `status == \"blocked\"` かつ `reason == \"reviewer_unavailable\"` かつ `source_sha256` が現在の SHA-256 と一致する → 正当な未完了停止とみなし、空オブジェクト `{}` を返して stop を許可する\n   - 欠落または不一致 → stale blocked marker とみなし、通常の review gate 判定へ進む\n4. `.slide-work/review.json` を読む\n   - 読めない／存在しない → reviewer 未実行。ブロックする\n   - 読めた場合、`status` と `source_sha256` フィールドを確認する\n5. `review.json.status == \"pass\"` の場合、`review.json.source_sha256` と現在の SHA-256 を比較する\n   - 一致する → 空オブジェクト `{}` を返して stop を許可する\n   - 欠落または不一致 → stale review とみなし、以下の形式でブロックする\n6. それ以外（`fail`, `missing_info`, 欠如）なら以下の形式でブロックする:\n\n```json\n{\n  \"decision\": \"block\",\n  \"reason\": \"review gate が満たされていません: status=<値>, source_sha256=<一致|不一致|欠落>. reviewer サブエージェントを呼び出し、review.json.exact_fix_instructions または questions_for_user に従って対応してください. reviewer 不可で停止する場合は review-blocked.json を作成してください.\"\n}\n```\n\n**重要**: 完了判定に使うのは `review.json.status` と `source_sha256` の一致だけです。`review-blocked.json` は未完了停止を許可するだけで、pass ではありません。gate_results の個別値や timestamp で独自判定してはいけません。gate を抜け道で通してはいけません。"
+            "type": "mcp_tool",
+            "server": "marp",
+            "tool": "validate_review_gate",
+            "input": {
+              "source": "slides/presentation.md",
+              "review": ".slide-work/review.json",
+              "blocked": ".slide-work/review-blocked.json"
+            },
+            "timeout": 30,
+            "statusMessage": "marp-slide の完了ゲートを検証中..."
           }
         ]
       }

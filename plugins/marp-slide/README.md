@@ -18,12 +18,14 @@ Claude Code の plugin として配布できる Marp スライド作成支援パ
 
 ## セットアップ
 
-1. Docker イメージをビルドする（初回のみ）
+1. Docker イメージをビルドする（初回、および `mcp-server/` の更新時）
 
 ```bash
 cd <path-to-this-repo>/plugins/marp-slide/mcp-server
 docker build -t marp-mcp-server .
 ```
+
+> `mcp-server/src/` を変更したら再ビルドしてください。`marp_hash`・`validate_review_gate` はイメージに焼き込まれるため、古いイメージのままだと Stop hook やハッシュ取得が「存在しないツール」を呼びます。
 
 2. plugin をローカルで読み込む
 

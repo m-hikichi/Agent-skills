@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
   existsSync,
   mkdirSync,
@@ -44,6 +45,23 @@ function resolveWorkspacePath(input: string, fieldName: "source" | "output"): st
   }
 
   return resolvedPath;
+}
+
+function sha256OfFile(filePath: string): string {
+  // Hash the raw bytes so the write side (reviewer) and the check side (Stop
+  // hook) agree regardless of CRLF/LF, BOM, or trailing newline differences.
+  return createHash("sha256").update(readFileSync(filePath)).digest("hex");
+}
+
+function readJsonIfPresent(filePath: string): unknown | undefined {
+  if (!existsSync(filePath)) {
+    return undefined;
+  }
+  try {
+    return JSON.parse(readFileSync(filePath, "utf-8"));
+  } catch {
+    return undefined;
+  }
 }
 
 function hasMarpFrontmatter(content: string): boolean {
@@ -257,6 +275,166 @@ server.tool(
         content: [{ type: "text" as const, text: `Export failed:\n${msg}` }],
       };
     }
+  }
+);
+
+server.tool(
+  "marp_hash",
+  "Compute the SHA-256 of a file (relative to workspace root). This is the deterministic value to store as review.json.source_sha256; the review gate compares against the same computation. Use this instead of computing a hash by hand.",
+  {
+    source: z
+      .string()
+      .describe("Path to the file to hash (relative to workspace root)"),
+  },
+  async ({ source }) => {
+    let sourcePath: string;
+    try {
+      sourcePath = resolveWorkspacePath(source, "source");
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      return {
+        isError: true,
+        content: [{ type: "text" as const, text: `Invalid path: ${msg}` }],
+      };
+    }
+
+    if (!existsSync(sourcePath)) {
+      return {
+        isError: true,
+        content: [{ type: "text" as const, text: `File not found: ${source}` }],
+      };
+    }
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: JSON.stringify({ source, sha256: sha256OfFile(sourcePath) }),
+        },
+      ],
+    };
+  }
+);
+
+// Stop-hook completion gate. Returns `{}` to ALLOW stop, or
+// `{"decision":"block","reason":...}` to BLOCK it (Claude Code's Stop output
+// contract). All checks are deterministic and run in-container, so the result
+// does not depend on a model computing a hash.
+server.tool(
+  "validate_review_gate",
+  "Deterministic marp-slide completion gate for use as a Stop hook (type: mcp_tool). Compares the current source SHA-256 against review.json.source_sha256 and decides whether the agent may stop. Returns {} to allow stop, or {\"decision\":\"block\",\"reason\":...} to block.",
+  {
+    source: z
+      .string()
+      .optional()
+      .describe("Marp source path (relative to workspace). Default: slides/presentation.md"),
+    review: z
+      .string()
+      .optional()
+      .describe("Review state path (relative to workspace). Default: .slide-work/review.json"),
+    blocked: z
+      .string()
+      .optional()
+      .describe("Blocked marker path (relative to workspace). Default: .slide-work/review-blocked.json"),
+  },
+  async ({ source, review, blocked }) => {
+    const allow = () => ({
+      content: [{ type: "text" as const, text: "{}" }],
+    });
+    const block = (reason: string) => ({
+      content: [
+        {
+          type: "text" as const,
+          text: JSON.stringify({ decision: "block", reason }),
+        },
+      ],
+    });
+
+    let sourcePath: string;
+    let reviewPath: string;
+    let blockedPath: string;
+    try {
+      sourcePath = resolveWorkspacePath(source ?? "slides/presentation.md", "source");
+      reviewPath = resolveWorkspacePath(review ?? ".slide-work/review.json", "source");
+      blockedPath = resolveWorkspacePath(blocked ?? ".slide-work/review-blocked.json", "source");
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      return block(`gate のパス解決に失敗しました: ${msg}`);
+    }
+
+    // 1. No deck yet → legitimate idle state (not drafted). Allow.
+    if (!existsSync(sourcePath)) {
+      return allow();
+    }
+
+    const currentSha = sha256OfFile(sourcePath);
+
+    // 2. Legitimate reviewer-unavailable stop, scoped to the current source.
+    const blockedDoc = readJsonIfPresent(blockedPath) as
+      | { status?: string; reason?: string; source_sha256?: string }
+      | undefined;
+    if (
+      blockedDoc &&
+      blockedDoc.status === "blocked" &&
+      blockedDoc.reason === "reviewer_unavailable" &&
+      blockedDoc.source_sha256 === currentSha
+    ) {
+      return allow();
+    }
+
+    // 3. Review state must exist and be readable.
+    const reviewDoc = readJsonIfPresent(reviewPath) as
+      | {
+          status?: string;
+          source_sha256?: string;
+          visual_review?: { checked_page_count?: number };
+          artifacts?: { page_images?: unknown[] };
+        }
+      | undefined;
+    if (!reviewDoc) {
+      return block(
+        "review gate が満たされていません: review.json が無い/壊れています。reviewer サブエージェントを呼び出してください。reviewer 不可なら review-blocked.json を作成してください。"
+      );
+    }
+
+    const shaMatch = reviewDoc.source_sha256 === currentSha;
+
+    // 4. Infrastructure failure (e.g. Docker/MCP down during export) recorded
+    //    for the current source → not a quality fail; allow the stop so the
+    //    agent can surface the cause instead of being forced to loop. Only the
+    //    documented `infra_blocked` status qualifies; any other value falls
+    //    through to the fail-closed block below.
+    if (reviewDoc.status === "infra_blocked" && shaMatch) {
+      return allow();
+    }
+
+    // 5. A genuine pass: status pass, hash matches, and a visual review really ran.
+    if (reviewDoc.status === "pass") {
+      // Treat malformed/missing fields as "not reviewed" (fail-closed) instead
+      // of letting a wrong type slip through the `<= 0` / `.length` checks.
+      const checkedRaw = reviewDoc.visual_review?.checked_page_count;
+      const checked = typeof checkedRaw === "number" ? checkedRaw : 0;
+      const imagesRaw = reviewDoc.artifacts?.page_images;
+      const pageImages = Array.isArray(imagesRaw) ? imagesRaw : [];
+      if (!shaMatch) {
+        return block(
+          "review gate が満たされていません: status=pass ですが source_sha256 が現在の source と不一致（stale review）。reviewer を再実行してください。"
+        );
+      }
+      if (checked <= 0 || pageImages.length === 0) {
+        return block(
+          "review gate が満たされていません: status=pass ですが visual_review が未実施（checked_page_count=0 / page_images が空）。reviewer に PNG 目視をやり直させてください。"
+        );
+      }
+      return allow();
+    }
+
+    // 6. Anything else (fail, missing_info, unknown) → block with the status.
+    return block(
+      `review gate が満たされていません: status=${reviewDoc.status ?? "欠落"}, source_sha256=${
+        shaMatch ? "一致" : "不一致/欠落"
+      }. review.json.exact_fix_instructions または questions_for_user に従って対応してください。`
+    );
   }
 );
 
