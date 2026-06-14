@@ -28,6 +28,7 @@ JSON スキーマとサンプルは references/format_spec.md を参照。
 import argparse
 import html
 import json
+import re
 import sys
 from datetime import datetime
 
@@ -45,6 +46,12 @@ HEADERS = ["大分類", "大分類ID", "中分類", "中分類ID", "小分類", 
            "機能名", "概要", "業務ルール", "画面", "要求ID"]
 COL_WIDTHS = ["6.5%", "2.5%", "6.5%", "2.5%", "6.5%", "2.5%",
               "9%", "16%", "29.5%", "13%", "5.5%"]
+WIDTH_CLASSES = {
+    "2.5%": "w025", "5.5%": "w055", "6%": "w060", "6.5%": "w065",
+    "9%": "w090", "10%": "w100", "13%": "w130", "16%": "w160",
+    "18%": "w180", "22%": "w220", "24%": "w240", "26%": "w260",
+    "29.5%": "w295", "44%": "w440", "72%": "w720", "78%": "w780",
+}
 
 
 def esc(v):
@@ -78,13 +85,94 @@ def _as_list(v):
     return v if isinstance(v, list) else [v]
 
 
+def _colgroup(widths):
+    """列幅を CSS class で指定し、style 属性を成果物へ出さない。"""
+    if not widths:
+        return ""
+    try:
+        cols = "".join(f'<col class="{WIDTH_CLASSES[w]}">' for w in widths)
+    except KeyError as exc:
+        raise ValueError(f"未定義の列幅です: {exc.args[0]}") from exc
+    return f"<colgroup>{cols}</colgroup>"
+
+
+def validate_config(cfg):
+    """新スキーマの必須品質と画面参照を、描画前に検証する。"""
+    errors = []
+    function_list = cfg.get("function_list")
+    if not isinstance(function_list, list) or not function_list:
+        errors.append("function_list は1件以上の配列で指定してください")
+        function_list = []
+
+    screens = cfg.get("screens", []) or []
+    screen_ids = [str(s.get("id", "")).strip() for s in screens]
+    defined_screen_ids = {sid for sid in screen_ids if sid}
+    for index, screen in enumerate(screens, 1):
+        if not str(screen.get("id", "")).strip():
+            errors.append(f"画面 {index}: 画面IDが空です")
+        if not str(screen.get("name", "")).strip():
+            errors.append(f"画面 {index}: 画面名が空です")
+    if len(defined_screen_ids) != len([sid for sid in screen_ids if sid]):
+        errors.append("screens の画面IDが重複しています")
+
+    referenced_screen_ids = set()
+    question_rows = []
+    row_count = 0
+    for dai in function_list:
+        for chu in dai.get("children", []):
+            for sho in chu.get("children", []):
+                for row in sho.get("rows", []):
+                    row_count += 1
+                    name = str(row.get("機能名") or row.get("細分類") or "").strip()
+                    is_new = any(k in row for k in ("機能名", "業務ルール", "画面"))
+                    if not name:
+                        errors.append(f"機能行 {row_count}: 機能名が空です")
+                    if not is_new:
+                        continue
+                    if not str(row.get("概要", "")).strip():
+                        errors.append(f"機能行 {row_count} ({name}): 概要が空です")
+                    rules = [str(x).strip() for x in _as_list(row.get("業務ルール")) if str(x).strip()]
+                    if not rules:
+                        errors.append(f"機能行 {row_count} ({name}): 業務ルールが空です")
+                    elif any("要確認" in rule for rule in rules):
+                        question_rows.append((name, set(re.findall(r"FR-\d+", str(row.get("FR", ""))))))
+                    row_screens = [str(x).strip() for x in _as_list(row.get("画面")) if str(x).strip()]
+                    if not row_screens:
+                        errors.append(f"機能行 {row_count} ({name}): 画面が空です")
+                    for screen in row_screens:
+                        if screen.startswith("SCR-"):
+                            referenced_screen_ids.add(screen)
+                            if screen not in defined_screen_ids:
+                                errors.append(
+                                    f"機能行 {row_count} ({name}): 未定義の画面ID {screen} を参照しています"
+                                )
+                    if not str(row.get("FR") or row.get("由来FR") or "").strip():
+                        errors.append(f"機能行 {row_count} ({name}): 要求IDが空です")
+
+    unused_screen_ids = defined_screen_ids - referenced_screen_ids
+    if unused_screen_ids:
+        errors.append("どの機能からも参照されない画面があります: " + ", ".join(sorted(unused_screen_ids)))
+    question_entries = [
+        f'{item.get("項目", "")} {item.get("内容", "")}'
+        for item in (cfg.get("criteria", []) or [])
+        if item.get("区分") == "要確認"
+    ]
+    for name, fr_ids in question_rows:
+        if not any(name in entry or any(fr_id in entry for fr_id in fr_ids) for entry in question_entries):
+            errors.append(f"機能行 ({name}): 業務ルールの要確認事項が criteria にありません")
+    if row_count == 0:
+        errors.append("function_list に機能行がありません")
+    if errors:
+        raise ValueError("設計データの検証に失敗しました:\n- " + "\n- ".join(errors))
+
+
 def normalize_row(r):
     """機能行を (機能名, 概要, 業務ルール[list], 画面[list], 要求ID) に正規化。
 
     新スキーマ（業務ルール/画面 あり）と旧スキーマ（機能/概要 のみ）の両対応:
       - 新: 概要=概要, 業務ルール=業務ルール
       - 旧: 概要=機能（動作説明）, 業務ルール=[概要]（旧概要を1ルールに退避）
-    これにより basic-design-xlsx 由来の旧 design.json もそのまま描画できる。
+    これにより旧Excel版の design.json もそのまま描画できる。
     """
     name = r.get("機能名") or r.get("細分類") or ""
     if "業務ルール" in r or "画面" in r:          # 新スキーマ
@@ -177,9 +265,7 @@ def _table(title, headers, rows, center_cols=(), col_widths=None, anchor="", row
     out = []
     a = f' id="{anchor}"' if anchor else ""
     out.append(f'    <h2{a}>{esc(title)}</h2>')
-    cg = ""
-    if col_widths:
-        cg = "<colgroup>" + "".join(f'<col style="width:{w}">' for w in col_widths) + "</colgroup>"
+    cg = _colgroup(col_widths)
     out.append(f'    <table class="aux">{cg}')
     out.append("      <thead><tr>" + "".join(f'<th>{esc(h)}</th>' for h in headers) + "</tr></thead>")
     out.append("      <tbody>")
@@ -211,6 +297,12 @@ table.meta td{ border:1px solid var(--grid); padding:3px 10px; white-space:nowra
 table.meta td.k{ background:var(--hdr); text-align:center; }
 h2{ font-size:16px; margin:6px 0 8px; padding-left:8px; border-left:6px solid var(--dai); }
 table{ border-collapse:collapse; width:100%%; table-layout:fixed; }
+col.w025{ width:2.5%%; } col.w055{ width:5.5%%; } col.w060{ width:6%%; }
+col.w065{ width:6.5%%; } col.w090{ width:9%%; } col.w100{ width:10%%; }
+col.w130{ width:13%%; } col.w160{ width:16%%; } col.w180{ width:18%%; }
+col.w220{ width:22%%; } col.w240{ width:24%%; } col.w260{ width:26%%; }
+col.w295{ width:29.5%%; } col.w440{ width:44%%; } col.w720{ width:72%%; }
+col.w780{ width:78%%; }
 th,td{ border:1px solid var(--grid); padding:5px 7px; vertical-align:top;
        word-break:break-word; overflow-wrap:anywhere; }
 thead th{ background:var(--hdr); text-align:center; vertical-align:middle;
@@ -272,6 +364,7 @@ TAB_SCRIPT = """
 
 
 def render(cfg):
+    validate_config(cfg)
     title = cfg.get("title", "機能一覧")
     meta = cfg.get("meta", {})
     screens = cfg.get("screens", []) or []
@@ -286,7 +379,7 @@ def render(cfg):
     fl = []
     fl.append('    <h2 id="func">機能一覧</h2>')
     fl.append('    <table class="funclist">')
-    fl.append("    <colgroup>" + "".join(f'<col style="width:{w}">' for w in COL_WIDTHS) + "</colgroup>")
+    fl.append("    " + _colgroup(COL_WIDTHS))
     fl.append("      <thead><tr>" + "".join(f"<th>{esc(h)}</th>" for h in HEADERS) + "</tr></thead>")
     fl.append("      <tbody>")
     fl.extend(build_function_rows(cfg, screen_names))
@@ -325,7 +418,7 @@ def render(cfg):
     crit = cfg.get("criteria")
     if crit:
         rows = [[c.get("区分", ""), c.get("項目", ""), c.get("内容", "")] for c in crit]
-        lines = _table("成功基準・前提・対象外", ["区分", "ID／項目", "内容"],
+        lines = _table("成功基準・前提・対象外・要確認事項", ["区分", "ID／項目", "内容"],
                        rows, center_cols=(0,), anchor="crit",
                        col_widths=["10%", "18%", "72%"],
                        row_future=lambda i: _is_future(crit[i]))
