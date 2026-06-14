@@ -1,0 +1,29 @@
+{
+  "skill_name": "speckit-spec-to-basic-design-html",
+  "evals": [
+    {
+      "id": 0,
+      "name": "fresh-gen-equipment-lending",
+      "prompt": "specs/020-equipment-lending-demo/spec.md をもとに基本設計書の機能一覧を作成してください。今は Excel で機能一覧を作っているのですが、更新したときに git で『どこを直したか』が確認しづらいのが悩みです。差分が git で追えて、かつ Excel と同じように大分類→中分類→小分類を俯瞰できる見た目で、エンジニアでない人でも開いて確認できる形式にしてください。出力は specs/020-equipment-lending-demo/ に置いてください。",
+      "expected_output": "spec.md の全 FR を基本設計レベルの機能へ分解した単一の自己完結 HTML。大/中/小分類の rowspan セル結合・teal 系テーマ色・游ゴシック・タイトル/メタ枠・sticky ヘッダを備え Excel と同じ雰囲気。インライン style を使わず CSS クラスで色付けし、1 機能行=HTML 1 行で出力（git 差分が読める）。全 FR が『由来FR:』として現れ、v1対象外行は淡いグレー＋将来対応バッジ（取消線なし）。ユーザーストーリー/成功基準・前提・対象外/データエンティティの補助セクションも含む。",
+      "files": ["fixtures/equipment-lending-spec.md"],
+      "assertions": []
+    },
+    {
+      "id": 1,
+      "name": "fresh-gen-book-lending",
+      "prompt": "添付の Spec Kit の spec.md（ユーザー要求・機能要件・受入条件を記述した Feature Specification）から、基本設計書の機能一覧を作ってください。Excel だとレビュー時に変更点が分かりにくいので、git で差分が確認できて、かつ Excel のように機能の階層を俯瞰できる雰囲気で見られる形にしたいです。",
+      "expected_output": "別仕様（社内図書貸出管理）でも同じ品質で生成できること（過学習していない）。FR-001〜031 を機能へ分解した単一 HTML。階層セル結合・teal テーマ色・游ゴシック・全 FR の『由来FR:』トレーサビリティ・CSS クラス方式（インライン style なし）・1 行1機能。FR-040/SC-003 など v1対象外は淡いグレー＋将来対応バッジ（取消線なし）。補助セクション（ユーザーストーリー/成功基準・前提・対象外/エンティティ）も生成。",
+      "files": ["fixtures/book-lending-spec.md"],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "name": "update-minimal-diff",
+      "prompt": "添付の機能一覧(備品貸出管理デモ_基本設計_機能一覧.html)を更新してください。spec に新機能として『貸出履歴を CSV エクスポートする』(FR-032) が追加されたので、『貸出管理』大分類の適切な小分類に 1 機能として追記してください。あとで git diff でレビューするので、既存の行はできるだけ動かさず、変更が最小限（追記とその所属グループの結合数の調整くらい）になるようにしてください。",
+      "expected_output": "既存 HTML を正として最小編集する。追加された 1 機能行（貸出履歴CSVエクスポート、由来FR: FR-032）と、その所属グループの rowspan 数の調整だけが変わり、無関係な既存行の文言は変化しない。出力は依然として有効な単一 HTML で、Excel 風の見た目・CSS クラス方式・1 行1機能を保つ。スクラッチからの作り直し（大量の無関係 diff）は不可。",
+      "files": ["fixtures/備品貸出管理デモ_基本設計_機能一覧.html"],
+      "assertions": []
+    }
+  ]
+}
