@@ -4,16 +4,9 @@
       {
         "hooks": [
           {
-            "type": "mcp_tool",
-            "server": "marp",
-            "tool": "validate_review_gate",
-            "input": {
-              "source": "slides/presentation.md",
-              "review": ".slide-work/review.json",
-              "blocked": ".slide-work/review-blocked.json"
-            },
-            "timeout": 30,
-            "statusMessage": "marp-slide の完了ゲートを検証中..."
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/review-gate.sh\" gate",
+            "timeout": 30
           }
         ]
       }

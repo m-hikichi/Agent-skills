@@ -15,6 +15,7 @@ Claude Code の plugin として配布できる Marp スライド作成支援パ
 
 - Claude Code 1.0.33 以降
 - Docker（Marp CLI・Chromium・日本語フォントは Docker イメージ内で動作します。ローカルに Node.js や Marp CLI を入れる必要はありません）
+- `bash` と SHA-256 コマンド。完了ゲートと SHA-256 計算はホスト側の `scripts/review-gate.sh`（Docker の外）が担い、**Windows / macOS / Linux** で動きます。必要なのは `bash`（Windows は Git Bash）と、`sha256sum`（Linux / Git Bash）または `shasum`（macOS）だけです
 
 ## セットアップ
 
@@ -25,13 +26,15 @@ cd <path-to-this-repo>/plugins/marp-slide/mcp-server
 docker build -t marp-mcp-server .
 ```
 
-> `mcp-server/src/` を変更したら再ビルドしてください。`marp_hash`・`validate_review_gate` はイメージに焼き込まれるため、古いイメージのままだと Stop hook やハッシュ取得が「存在しないツール」を呼びます。
+> `mcp-server/src/` を変更したら再ビルドしてください。なお、この MCP イメージは **export 専用**（`marp_export` のみ）です。SHA-256 計算と完了ゲートはホスト側の `scripts/review-gate.sh` が担うため、イメージの新旧は完了ゲートに影響しません（古いイメージで「存在しないツールを呼ぶ」問題は構造的に解消済み）。
 
-2. plugin をローカルで読み込む
+2. plugin を読み込む（clone 済みリポジトリを直接読み込む）
 
 ```bash
 claude --plugin-dir <path-to-this-repo>/plugins/marp-slide
 ```
+
+> Docker イメージは手元の clone（または plugin キャッシュ内 `mcp-server/`）からビルドする必要があります。手順 1 を先に済ませてください。
 
 3. Claude Code 内でスキルを呼ぶ
 
@@ -98,6 +101,7 @@ slides/
 
 ## 補足
 
+- 完了ゲートと SHA-256 計算は、PDF/PPTX を出力する Docker MCP サーバとは別に、ホスト側の bash スクリプト `scripts/review-gate.sh` が担います（Stop hook から `type: command` で起動、Windows/macOS/Linux 対応）。これにより MCP 接続が切れていても、Docker イメージが古くても、完了ゲートは正しく動作します。reviewer は `sha256sum`/`shasum`/`Get-FileHash` で生バイト SHA-256 を記録し、ゲートが同じ値で再検証します
 - レビューは Markdown ソースだけでなく、レンダリング後の PNG 画像を Read ツールで目視します（視覚的なはみ出しやレイアウト崩れはソースだけでは判定できないため）
 - `reviewer` サブエージェントを起動できない環境では完了ゲートを通せません。既存 reviewer の具体的な fail 修正は適用できますが、`.slide-work/review-blocked.json` を残して未完了停止し、main agent のセルフチェックだけで pass 扱いにはしません
 - Docker が起動していない状態で実行すると、MCP からの export がエラーになります。Docker Desktop を起動してから試してください

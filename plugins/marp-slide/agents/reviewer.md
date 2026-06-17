@@ -28,7 +28,7 @@ color: red
 以下を順番に実行する。途中で止めてはいけない（必須項目欠落による missing_info での早期終了と、PDF/PNG 失敗時の infra_blocked を除く）。
 
 1. **入力ファイルを読み、必須項目を確認する**（request.yaml, presentation.md）。`request.yaml` の `topic`/`audience`/`goal`/`target_slide_count` のいずれかが空なら、PDF/PNG 出力もゲート判定も行わず `status: "missing_info"`（`missing_required` と `questions_for_user` を埋める）を返して終了する
-2. **source hash を記録する**: `mcp__marp__marp_hash(source: "slides/presentation.md")` を呼び、返り値の `sha256` を `source_sha256` に入れる。**自分でハッシュを暗算してはいけない**（Stop hook も同じ MCP ツールで検証するため、計算主体を揃える）。ツールがエラーを返したら `status: "infra_blocked"` にし、`issues` に理由を書いて終了する
+2. **source hash を記録する**: `slides/presentation.md` の生バイト SHA-256 を計算し、小文字で `source_sha256` に入れる。次のいずれかで計算する: `sha256sum slides/presentation.md`（Linux / Windows Git Bash）、`shasum -a 256 slides/presentation.md`（macOS）、`(Get-FileHash -Algorithm SHA256 slides/presentation.md).Hash`（Windows PowerShell）。**ハッシュを暗算・捏造してはいけない**（必ずツールで計算する）。この計算はローカルで完結し、Docker/MCP には依存しない。Stop hook のゲート（`scripts/review-gate.sh`）も同じ生バイト SHA-256 を計算し、大文字小文字を無視して比較するため必ず一致する
 3. **review_attempt を記録する**: main agent が呼び出し時に渡した attempt 番号をそのまま `review_attempt` に書く。渡されていない場合のみ、フォールバックとして既存 `.slide-work/review.json.review_attempt`（無ければ 0）に +1 する。加算主体は本来 main agent 側に固定されている
 4. **MCP で PDF を出力する**: `mcp__marp__marp_export(source: "slides/presentation.md", format: "pdf", output: ".slide-work/presentation.pdf")`
 5. **MCP で PNG を出力する**: `mcp__marp__marp_export(source: "slides/presentation.md", format: "png", output: ".slide-work/rendered-pages/page.png")`
@@ -67,7 +67,7 @@ PDF または PNG の出力に失敗した場合は、visual review を実行せ
 1 つ以上のゲートが fail した場合（デッキ品質の問題）。`issues` と `exact_fix_instructions` を 1 対 1 に対応させる。
 
 ### `infra_blocked`
-環境起因で判定できなかった場合（`marp_hash` のエラー、MCP `marp_export` の失敗＝Docker 未起動など）。デッキ品質の `fail` と混同しないこと。`issues` に原因（例: 「Docker が起動していないため marp_export が失敗」）を書き、`exact_fix_instructions` は空にする。`source_sha256` は手順 2 で記録済みのものを残す。Stop hook はこの状態を「未完了だが品質 fail ではない停止」として許可するので、main agent はユーザーに原因（Docker 起動など）を案内する。
+環境起因で判定できなかった場合（MCP `marp_export` の失敗＝Docker 未起動・イメージ未ビルドなど）。デッキ品質の `fail` と混同しないこと。`issues` に原因（例: 「Docker が起動していないため marp_export が失敗」）を書き、`exact_fix_instructions` は空にする。`source_sha256` は手順 2 で記録済みのもの（生バイト SHA-256）を残す。Stop hook はこの状態を「未完了だが品質 fail ではない停止」として許可するので、main agent はユーザーに原因（Docker 起動・イメージ再ビルドなど）を案内する。**ハッシュ計算はローカル（`sha256sum`/`shasum`/`Get-FileHash`）で完結するため、infra_blocked の原因にはならない**。
 
 `exact_fix_instructions` は main agent がそのまま適用できる形で書く:
 - 良い例: 「スライド 3 のタイトルを『背景について』から『在庫回転率が半減しているため対応が必要』に変更する」
@@ -118,7 +118,7 @@ PDF または PNG の出力に失敗した場合は、visual review を実行せ
 ### フィールド規約
 
 - `reviewed_at`: 判定時点の ISO 8601 タイムスタンプ
-- `source_sha256`: 判定対象にした `slides/presentation.md` の SHA-256（`mcp__marp__marp_hash` の返り値）。main agent と Stop hook は同じ MCP ツールでこれを検証し、古い pass を無効化する
+- `source_sha256`: 判定対象にした `slides/presentation.md` の生バイト SHA-256（小文字）。`sha256sum` / `shasum -a 256` / `Get-FileHash` のいずれで計算してもよい。Stop hook のゲート（`scripts/review-gate.sh`）は同じ生バイト SHA-256 を再計算し、大文字小文字を無視して比較することで古い pass を無効化する
 - `review_attempt`: S3 review を実行した累計回数。**加算は main agent が S3 入場時に行い、その値を呼び出し時に渡す**。reviewer は渡された値を記録する（渡されなければ既存値+1、無ければ 1）
 - `failed_gates`: fail したゲート ID の配列（例: `["G1", "G7"]`）。pass なら `[]`
 - `issues`: 各 fail ゲートの具体的な問題（スライド番号を含む）

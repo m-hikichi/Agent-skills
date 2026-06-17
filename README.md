@@ -64,12 +64,22 @@ git submodule update --init --recursive
 3. 破壊的変更はREADMEやリリースノートで明示する
 4. 必要に応じてタグを付けてバージョンを管理する
 
+## Plugin をインストールする
+
+clone 済みリポジトリを直接読み込んで利用します。
+
+```bash
+claude --plugin-dir <path-to-this-repo>/plugins/marp-slide
+```
+
+marp-slide は MCP サーバーを Docker で動かすため、別途 Docker イメージのビルドが必要です（[plugins/marp-slide/README.md](plugins/marp-slide/README.md) 参照）。
+
 ## 収録内容
 
 ### Plugin (`plugins/`)
 
 - [`marp-slide`](plugins/marp-slide/README.md): Marp を使ったスライド作成支援 Plugin。要件を対話で整理してスライドを作成し、別 AI によるレビューを通して PDF / PNG / HTML / PPTX へ出力する。
-- [`claude-plugins-official`](plugins/claude-plugins-official/README.md): Anthropic 公式の Claude Code Plugin ディレクトリ。公式・コミュニティ Plugin の構成例や marketplace 定義を参照するための submodule。
+- [`claude-plugins-official`](plugins/claude-plugins-official/README.md): Anthropic 公式の Claude Code Plugin ディレクトリ。公式・コミュニティ Plugin の構成例を参照するための submodule。
 
 ### Skill (`skills/`)
 

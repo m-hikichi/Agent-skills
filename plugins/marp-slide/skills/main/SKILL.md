@@ -106,10 +106,10 @@ Marp スライドを 4 状態のワークフローで作成する:
 1. **`review_attempt` を加算する**: reviewer を実際に呼び出すたびに `review_attempt` を 1 増やす責任は main agent にある。直前の `.slide-work/review.json.review_attempt`（無ければ 0）に +1 した値 `N` を求める。加算主体を main agent の一点に固定し、off-by-one や二重カウントを避ける。reviewer を呼ばない S3 再入（missing_info の確認待ち、infra_blocked からの環境復旧、reviewer 不可で判定が出ない場合）では加算しない
 2. **reviewer サブエージェントを呼び出す**:
    - Agent ツールで `subagent_type: reviewer` を指定し、**呼び出しプロンプトに「今回は review_attempt = N」と明示して渡す**。reviewer はこの値を `review.json.review_attempt` にそのまま記録する
-   - reviewer は別コンテキストで `slides/presentation.md` と `request.yaml` を読み、`mcp__marp__marp_hash` で `source_sha256` を記録し、MCP で PDF/PNG を出力し、PNG を目視し、10 ゲートで判定して `.slide-work/review.json` を書き込む
+   - reviewer は別コンテキストで `slides/presentation.md` と `request.yaml` を読み、生バイト SHA-256（`sha256sum`/`shasum`/`Get-FileHash`）で `source_sha256` を記録し、MCP で PDF/PNG を出力し、PNG を目視し、10 ゲートで判定して `.slide-work/review.json` を書き込む
    - 詳細は `../../agents/reviewer.md` を参照
 3. **`review.json.status` を確認する**:
-   - `pass` → `mcp__marp__marp_hash(source: "slides/presentation.md")` の返り値と `review.json.source_sha256` が一致することを確認して S4 へ（**自分でハッシュを暗算しない**）
+   - `pass` → `slides/presentation.md` の生バイト SHA-256（`sha256sum` / `shasum -a 256` / `Get-FileHash` のいずれか）と `review.json.source_sha256` が一致することを確認して S4 へ（大文字小文字は無視。**ハッシュを暗算・捏造しない**）
    - `missing_info` → `questions_for_user` をユーザーに確認し、`request.yaml` を更新、S3 を再実行
    - `fail` → `exact_fix_instructions` に従って `slides/presentation.md` を修正、S3 を再実行
    - `infra_blocked` → 環境起因の停止。デッキは直さない。`issues` の原因（Docker 未起動など）をユーザーに案内し、環境が整ってから S3 を再実行する。Stop hook はこの状態（`source_sha256` 一致）での停止を許可する。既に `infra_blocked` が記録され reviewer も起動できない場合は infra_blocked の案内を優先し、別途 `review-blocked.json` は書かない
@@ -135,7 +135,7 @@ Marp スライドを 4 状態のワークフローで作成する:
 }
 ```
 
-- `source_sha256` は停止時点の `slides/presentation.md` の SHA-256（`mcp__marp__marp_hash` で取得する。暗算しない）。修正を適用した場合は適用後の SHA-256 を入れる（編集で旧ハッシュは無効になるため）。MCP 自体が使えずハッシュを取得できない場合は `source_sha256` を null にし `message` に理由を書く（Stop hook はこの marker では停止を許可しないので、ユーザーに手動確認を促す）
+- `source_sha256` は停止時点の `slides/presentation.md` の生バイト SHA-256（`sha256sum`/`shasum`/`Get-FileHash` で取得する。暗算・捏造しない）。修正を適用した場合は適用後の SHA-256 を入れる（編集で旧ハッシュは無効になるため）。ハッシュ計算はローカルで完結するので通常は取得できるが、万一取得できない場合は `source_sha256` を null にし `message` に理由を書く（Stop hook はこの marker では停止を許可しないので、ユーザーに手動確認を促す）
 - これは未完了マーカーであり、pass ではない。次回再開時は S3 から続ける
 - 予備セルフチェックは、適用済みの `exact_fix_instructions` の確認だけに限定する。gate verdict、pass/fail 判定、`review.json` 更新、完了報告は行わない
 
@@ -155,7 +155,7 @@ Marp スライドを 4 状態のワークフローで作成する:
 - `review.json.status == "pass"` かつ `review.json.source_sha256` が現在の `slides/presentation.md` の SHA-256 と一致している
 
 ### 行うこと
-1. `mcp__marp__marp_hash(source: "slides/presentation.md")` の返り値と `review.json.source_sha256` が一致することを確認する（自分で暗算しない）。不一致・欠落・取得不能なら S3 に戻る
+1. `slides/presentation.md` の生バイト SHA-256（`sha256sum`/`shasum`/`Get-FileHash`）と `review.json.source_sha256` が一致することを確認する（大文字小文字は無視。暗算・捏造しない）。不一致・欠落・取得不能なら S3 に戻る
 2. `review.json.artifacts.pdf` と `page_images` のパスを確認する（既に S3 で reviewer が出力済み）
 3. ユーザーに完了を報告する:
    - PDF のパス: `.slide-work/presentation.pdf`
@@ -186,8 +186,8 @@ Marp スライドを 4 状態のワークフローで作成する:
 
 ## ツール境界
 
-- `marp_export`（MCP）を呼ぶのは **reviewer サブエージェントの中** が基本。main agent も追加フォーマット出力時には呼んでよい
-- **SHA-256 は必ず `mcp__marp__marp_hash`（MCP）で取得する**。main agent も reviewer も自分で暗算しない。Stop hook の `validate_review_gate` も同じ計算を使うため、書き手と検証側のハッシュが必ず一致する
+- `marp_export`（MCP）を呼ぶのは **reviewer サブエージェントの中** が基本。main agent も追加フォーマット出力時には呼んでよい。この MCP サーバは **PDF/PPTX/HTML/PNG の出力専用**で、ハッシュ計算は持たない
+- **SHA-256 はホスト側で計算する**（PDF/PPTX を出力する MCP サーバとは別の場所）。main agent も reviewer も生バイト SHA-256 を計算する: `sha256sum`（Linux / Windows Git Bash）／`shasum -a 256`（macOS）／`Get-FileHash`（Windows PowerShell）。暗算・捏造しない。Stop hook のゲート `scripts/review-gate.sh`（bash・Windows/macOS/Linux 対応）も同じ生バイト SHA-256 を計算し大文字小文字を無視して比較するため、書き手と検証側のハッシュは必ず一致する。完了ゲートは Docker/MCP 接続に依存しない
 - visual review（PNG 目視）は reviewer だけが行う
 - main agent は `slides/presentation.md` の作成・修正を行い、`.slide-work/review.json` は読み取り専用。サブエージェント不可時でも main agent が pass を書いてはいけない
 
@@ -203,6 +203,7 @@ Marp スライドを 4 状態のワークフローで作成する:
 ## 参照
 
 - `../../agents/reviewer.md` — reviewer サブエージェントの仕様（10 ゲートの詳細はここ）
+- `../../scripts/review-gate.sh` — ホスト側の完了ゲート / ハッシュ計算（bash・Windows/macOS/Linux 対応。Stop hook が呼ぶ。export MCP から独立）
 - `templates/request-template.yaml` — request state の初期値
 - `templates/review-template.json` — review state の初期値
 - `templates/presentation-starter.md` — 既定のデザインリファレンス（visual language の土台）
