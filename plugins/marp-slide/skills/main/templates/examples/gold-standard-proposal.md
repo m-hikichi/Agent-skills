@@ -548,180 +548,48 @@ style: |
 ---
 
 <!--
-このデッキは「archetype ごとの正しいマークアップ見本」です。
-生成時は (1) 上の style ブロックを丸ごと転記し、
-(2) 使う archetype のスライドをこの見本どおりの構造で書きます。
-以降の各スライドが 1 archetype = 1 見本です。
+gold-standard 完成例: 提案デッキ（架空題材）。
+S2b でドラフトを書く前にこのデッキを読み、タイトルの書き方・
+archetype の使い分け・密度感をこの水準に合わせること。
+style ブロックは presentation-starter.md と同一。
 -->
 
 <!-- _class: title-hero -->
 <!-- _paginate: false -->
 
-# 主タイトルは結論を一言で書く
+# 在庫コストを2年で半減する
 
-## サブタイトルで対象と文脈を補う
+## 発注自動化システム導入のご提案
 
-<div class="meta">2026年◯月◯日｜◯◯◯向け</div>
-
----
-
-<!-- _class: agenda-overview -->
-
-# 本日は判断に必要な3点に絞って説明します
-
-1. 課題 — 何が起きているか
-2. 提案 — どう解決するか
-3. 効果と計画 — 投資に見合うか
-
----
-
-<!-- _class: section-divider -->
-
-<div class="chapter">01</div>
-
-# 課題
-
-## 章のテーマをサブラインで一言補足する
+<div class="meta">2026年7月10日｜経営会議</div>
 
 ---
 
 <!-- _class: title-content -->
 
-# 標準スライドは1メッセージ+根拠3点で構成する
+# 結論: 300万円のPoCで「半減シナリオ」を検証させてほしい
 
-- bullet はタイトルの言い換えではなく、独自の情報を書く
-- 1 bullet は 2 行以内、**強調はトークン色**で最小限にする
-- 詳細は補足資料に回し、このページでは結論を支える事実だけを置く
+<div class="grid-3">
+<div class="card filled">
 
----
+### 課題
 
-<!-- _class: assertion-evidence -->
-
-# 主張は左の根拠と右の証拠で1画面に収める
-
-<div class="grid-2">
-<div>
-
-- 根拠1: 主張を支える事実を簡潔に書く
-- 根拠2: 数値は出典と時点をそろえる
-- 根拠3: 反論への備えを1つ含める
+滞留在庫コストが**年4,200万円**に到達
 
 </div>
-<div class="evidence">
-<div class="big-stat">
-<span class="value">42<span class="unit">%</span></span>
-<span class="label">証拠となる指標（出典・時点）</span>
-</div>
-</div>
-</div>
+<div class="card filled">
 
----
+### 提案
 
-<!-- _class: two-column-compare -->
-
-# 移行後は手作業が半減し、ミスの温床が消える
-
-<div class="compare">
-<div class="col before">
-<span class="col-label">BEFORE</span>
-
-- 発注は担当者の経験に依存
-- 転記ミスが月3件発生
-- 棚卸しに2日を要する
+発注業務を自動化し滞留の発生源を断つ
 
 </div>
-<div class="col after">
-<span class="col-label">AFTER</span>
+<div class="card emphasis">
 
-- 発注は需要予測から自動起案
-- 転記作業そのものを廃止
-- 棚卸しは半日で完了
+### 本日のお願い
 
-</div>
-</div>
+PoC予算**300万円**の承認
 
----
-
-<!-- _class: two-column-content -->
-
-# 関連する2つの論点は左右で並べて見せる
-
-<div class="grid-2">
-<div class="card">
-
-### 論点A の小見出し
-
-- 要点を2〜3個に絞る
-- 左右の情報量をそろえる
-
-</div>
-<div class="card">
-
-### 論点B の小見出し
-
-- 対になる要点を書く
-- 高さと密度を左とそろえる
-
-</div>
-</div>
-
----
-
-<!-- _class: process-flow -->
-
-# 導入は3ステップ・3か月で完了する
-
-<div class="steps">
-<div class="step">
-<span class="step-no">1</span>
-
-### 現状把握
-
-<p>対象業務の棚卸し（2週間）</p>
-</div>
-<div class="step">
-<span class="step-no">2</span>
-
-### 試験導入
-
-<p>1部門で並行運用（6週間）</p>
-</div>
-<div class="step">
-<span class="step-no">3</span>
-
-### 全社展開
-
-<p>残り部門へ順次展開（4週間）</p>
-</div>
-</div>
-
----
-
-<!-- _class: timeline-roadmap -->
-
-# 2026年度内に全社展開まで到達する
-
-<div class="timeline">
-<div class="t-item is-now">
-<span class="pill accent">Phase 1</span>
-
-### PoC
-
-<p>7〜8月｜対象1部門</p>
-</div>
-<div class="t-item">
-<span class="pill">Phase 2</span>
-
-### 本番導入
-
-<p>9〜11月｜主要3部門</p>
-</div>
-<div class="t-item">
-<span class="pill">Phase 3</span>
-
-### 全社展開
-
-<p>12〜3月｜全部門+定着化</p>
 </div>
 </div>
 
@@ -740,6 +608,38 @@ style: |
 
 ---
 
+<!-- _class: assertion-evidence -->
+
+# 原因は需要予測の精度ではなく、発注の属人化にある
+
+<div class="grid-2">
+<div>
+
+- 発注判断の基準が担当者ごとに異なり、標準がない
+- 転記・確認の手作業が週12時間発生し、ミスが月3件
+- 予測モデル導入済みの部門でも滞留は減っていない
+
+</div>
+<div class="evidence">
+<div class="big-stat">
+<span class="value">68<span class="unit">%</span></span>
+<span class="label">発注業務のうち手作業が占める割合（業務調査 2026年6月）</span>
+</div>
+</div>
+</div>
+
+---
+
+<!-- _class: section-divider -->
+
+<div class="chapter">02</div>
+
+# 提案
+
+## 発注プロセスそのものを自動化する
+
+---
+
 <!-- _class: architecture-diagram -->
 
 # 既存の基幹システムに追加開発なしで接続できる
@@ -747,24 +647,90 @@ style: |
 <div class="arch">
 <div class="node">基幹システム<span>受発注データ</span></div>
 <div class="arrow"></div>
-<div class="node hub">自動化エンジン<span>需要予測・起案</span></div>
+<div class="node hub">自動発注エンジン<span>需要予測・自動起案</span></div>
 <div class="arrow"></div>
 <div class="node">承認ワークフロー<span>例外のみ人が判断</span></div>
 </div>
 
-<p class="arch-note">連携は既存の日次CSV出力を流用（改修ゼロ）</p>
+<p class="arch-note">データ連携は既存の日次CSV出力を流用するため、基幹側の改修はゼロ</p>
 
 ---
 
-<!-- _class: quote-callout -->
+<!-- _class: two-column-compare -->
 
-# 現場は手作業の限界をすでに自覚している
+# 移行後は発注工数が週12時間から2時間に減る
 
-> 毎週月曜は発注確認だけで半日つぶれる。転記ミスも月に数回は起きている。
+<div class="compare">
+<div class="col before">
+<span class="col-label">BEFORE（現行）</span>
 
-<div class="quote-attr">— 物流部門ヒアリング（2026年6月・n=12）</div>
+- 担当者の経験で発注量を判断
+- 転記・突合の手作業が週12時間
+- ミス発見は月次棚卸しまで遅延
 
-<p class="quote-insight">属人化した運用がミスと残業の温床になっている</p>
+</div>
+<div class="col after">
+<span class="col-label">AFTER（自動化後）</span>
+
+- 需要予測から自動で起案
+- 人の作業は例外承認の週2時間
+- 異常は当日中にアラート検知
+
+</div>
+</div>
+
+---
+
+<!-- _class: title-content -->
+
+# 投資は初年度内に回収できる見込み
+
+<div class="metrics-row">
+<div class="metric">
+<span class="value">2,100<span class="unit">万円/年</span></span>
+<span class="label">在庫コスト削減額 <em>（要確認）</em></span>
+</div>
+<div class="metric">
+<span class="value">2,100<span class="unit">万円</span></span>
+<span class="label">総投資額（PoC 300 + 本導入 1,800）</span>
+</div>
+<div class="metric highlight">
+<span class="value">12<span class="unit">か月</span></span>
+<span class="label">投資回収期間（試算）</span>
+</div>
+</div>
+
+<p class="small">削減額は滞留半減を仮説とした試算値（仮説・要確認）。PoC で実測し精緻化する。</p>
+
+---
+
+<!-- _class: timeline-roadmap -->
+
+# 2026年度内に全社展開まで到達できる
+
+<div class="timeline">
+<div class="t-item is-now">
+<span class="pill accent">Phase 1</span>
+
+### PoC
+
+<p>7〜9月｜物流部門で実測</p>
+</div>
+<div class="t-item">
+<span class="pill">Phase 2</span>
+
+### 本番導入
+
+<p>10〜12月｜主要3部門</p>
+</div>
+<div class="t-item">
+<span class="pill">Phase 3</span>
+
+### 全社展開
+
+<p>1〜3月｜全部門+定着化</p>
+</div>
+</div>
 
 ---
 
@@ -786,8 +752,8 @@ style: |
 <span class="cta-no">2</span>
 <div class="cta-body">
 
-**対象部門の選定（物流部門を提案）**
-<span class="cta-meta">7月第2週まで｜担当: 業務改革室</span>
+**PoC 対象として物流部門を確定**
+<span class="cta-meta">7月17日まで｜担当: 業務改革室</span>
 
 </div>
 </div>
@@ -795,8 +761,8 @@ style: |
 <span class="cta-no">3</span>
 <div class="cta-body">
 
-**キックオフの日程確定**
-<span class="cta-meta">7月中｜事務局: 情報システム部</span>
+**9月末の経営会議で実測結果を報告**
+<span class="cta-meta">報告者: 情報システム部</span>
 
 </div>
 </div>

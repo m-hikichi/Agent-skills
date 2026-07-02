@@ -1,6 +1,6 @@
 ---
 name: main
-description: Marp スライドの要件収集、ドラフト作成、批判的レビュー、PDF/PNGエクスポートを行うスキル。レビューは `reviewer` サブエージェントが別コンテキストで実施し、現在の `slides/presentation.md` と一致する `.slide-work/review.json.status == "pass"` になるまで完了しない。4 状態のワークフロー（Gather → Draft → Review → Export）で進める。
+description: Marp スライドの要件収集、ストーリーボード設計、ドラフト作成、批判的レビュー、PDF/PNGエクスポートを行うスキル。レビューは `reviewer` サブエージェントが別コンテキストで実施し、現在の `slides/presentation.md` と一致する `.slide-work/review.json.status == "pass"` になるまで完了しない。4 状態のワークフロー（Gather → Draft → Review → Export）で進める。
 model: opus
 effort: xhigh
 ---
@@ -12,7 +12,7 @@ effort: xhigh
 Marp スライドを 4 状態のワークフローで作成する:
 
 1. **S1. Gather** — 要件を会話で収集し `.slide-work/request.yaml` を埋める
-2. **S2. Draft** — `slides/presentation.md` を作成する
+2. **S2. Draft** — S2a でストーリーボードを固め、S2b で `slides/presentation.md` を作成する
 3. **S3. Review** — `reviewer` サブエージェントが批判的に審査し、必要なら main agent が修正して再実行する（最大 3 回）
 4. **S4. Export & Approve** — PDF/PNG を最終確認し、ユーザーに完了報告する
 
@@ -22,9 +22,12 @@ Marp スライドを 4 状態のワークフローで作成する:
 
 - **レビューは別 AI が行う**: ドラフトを作った main agent ではなく、`reviewer` サブエージェントが判定します。Claude Code の Agent ツールで `subagent_type: reviewer` を指定して呼び出します
 - **サブエージェント不可時は完了不可**: `reviewer` サブエージェントを起動できない環境では、既存の `exact_fix_instructions` が具体的なら main agent が `slides/presentation.md` に適用してよい。その後 `.slide-work/review-blocked.json` を書いて停止し、`.slide-work/review.json.status = "pass"` を自分で作って完了扱いにしてはいけません。ユーザーに「reviewer を起動できないため完了ゲートを通せない」と報告します
-- **ゲートは 10 個だけ**: reviewer は 10 個のハードゲート（ストーリー 5 + ビジュアル 5）だけを見ます。詳細は `../../agents/reviewer.md`
+- **ゲートは 12 個だけ**: reviewer は 12 個のハードゲート（ストーリー 6 + ビジュアル 6）だけを見ます。詳細は `../../agents/reviewer.md`
 - **修正ループは最大 3 回**: S3 で 3 回連続 fail ならユーザーに相談して判断を仰ぐ（無限ループ防止）
-- **デザインの既定は `templates/presentation-starter.md`**: ユーザーが別のデザインリファレンスを指定していない限り、これを土台にする
+- **ストーリーが先、スライドは後**: いきなり Markdown を書かず、S2a で全スライドのアクションタイトルを確定させ、タイトルだけで話が通る（横のロジック）ことを確認してから本文化する
+- **デザインの既定は `templates/presentation-starter.md`**: ユーザーが別のデザインリファレンスを指定していない限り、これを土台にする。
+- **品質の見本は `templates/examples/gold-standard-proposal.md`**: S2b で必ず読み、タイトル・密度・マークアップをこの水準に合わせる
+- **スタイルはテンプレートが強制する**: 本文側でトークン・定義済みクラス外の色/フォント/inline style を新設しない（reviewer G12 が fail にする）
 
 ## S1. Gather（要件収集）
 
@@ -76,24 +79,59 @@ Marp スライドを 4 状態のワークフローで作成する:
 
 ## S2. Draft（ドラフト作成）
 
-### 入る条件
-- S1 の抜ける条件を満たした
+S2 は 2 段階で進める。**ストーリーボードなしで Markdown を書き始めてはいけない。**
 
-### 行うこと
-1. デザインの土台を選んで `slides/presentation.md` を作成する: `request.yaml.design_reference` が指定されていればそのファイルの style ブロック・archetype クラスを土台にし、未指定なら `templates/presentation-starter.md` を使う。style ブロックは未使用クラスも含めて丸ごと転記し、使う archetype だけに削らない（クラス欠落による表示崩れを防ぐ）
-2. `references/layout-patterns.md` を参照し、各スライドに適した archetype を選ぶ
-3. 以下のルールを守る:
-   - タイトルは topic label ではなく takeaway（結論）を断定的に書く（`section-divider` の見出しは章ラベルでよく、この規則の対象外）
+### S2a. ストーリーボード（論理設計）
+
+#### 入る条件
+- S1 の抜ける条件を満たした
+- `.slide-work/storyboard.md` が存在しない、または要件変更で作り直しが必要
+
+#### 行うこと
+1. `references/presentation-structures.md` の「ストーリーボードの作り方」に従い、`.slide-work/storyboard.md` を作成する:
+   - ピラミッドを立てる（推奨 1 文 → 論拠 3 個前後 → 支えるデータ）
+   - 冒頭 2 枚を SCQA で設計する
+   - 全スライドのアクションタイトルを確定文で書き切る
+   - タイトルだけを通読して話が通るか（横のロジック）を自己検証する
+   - 各スライドに archetype を割り当てる（`references/layout-patterns.md`）
+2. アクションタイトルの基準: スライドの結論を述べる完全な文・40 全角字以内・2 行以内・能動態・可能なら定量。「および」「かつ」で 2 主張をつなぐくらいなら 2 枚に分ける
+
+   | 悪い例 | 良い例 |
+   |---|---|
+   | 在庫管理の現状について | 滞留在庫のコストは年間4,200万円に達している |
+   | 導入スケジュール | 2026年度内に全社展開まで到達できる |
+
+3. ユーザー合意は S1 の裁量ルールに従う: 「おまかせ」等の裁量が明示されていればストーリーボードの要点（タイトル一覧）を短く提示して S2b に進んでよい。判断要求や must_include の解釈が曖昧なら確認する
+
+#### 抜ける条件
+- `storyboard.md` が完成し、タイトルの通読で主張が一本のストーリーとして通っている
+
+### S2b. ドラフト（Markdown 化）
+
+#### 入る条件
+- `.slide-work/storyboard.md` が存在する
+
+#### 行うこと
+1. デザインの土台を選ぶ: `request.yaml.design_reference` が指定されていればそのファイル、未指定なら `templates/presentation-starter.md`。**style ブロックは未使用クラスも含めて丸ごと `slides/presentation.md` に転記し、使う archetype だけに削らない**（クラス欠落による表示崩れを防ぐ）
+2. `templates/examples/gold-standard-proposal.md` を読み、タイトルの書き方・密度感・マークアップ構造の水準を確認する。ドラフトはこの見本と同じ構造規約で書く
+3. アセットをコピーする: テンプレートが `assets/` 配下の画像（ロゴ等）を参照している場合、テンプレートと同じディレクトリの `assets/` を `slides/assets/` にコピーする。Markdown 内の参照は `assets/...` のままでよい（`slides/presentation.md` からの相対パスで解決される）。既定の presentation-starter は画像を使わないためコピー不要
+4. storyboard の各行を、割り当てた archetype の見本マークアップ（`references/layout-patterns.md` のスニペット、完全版はテンプレート本文）どおりに実装する。ルール:
+   - タイトルは storyboard で確定したアクションタイトルをそのまま使う（`section-divider` の見出しは章ラベルでよく、この規則の対象外）
    - 2 枚目に executive summary を置き、最後に next action を置く
-   - 7 枚以上のデッキには少なくとも 1 枚の `section-divider` を入れる
-   - 1 スライド 1 メッセージ、タイトル除くテキスト 6 行以下、bullet 3 つ以下
+   - 7 枚以上のデッキには少なくとも 1 枚の `section-divider` を入れる。15 枚以上では章ごとに入れる
+   - 1 スライド 1 メッセージ、1 リストブロックにつき bullet 3 つ以下、タイトル除くテキスト 6 行以下
    - 同一 archetype が 3 枚連続しないように並べる
    - `request.yaml.must_include` の全項目を盛り込む
-   - 構成パターンの枚数が `target_slide_count` と違うときは target ±3 枚に収める: パターンが target より多い場合は低優先の要素（背景・詳細）から圧縮し、少ない場合は中核要素を章に分割して `section-divider` で区切る（タイトル・エグゼクティブサマリー・next action は必ず残す）。15 枚以上では章ごとに divider を入れて構造を保つ
+   - 構成パターンの枚数が `target_slide_count` と違うときは target ±3 枚に収める: 多い場合は低優先の要素（背景・詳細）から圧縮し、少ない場合は中核要素を章に分割して `section-divider` で区切る（タイトル・エグゼクティブサマリー・next action は必ず残す）
    - ユーザーの言語で書く（テンプレートが英語でも、日本語依頼なら日本語で）
+   - デザイントークン規律を守る: 色・フォント・サイズはテンプレートの CSS 変数と定義済みクラスだけ。inline style・新しい色コード・未定義クラス・`<style>` ブロックを本文に書かない
+5. セルフチェックを 1 回だけ行う（Self-Refine）:
+   - `bash "${CLAUDE_PLUGIN_ROOT}/scripts/deck-lint.sh" --source slides/presentation.md --target <target_slide_count>` を実行し、FAIL をすべて修正する（WARN は内容を見て判断）。プラグインパスが不明な場合はこのスキルからの相対で `../../scripts/deck-lint.sh` を使う
+   - `../../agents/reviewer.md` の 12 ゲートを基準に自分の目で一度だけ批評し、直せる欠陥（言い換え bullet、密度超過、単調な並び）を直す
+   - **このセルフチェックは reviewer の代替ではない**。`review.json` を書いたり pass を名乗ったりしてはいけない
 
-### 抜ける条件
-- `slides/presentation.md` がレビュー可能な状態になっている
+#### 抜ける条件
+- `slides/presentation.md` が存在し、deck-lint の FAIL が 0 件でレビュー可能な状態になっている
 
 ## S3. Review（批判的レビュー）
 
@@ -106,10 +144,10 @@ Marp スライドを 4 状態のワークフローで作成する:
 1. **`review_attempt` を加算する**: reviewer を実際に呼び出すたびに `review_attempt` を 1 増やす責任は main agent にある。直前の `.slide-work/review.json.review_attempt`（無ければ 0）に +1 した値 `N` を求める。加算主体を main agent の一点に固定し、off-by-one や二重カウントを避ける。reviewer を呼ばない S3 再入（missing_info の確認待ち、infra_blocked からの環境復旧、reviewer 不可で判定が出ない場合）では加算しない
 2. **reviewer サブエージェントを呼び出す**:
    - Agent ツールで `subagent_type: reviewer` を指定し、**呼び出しプロンプトに「今回は review_attempt = N」と明示して渡す**。reviewer はこの値を `review.json.review_attempt` にそのまま記録する
-   - reviewer は別コンテキストで `slides/presentation.md` と `request.yaml` を読み、生バイト SHA-256（`sha256sum`/`shasum`/`Get-FileHash`）で `source_sha256` を記録し、MCP で PDF/PNG を出力し、PNG を目視し、10 ゲートで判定して `.slide-work/review.json` を書き込む
+   - reviewer は別コンテキストで `slides/presentation.md` と `request.yaml` を読み、生バイト SHA-256 で `source_sha256` を記録し、MCP で PDF/PNG を出力し、PNG を目視し、12 ゲートで判定して `.slide-work/review.json` を書き込む
    - 詳細は `../../agents/reviewer.md` を参照
 3. **`review.json.status` を確認する**:
-   - `pass` → `slides/presentation.md` の生バイト SHA-256（`sha256sum` / `shasum -a 256` / `Get-FileHash` のいずれか）と `review.json.source_sha256` が一致することを確認して S4 へ（大文字小文字は無視。**ハッシュを暗算・捏造しない**）
+   - `pass` → 現在の `slides/presentation.md` の生バイト SHA-256 と `review.json.source_sha256` の一致を確認して S4 へ（計算方法は「ツール境界」参照。大文字小文字は無視。**暗算・捏造しない**）
    - `missing_info` → `questions_for_user` をユーザーに確認し、`request.yaml` を更新、S3 を再実行
    - `fail` → `exact_fix_instructions` に従って `slides/presentation.md` を修正、S3 を再実行
    - `infra_blocked` → 環境起因の停止。デッキは直さない。`issues` の原因（Docker 未起動など）をユーザーに案内し、環境が整ってから S3 を再実行する。Stop hook はこの状態（`source_sha256` 一致）での停止を許可する。既に `infra_blocked` が記録され reviewer も起動できない場合は infra_blocked の案内を優先し、別途 `review-blocked.json` は書かない
@@ -135,13 +173,13 @@ Marp スライドを 4 状態のワークフローで作成する:
 }
 ```
 
-- `source_sha256` は停止時点の `slides/presentation.md` の生バイト SHA-256（`sha256sum`/`shasum`/`Get-FileHash` で取得する。暗算・捏造しない）。修正を適用した場合は適用後の SHA-256 を入れる（編集で旧ハッシュは無効になるため）。ハッシュ計算はローカルで完結するので通常は取得できるが、万一取得できない場合は `source_sha256` を null にし `message` に理由を書く（Stop hook はこの marker では停止を許可しないので、ユーザーに手動確認を促す）
+- `source_sha256` は停止時点の `slides/presentation.md` の生バイト SHA-256（計算方法は「ツール境界」参照。暗算・捏造しない）。修正を適用した場合は適用後の SHA-256 を入れる（編集で旧ハッシュは無効になるため）。ハッシュ計算はローカルで完結するので通常は取得できるが、万一取得できない場合は `source_sha256` を null にし `message` に理由を書く（Stop hook はこの marker では停止を許可しないので、ユーザーに手動確認を促す）
 - これは未完了マーカーであり、pass ではない。次回再開時は S3 から続ける
 - 予備セルフチェックは、適用済みの `exact_fix_instructions` の確認だけに限定する。gate verdict、pass/fail 判定、`review.json` 更新、完了報告は行わない
 
 ### 再試行上限
 - S3 の fail → 修正 → S3 再実行 のループは **最大 3 回**。判定は単一述語で行う: **`review_attempt >= 3` かつ直近 status が `fail` なら、自動修正を止めてユーザーに相談する**。fail 消費ルールはこの上限に従属し、上限到達時は再修正より相談を優先する
-- カウントは `review_attempt` の一本だけを使う。malformed 指示による再実行（下記）も 1 attempt として消費する。別カウントを作らない
+- カウントは `review_attempt` の一本だけを使う。malformed 指示による再実行（上記）も 1 attempt として消費する。別カウントを作らない
 - `infra_blocked`（環境起因）は品質 fail の 3 回上限には数えない。環境を直して再実行する
 - 直近の `.slide-work/review.json.review_attempt` を確認し、3 回目の fail 後は自動修正を続けない
 - 3 回連続で fail になったら、`review.json` の内容をユーザーに共有し、方針の判断を仰ぐ（要件の見直しか、デザインの妥協か、など）
@@ -155,7 +193,7 @@ Marp スライドを 4 状態のワークフローで作成する:
 - `review.json.status == "pass"` かつ `review.json.source_sha256` が現在の `slides/presentation.md` の SHA-256 と一致している
 
 ### 行うこと
-1. `slides/presentation.md` の生バイト SHA-256（`sha256sum`/`shasum`/`Get-FileHash`）と `review.json.source_sha256` が一致することを確認する（大文字小文字は無視。暗算・捏造しない）。不一致・欠落・取得不能なら S3 に戻る
+1. `slides/presentation.md` の生バイト SHA-256 と `review.json.source_sha256` が一致することを確認する（計算方法は「ツール境界」参照。大文字小文字は無視。暗算・捏造しない）。不一致・欠落・取得不能なら S3 に戻る
 2. `review.json.artifacts.pdf` と `page_images` のパスを確認する（既に S3 で reviewer が出力済み）
 3. ユーザーに完了を報告する:
    - PDF のパス: `.slide-work/presentation.pdf`
@@ -174,7 +212,8 @@ Marp スライドを 4 状態のワークフローで作成する:
 | 条件 | 入る状態 |
 |------|----------|
 | `.slide-work/` が存在しない、または `request.yaml` の必須項目が不足 | S1 |
-| `request.yaml` 埋まっているが `slides/presentation.md` が存在しない | S2 |
+| `request.yaml` は埋まっているが `storyboard.md` も `slides/presentation.md` も存在しない | S2a |
+| `storyboard.md` はあるが `slides/presentation.md` が存在しない | S2b |
 | `slides/presentation.md` が存在するが `review.json.status != "pass"` | S3 |
 | `review.json.status == "pass"` だが `review.json.source_sha256` が欠落、または現在の `slides/presentation.md` の SHA-256 と一致しない | S3 |
 | `review.json.status == "pass"` かつ `source_sha256` が一致しているがユーザー承認がまだ | S4 |
@@ -187,28 +226,33 @@ Marp スライドを 4 状態のワークフローで作成する:
 ## ツール境界
 
 - `marp_export`（MCP）を呼ぶのは **reviewer サブエージェントの中** が基本。main agent も追加フォーマット出力時には呼んでよい。この MCP サーバは **PDF/PPTX/HTML/PNG の出力専用**で、ハッシュ計算は持たない
-- **SHA-256 はホスト側で計算する**（PDF/PPTX を出力する MCP サーバとは別の場所）。main agent も reviewer も生バイト SHA-256 を計算する: `sha256sum`（Linux / Windows Git Bash）／`shasum -a 256`（macOS）／`Get-FileHash`（Windows PowerShell）。暗算・捏造しない。Stop hook のゲート `scripts/review-gate.sh`（bash・Windows/macOS/Linux 対応）も同じ生バイト SHA-256 を計算し大文字小文字を無視して比較するため、書き手と検証側のハッシュは必ず一致する。完了ゲートは Docker/MCP 接続に依存しない
+- **SHA-256 はホスト側で計算する**（PDF/PPTX を出力する MCP サーバとは別の場所）。生バイト SHA-256 の計算コマンドはこの 3 つのいずれか: `sha256sum`（Linux / Windows Git Bash）／`shasum -a 256`（macOS）／`(Get-FileHash -Algorithm SHA256 <file>).Hash`（Windows PowerShell）。**暗算・捏造しない**。Stop hook のゲート `scripts/review-gate.sh`（bash・Windows/macOS/Linux 対応）も同じ生バイト SHA-256 を計算し大文字小文字を無視して比較するため、書き手と検証側のハッシュは必ず一致する。完了ゲートは Docker/MCP 接続に依存しない
+- `scripts/deck-lint.sh` は密度・タイトル長・連続 archetype の**補助チェック専用**。main agent（S2b）と reviewer が実行してよいが、lint は `review.json` を書かず、完了ゲートにも関与しない
 - visual review（PNG 目視）は reviewer だけが行う
 - main agent は `slides/presentation.md` の作成・修正を行い、`.slide-work/review.json` は読み取り専用。サブエージェント不可時でも main agent が pass を書いてはいけない
 
 ## 作業ファイル
 
 - `.slide-work/request.yaml` — 要件
+- `.slide-work/storyboard.md` — S2a のストーリーボード（ピラミッド + タイトル一覧 + archetype 割当）
 - `.slide-work/review.json` — reviewer の判定結果（source of truth）。`source_sha256` と `review_attempt` を含む
 - `.slide-work/review-blocked.json` — reviewer 不可で正当に停止した未完了マーカー
 - `.slide-work/presentation.pdf` — PDF 出力
 - `.slide-work/rendered-pages/page-###.png` — ページ画像
 - `slides/presentation.md` — Marp ソース（最終成果物の本体）
+- `slides/assets/` — テンプレート由来の画像アセット
 
 ## 参照
 
-- `../../agents/reviewer.md` — reviewer サブエージェントの仕様（10 ゲートの詳細はここ）
-- `../../scripts/review-gate.sh` — ホスト側の完了ゲート / ハッシュ計算（bash・Windows/macOS/Linux 対応。Stop hook が呼ぶ。export MCP から独立）
+- `../../agents/reviewer.md` — reviewer サブエージェントの仕様（12 ゲートの詳細はここ）
+- `../../scripts/review-gate.sh` — ホスト側の完了ゲート / ハッシュ計算（Stop hook が呼ぶ。export MCP から独立）
+- `../../scripts/deck-lint.sh` — 決定論的な密度・タイトル・連続 archetype リント（S2b セルフチェック用）
 - `templates/request-template.yaml` — request state の初期値
 - `templates/review-template.json` — review state の初期値
-- `templates/presentation-starter.md` — 既定のデザインリファレンス（visual language の土台）
-- `references/presentation-structures.md` — `presentation_type` ごとの構成パターン
-- `references/layout-patterns.md` — archetype ごとのレイアウト指針
+- `templates/presentation-starter.md` — 既定のデザインリファレンス（デザイントークン + 13 archetype + 部品 CSS + マークアップ見本）
+- `templates/examples/gold-standard-proposal.md` — 完成品質の見本デッキ（S2b で必読）
+- `references/presentation-structures.md` — 構成パターンとストーリーボードの作り方
+- `references/layout-patterns.md` — archetype・部品クラスとマークアップ規約
 
 ## 運用ルール
 

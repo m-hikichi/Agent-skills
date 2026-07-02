@@ -22,7 +22,9 @@
     "G7_text_density": "not_run",
     "G8_archetype_variety": "not_run",
     "G9_custom_styling_applied": "not_run",
-    "G10_slide_count": "not_run"
+    "G10_slide_count": "not_run",
+    "G11_horizontal_logic": "not_run",
+    "G12_design_token_discipline": "not_run"
   },
   "visual_review": {
     "executed": false,
