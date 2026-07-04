@@ -5,7 +5,15 @@ presentation_context:
 presentation_type:
 goal:
 target_slide_count:
+slide_count_mode: target
+delivery_mode: live
+duration_minutes:
+desired_tone:
+audience_decision_criteria:
 output_formats: []
 must_include: []
 source_materials: []
+evidence_policy: cite-or-label-assumption
 design_reference:
+brand_constraints:
+available_assets: []

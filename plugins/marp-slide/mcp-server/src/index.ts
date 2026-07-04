@@ -16,14 +16,17 @@ const WORKSPACE = resolve(process.env.WORKSPACE_DIR || "/workspace");
 
 const server = new McpServer({
   name: "marp-mcp-server",
-  version: "1.0.0",
+  version: "1.1.0",
 });
 
 function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function resolveWorkspacePath(input: string, fieldName: "source" | "output"): string {
+function resolveWorkspacePath(
+  input: string,
+  fieldName: "source" | "output" | "theme"
+): string {
   if (input.trim() === "") {
     throw new Error(`${fieldName} path must not be empty`);
   }
@@ -117,7 +120,7 @@ function normalizePngOutputNames(outputPath: string) {
 
 server.tool(
   "marp_export",
-  "Export a Marp markdown file to HTML, PDF, PPTX, or per-slide PNG images. The source file must contain 'marp: true' in its YAML frontmatter.",
+  "Export a Marp markdown file to HTML, PDF, PPTX, or per-slide PNG images. Supports an optional workspace-local custom theme CSS file. The source file must contain 'marp: true' in its YAML frontmatter.",
   {
     source: z
       .string()
@@ -133,10 +136,17 @@ server.tool(
       .describe(
         "Output file path (relative to workspace root). Defaults to same name with the target extension. For png, the server asks Marp for numbered images and normalizes them to names such as page-001.png."
       ),
+    theme: z
+      .string()
+      .optional()
+      .describe(
+        "Optional custom theme CSS path (relative to workspace root), passed to Marp with --theme-set"
+      ),
   },
-  async ({ source, format, output }) => {
+  async ({ source, format, output, theme }) => {
     let sourcePath: string;
     let outputPath: string;
+    let themePath: string | undefined;
 
     try {
       sourcePath = resolveWorkspacePath(source, "source");
@@ -156,6 +166,13 @@ server.tool(
       outputPath = output
         ? resolveWorkspacePath(output, "output")
         : sourcePath.replace(/\.md$/i, `.${format}`);
+
+      if (theme) {
+        themePath = resolveWorkspacePath(theme, "theme");
+        if (extname(themePath).toLowerCase() !== ".css") {
+          throw new Error(`theme path must be a CSS file: ${theme}`);
+        }
+      }
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : String(error);
       return {
@@ -168,6 +185,13 @@ server.tool(
       return {
         isError: true,
         content: [{ type: "text" as const, text: `File not found: ${source}` }],
+      };
+    }
+
+    if (themePath && !existsSync(themePath)) {
+      return {
+        isError: true,
+        content: [{ type: "text" as const, text: `Theme file not found: ${theme}` }],
       };
     }
 
@@ -187,6 +211,9 @@ server.tool(
     prepareOutputPath(outputPath, format);
 
     const marpArgs: string[] = [sourcePath, "--html", "--allow-local-files"];
+    if (themePath) {
+      marpArgs.push("--theme-set", themePath);
+    }
     if (format === "png") {
       marpArgs.push("--images", "png");
     } else if (format !== "html") {
@@ -227,6 +254,7 @@ server.tool(
               text: [
                 `Export successful: ${relativeOutput}`,
                 "Format: png",
+                theme ? `Theme: ${theme}` : "Theme: inline/default",
                 "Generated files:",
                 ...outputs.map((generated) => `- ${generated}`),
                 "",
@@ -243,7 +271,15 @@ server.tool(
         content: [
           {
             type: "text" as const,
-            text: `Export successful: ${relativeOutput}\nFormat: ${format}\n\n${result}`.trim(),
+            text: [
+              `Export successful: ${relativeOutput}`,
+              `Format: ${format}`,
+              theme ? `Theme: ${theme}` : "Theme: inline/default",
+              "",
+              result,
+            ]
+              .join("\n")
+              .trim(),
           },
         ],
       };

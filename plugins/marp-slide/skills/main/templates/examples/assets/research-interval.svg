@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="260" viewBox="0 0 900 260" role="img" aria-labelledby="title desc">
+  <title id="title">試行前後の成果量変化</title>
+  <desc id="desc">3チームの平均変化と95パーセント区間を示す合成データ</desc>
+  <rect width="900" height="260" fill="#fbfaf6"/>
+  <line x1="450" y1="30" x2="450" y2="220" stroke="#b5472c" stroke-width="3"/>
+  <text x="450" y="245" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#6f6b63">変化なし</text>
+  <g font-family="sans-serif" font-size="20" fill="#20201e" stroke="#2f6b62" stroke-width="8">
+    <text x="30" y="70" stroke="none">開発</text><line x1="360" y1="64" x2="548" y2="64"/><circle cx="486" cy="64" r="9" fill="#b5472c" stroke="none"/>
+    <text x="30" y="132" stroke="none">運用</text><line x1="334" y1="126" x2="510" y2="126"/><circle cx="452" cy="126" r="9" fill="#b5472c" stroke="none"/>
+    <text x="30" y="194" stroke="none">顧客支援</text><line x1="308" y1="188" x2="472" y2="188"/><circle cx="414" cy="188" r="9" fill="#b5472c" stroke="none"/>
+  </g>
+  <g font-family="sans-serif" font-size="15" fill="#6f6b63">
+    <text x="260" y="24">低下</text><text x="610" y="24">増加</text>
+  </g>
+</svg>

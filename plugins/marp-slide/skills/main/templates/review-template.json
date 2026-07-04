@@ -1,30 +1,29 @@
 {
+  "rubric_version": 2,
   "status": "missing_info",
   "reviewed_at": "",
   "source_sha256": "",
   "review_attempt": 0,
-  "failed_gates": [],
   "missing_required": [],
-  "issues": [],
-  "exact_fix_instructions": [],
   "questions_for_user": [],
+  "issues": [],
+  "strengths": [],
+  "hard_gates": {
+    "H1_audience_goal_fit": { "status": "not_run", "evidence": "" },
+    "H2_must_include_coverage": { "status": "not_run", "evidence": "" },
+    "H3_evidence_integrity": { "status": "not_run", "evidence": "" },
+    "H4_story_coherence": { "status": "not_run", "evidence": "" },
+    "H5_rendered_readability": { "status": "not_run", "evidence": "" }
+  },
+  "scores": {
+    "story_audience_fit": { "score": 0, "reason": "" },
+    "evidence_content_quality": { "score": 0, "reason": "" },
+    "visual_hierarchy_semantics": { "score": 0, "reason": "" },
+    "cohesion_polish": { "score": 0, "reason": "" }
+  },
   "artifacts": {
     "pdf": ".slide-work/presentation.pdf",
     "page_images": []
-  },
-  "gate_results": {
-    "G1_takeaway_titles": "not_run",
-    "G2_opening_hook": "not_run",
-    "G3_closing_action": "not_run",
-    "G4_bullet_independence": "not_run",
-    "G5_must_include_coverage": "not_run",
-    "G6_no_overflow": "not_run",
-    "G7_text_density": "not_run",
-    "G8_archetype_variety": "not_run",
-    "G9_custom_styling_applied": "not_run",
-    "G10_slide_count": "not_run",
-    "G11_horizontal_logic": "not_run",
-    "G12_design_token_discipline": "not_run"
   },
   "visual_review": {
     "executed": false,

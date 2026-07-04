@@ -1,117 +1,147 @@
 # marp-slide プラグイン
 
-Claude Code の plugin として配布できる Marp スライド作成支援パッケージです。要件をヒアリングし、ストーリーボード（各スライドのアクションタイトル）を先に固めてからスライドを作り、作成した AI とは別の reviewer サブエージェントが批判的に審査し、PDF/PNG までエクスポートします。
+Claude Codeで、聞き手・目的・根拠・発表条件に合わせたMarp資料を作成するプラグインです。ストーリーボードを先に設計し、外部テーマとローカル画像/SVGで資料化し、作成者とは別のreviewerが全ページPNGを確認します。
 
-レビューでは 12 個のハードゲート（ストーリー 6 + ビジュアル 6）だけを見ます。「まあ悪くない」は fail、「文句のつけようがない」だけが pass。現在の `slides/presentation.md` と一致する `.slide-work/review.json.status == "pass"` になるまで完了しません。
+## v0.8の変更点
 
-## 何ができるか
-
-- **要件からスライドを作る**: 聞き手・目的・枚数などを対話で聞き取り、Marp のソースを生成します
-- **ストーリーを先に設計する**: ピラミッド原理 + SCQA でストーリーボード（全スライドのアクションタイトル）を先に確定し、タイトルだけで話が通る「横のロジック」を検証してから本文化します
-- **一流の見た目を既定で持つ**: デザイントークン（配色・タイポスケール）+ 13 レイアウト archetype + 図解部品（プロセス図・タイムライン・KPI・比較・構成図）+ モノクロピクトグラム 20 種を CSS 部品として同梱。モデルはテキストを流し込むだけで整った図解になります
-- **完成品質の見本に倣う**: gold-standard 完成例デッキを同梱し、ドラフトは常にその水準・構造規約に合わせます
-- **別の AI に批判的にレビューさせる**: 作成者ではない `reviewer` サブエージェントが、PNG 画像と Markdown の両面からチェックします
-- **PDF / PNG / HTML / PPTX で出力する**: レビュー時に生成した PDF/PNG に加え、要求に応じて追加フォーマットも出力できます
+- 固定archetypeと行数制限中心の評価を廃止
+- 独立・厳格・証拠ベースのrubric v2へ変更
+- inline CSSを外部テーマへ分離
+- executive-clean / editorial / technicalの3テーマを追加
+- proposal / executive-update / report / training / researchの完成例を分離
+- ローカル画像、SVG、事前変換したMermaid図を許可
+- ハッシュとreview attemptの計算をスクリプトへ移動
 
 ## 必要なもの
 
-- Claude Code 1.0.33 以降
-- Docker（Marp CLI・Chromium・日本語フォント（Noto Sans CJK JP / BIZ UDPGothic）は Docker イメージ内で動作します。ローカルに Node.js や Marp CLI を入れる必要はありません）
-- `bash` と SHA-256 コマンド。完了ゲートと SHA-256 計算はホスト側の `scripts/review-gate.sh`（Docker の外）が担い、**Windows / macOS / Linux** で動きます。必要なのは `bash`（Windows は Git Bash）と、`sha256sum`（Linux / Git Bash）または `shasum`（macOS）だけです
+- Claude Code 1.0.33以降
+- Docker
+- bash
+- `sha256sum`または`shasum`
 
 ## セットアップ
 
-1. Docker イメージをビルドする（初回、および `mcp-server/` の更新時）
+MCPサーバをビルドします。
 
 ```bash
-cd <path-to-this-repo>/plugins/marp-slide/mcp-server
+cd plugins/marp-slide/mcp-server
 docker build -t marp-mcp-server .
 ```
 
-> `mcp-server/src/` を変更したら再ビルドしてください。なお、この MCP イメージは **export 専用**（`marp_export` のみ）です。SHA-256 計算と完了ゲートはホスト側の `scripts/review-gate.sh` が担うため、イメージの新旧は完了ゲートに影響しません
-
-2. plugin を読み込む（clone 済みリポジトリを直接読み込む）
+プラグインを読み込みます。
 
 ```bash
-claude --plugin-dir <path-to-this-repo>/plugins/marp-slide
+claude --plugin-dir <repo>/plugins/marp-slide
 ```
 
-> Docker イメージは手元の clone（または plugin キャッシュ内 `mcp-server/`）からビルドする必要があります。手順 1 を先に済ませてください。
-
-3. Claude Code 内でスキルを呼ぶ
+Claude Codeで実行します。
 
 ```text
 /marp-slide:main
 ```
 
-`/help` を実行すると `marp-slide` 名前空間の下にスキルが表示されます。
+## ワークフロー
 
-## 使い方
+1. Gather: 聞き手、目的、発表形態、根拠、デザイン条件を確認
+2. Storyboard: 各ページの役割、メッセージ、根拠、視覚表現を設計
+3. Draft: 資料タイプに合うテーマと完成例を選んで作成
+4. Review: 別reviewerがPDF/PNGとMarkdownをrubric v2で評価
+5. Export: passしたソースから必要な形式を出力
 
-`/marp-slide:main` を実行すると、以下のワークフローで進行します。
+## 外部テーマ
 
+| theme | 主な用途 |
+|---|---|
+| `executive-clean` | 提案、経営更新、意思決定 |
+| `editorial` | 分析報告、調査、研究 |
+| `technical` | 研修、技術説明、手順 |
+
+生成時は選んだCSSを `slides/theme.css` にコピーします。
+
+```yaml
+---
+marp: true
+theme: executive-clean
+---
 ```
-S1.  Gather : 聞き手・目的・枚数・必須要素などを対話で埋める
-S2a. Story  : ストーリーボード（推奨→論拠→全スライドのアクションタイトル→archetype 割当）
-              を .slide-work/storyboard.md に固める
-S2b. Draft  : gold-standard 見本と同じ構造規約で slides/presentation.md を生成し、
-              deck-lint（密度・タイトル長・連続 archetype の機械チェック）を通す
-S3.  Review : 別の AI（reviewer サブエージェント）が MCP で PDF/PNG を出力し、
-              PNG 目視と Markdown 内容の両面で 12 ゲート判定する。fail なら修正して再実行（最大 3 回）
-S4.  Export : review.json.source_sha256 が現在の slides/presentation.md と一致することを確認し、
-              必要に応じて HTML/PPTX を追加出力する
+
+MCP出力ではthemeを指定します。
+
+```text
+marp_export(
+  source: "slides/presentation.md",
+  format: "pdf",
+  output: ".slide-work/presentation.pdf",
+  theme: "slides/theme.css"
+)
 ```
 
-会話の途中で切れても、`.slide-work/` の状態から自動的に再開ポイントを判定します。
+themeは任意です。従来のinline CSSデッキもそのまま出力できます。
 
-## 12 個のレビュー基準
+## rubric v2
 
-### ストーリー・タイトル品質
-- G1. タイトルが topic label ではなく takeaway（結論文・40 全角字以内・2 行以内）になっている
-- G2. 冒頭に聞き手のフック／executive summary がある
-- G3. 最終スライドに具体的なアクション／判断要求がある（「ご清聴〜」は fail）
-- G4. bullet がタイトルの言い換えではなく独自情報を持つ
-- G5. 「必ず入れてほしい内容」（`must_include`）が全て反映されている
-- G11. タイトルだけを順に読んでも主張が一本のストーリーとして通る（横のロジック）
+### ハードゲート
 
-### ビジュアル品質
-- G6. 全ページの PNG ではみ出し・切れがない
-- G7. タイトル除くテキスト 6 行以下、1 リストブロックの bullet 3 つ以下、各 bullet 2 行以下
-- G8. 同じレイアウトが 3 枚以上連続しない
-- G9. デフォルトの Marp スタイルではなく custom theme が適用されている
-- G10. 実際の枚数が target_slide_count の ±3 枚以内
-- G12. 本文に inline style・生の色コード・未定義クラスがない（デザイントークン規律）
+- H1: 聞き手と目的への適合
+- H2: must_includeの充足
+- H3: 事実・数値・引用の根拠
+- H4: 資料タイプに合うストーリー
+- H5: レンダリング結果の可読性
 
-## 作業ファイル
+### 5段階評価
 
-スキル実行中は `.slide-work/` 以下に状態が作られます。
+- ストーリーと聞き手適合
+- 根拠と内容の信頼性
+- 視覚階層と図解の適切さ
+- 統一感と完成度
+
+全ハードゲートpass、全評価4以上、critical/majorなしでpassです。reviewerは問題ごとにスライド番号、観測事実、理由、修正案を記録します。
+
+## 状態ファイル
 
 ```text
 .slide-work/
-|-- request.yaml              # 要件
-|-- storyboard.md             # S2a のストーリーボード（タイトル一覧 + archetype 割当）
-|-- review.json               # reviewer の判定結果（source_sha256 / review_attempt を含む）
-|-- review-blocked.json       # reviewer 不可で停止した未完了マーカー
-|-- presentation.pdf          # PDF 出力
-|-- preview.html              # HTML プレビュー（要求時）
+|-- request.yaml
+|-- storyboard.md
+|-- review.json
+|-- presentation.pdf
 `-- rendered-pages/
-    |-- page-001.png
-    `-- ...
 slides/
-|-- presentation.md           # Marp ソース（編集対象）
-`-- assets/                   # ブランドテンプレート使用時のロゴ等（自動コピー）
+|-- presentation.md
+|-- theme.css
+`-- assets/
+    `-- SOURCES.md
 ```
 
-## デザインをカスタマイズしたいとき
+旧rubricのreview.jsonはv0.8では無効です。現在のソースに対し `rubric_version: 2` で再レビューしてください。
 
-- 既定の見た目は `skills/main/templates/presentation-starter.md` が持ちます。冒頭 style ブロックの**デザイントークン**（`--c-*` 配色 / `--fs-*` タイポスケール）を変えると、全部品・全 archetype の見た目が一括で変わります
-- 既存デッキのデザインを踏襲したい場合も同様に、`design_reference` にそのファイルパスを指定できます
+## lint
 
-## 補足
+lintは品質を判定せず、frontmatter、theme、ローカルアセット、枚数指定だけを確認します。
 
-- 完了ゲートと SHA-256 計算は、PDF/PPTX を出力する Docker MCP サーバとは別に、ホスト側の bash スクリプト `scripts/review-gate.sh` が担います（Stop hook から `type: command` で起動、Windows/macOS/Linux 対応）。これにより MCP 接続が切れていても、Docker イメージが古くても、完了ゲートは正しく動作します
-- `scripts/deck-lint.sh` は密度・タイトル長・連続 archetype を機械チェックする補助リントです。ドラフト直後のセルフチェックと reviewer の当たり付けに使いますが、判定の権威は reviewer の 12 ゲートです（lint は `review.json` を書きません）
-- レビューは Markdown ソースだけでなく、レンダリング後の PNG 画像を Read ツールで目視します（視覚的なはみ出しやレイアウト崩れはソースだけでは判定できないため）
-- `reviewer` サブエージェントを起動できない環境では完了ゲートを通せません。既存 reviewer の具体的な fail 修正は適用できますが、`.slide-work/review-blocked.json` を残して未完了停止し、main agent のセルフチェックだけで pass 扱いにはしません
-- Docker が起動していない状態で実行すると、MCP からの export がエラーになります。Docker Desktop を起動してから試してください
-- `.mcp.json` は `claude` を起動した作業ディレクトリ（カレントディレクトリ）を Docker の `/workspace` に mount します。プロジェクトのルートで `claude` を起動してください
+```bash
+bash scripts/deck-lint.sh \
+  --source slides/presentation.md \
+  --target 10 \
+  --slide-count-mode target \
+  --theme slides/theme.css
+```
+
+`exact`だけが枚数不一致をFAILにします。`target`はWARN、`flexible`は判定しません。
+
+## レビュー状態
+
+レビュー開始前にスクリプトがハッシュとattemptを計算します。
+
+```bash
+bash scripts/review-gate.sh prepare
+```
+
+Stop hookはpass判定について次を確認します。
+
+- rubric_versionが2
+- source_sha256が現在のMarkdownと一致
+- 全ページPNGを確認済み
+- 5ハードゲートがpass
+- 4評価がすべて4以上
+- critical/major問題がない
