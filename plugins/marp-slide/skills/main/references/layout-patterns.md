@@ -37,6 +37,29 @@
 | `.cta-list` + `.cta` | クロージングのアクション | 担当か期限を必ず書く |
 | `.pill`（`.accent`） | 短いラベル | フェーズ名・タグ用 |
 | `.small` | 注記・出典 | 出典と時点はここに書く |
+| `.icon` + `.i-*` | モノクロピクトグラム | 下記「ピクトグラム」参照 |
+
+## ピクトグラム（.icon）
+
+`<span class="icon i-gear"></span>` の形で `.card` / `.metric` / `.evidence` の先頭に置く。内容と意味が対応するときだけ使い、飾りとして付けない。
+
+- 形はテンプレート定義の `.i-*` 20 種のみ。絵文字・外部画像・生 SVG は使わない（G12 の対象）
+- 色は既定（primary）を基本に、暗い背景（`.card.emphasis` / `.metric.highlight`）では `.inverse`、控えめにするなら `.sub`。`.accent` は 1 スライド 1 個まで
+- サイズは `.sm`（28px・metric 向き）/ 無指定（42px・card 向き）/ `.lg`（64px）。同じ行・列に並ぶアイコンはサイズと色をそろえ、付けるなら並びの全カードに付ける
+- bullet の行頭や文中には置かない
+
+| クラス | 意味 | クラス | 意味 |
+|---|---|---|---|
+| `i-target` | 目的・ゴール | `i-check` | 完了・承認・メリット |
+| `i-chart-up` | 増加・成長 | `i-alert` | リスク・課題・注意 |
+| `i-chart-down` | 減少・削減 | `i-idea` | 提案・アイデア |
+| `i-clock` | 時間・工数 | `i-search` | 調査・分析 |
+| `i-money` | コスト・投資 | `i-shield` | 品質・セキュリティ |
+| `i-people` | 体制・チーム | `i-rocket` | 立ち上げ・展開 |
+| `i-person` | 担当・顧客 | `i-building` | 会社・組織・部門 |
+| `i-gear` | プロセス・システム | `i-calendar` | 日程・期限 |
+| `i-database` | データ・基盤 | `i-cycle` | 運用・改善サイクル |
+| `i-doc` | 資料・契約 | `i-chat` | ヒアリング・対話 |
 
 ## title-hero
 
