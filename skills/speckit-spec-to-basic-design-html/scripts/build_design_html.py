@@ -1,506 +1,479 @@
 # -*- coding: utf-8 -*-
-"""基本設計書(機能一覧) HTML ジェネレータ。
+"""Render validated basic-design schema v2 as a self-contained HTML file."""
 
-JSON 設計データを受け取り、社内 Excel テンプレート（○○_基本設計_機能一覧.xlsx）と
-同じ「雰囲気」の **自己完結 HTML** を 1 ファイルで生成する。
+from __future__ import annotations
 
-ねらいは 2 つを 1 つの成果物で両立すること:
-  1. 誰でも見やすい資料 … ブラウザで開けば Excel と同じ見え方（大→中→小の
-     セル結合・テーマ色の塗り分け・游ゴシック・タイトル/メタ枠）。Excel に複数シートが
-     あったのと同じく、画面下部の **シートタブ**（機能一覧／画面一覧／ユーザーストーリー／
-     成功基準ほか／データエンティティ）で切り替えられる。印刷すれば全シートを通しで PDF 化。
-     CSS/JS 内蔵・外部依存なしなのでメール添付や社内共有もそのまま。
-  2. git で差分が追える … インライン style を使わず CSS クラスで色付けし、
-     1 機能行 = HTML 1 行（<tr> を 1 行に収める）で出力する。これにより
-     「概要を 1 か所直した」→「diff も 1 行だけ」になり、何が変わったかを
-     日本語のまま PR/コミットで確認できる。
-
-機能一覧の列（レビューしやすいよう「機能」と「要件」を分離 + 画面紐付けを追加）:
-    大分類 / (ID) / 中分類 / (ID) / 小分類 / (ID) /
-    機能名 / 概要 / 業務ルール / 画面 / 要求ID
-
-使い方:
-    python build_design_html.py design.json
-    python build_design_html.py design.json -o 出力.html
-
-JSON スキーマとサンプルは references/format_spec.md を参照。
-"""
 import argparse
 import html
 import json
-import re
 import sys
 from datetime import datetime
+from pathlib import Path
 
-# ── Excel テンプレートの実テーマ色（Office 既定: accent5=teal / accent6=orange）を
-#    そのまま採用。中/小分類は Excel の「明るく 40%/80%」相当。雰囲気を完全一致させる。
-HEADER_BG = "#C6D9F1"   # ヘッダ行（テンプレート実値）
-DAI_BG = "#4BACC6"      # 大分類 = Aqua, Accent 5
-CHU_BG = "#92CDDC"      # 中分類 = Aqua, Accent 5, 明るく 40%
-SHO_BG = ["#DAEEF3", "#FDE9D9"]  # 小分類 = accent5/accent6 明るく 80%（隣接で交互）
-FUTURE_BG = "#EFEFEF"   # 将来対応（将来バージョンで提供予定）の行（淡色で控えめに区別）
-GRID = "#BFBFBF"        # 罫線
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
 
-# 機能一覧の列見出しと相対幅（合計 100%、table-layout:fixed + 折返し）。
-HEADERS = ["大分類", "大分類ID", "中分類", "中分類ID", "小分類", "小分類ID",
-           "機能名", "概要", "業務ルール", "画面", "要求ID"]
-COL_WIDTHS = ["6.5%", "2.5%", "6.5%", "2.5%", "6.5%", "2.5%",
-              "9%", "16%", "29.5%", "13%", "5.5%"]
-WIDTH_CLASSES = {
-    "2.5%": "w025", "5.5%": "w055", "6%": "w060", "6.5%": "w065",
-    "9%": "w090", "10%": "w100", "13%": "w130", "16%": "w160",
-    "18%": "w180", "22%": "w220", "24%": "w240", "26%": "w260",
-    "29.5%": "w295", "44%": "w440", "72%": "w720", "78%": "w780",
-}
+from design_quality import (  # noqa: E402
+    TYPE_LABELS,
+    flatten_functions,
+    normalize_config,
+    validate_design,
+)
 
 
-def esc(v):
-    """セル値を HTML エスケープし、改行は <br> に。None/数値も安全に文字列化。"""
-    if v is None:
-        v = ""
-    return html.escape(str(v)).replace("\n", "<br>")
+HEADER_BG = "#C6D9F1"
+DAI_BG = "#4BACC6"
+CHU_BG = "#92CDDC"
+SHO_BG = ["#DAEEF3", "#FDE9D9"]
+FUTURE_BG = "#EFEFEF"
+GRID = "#BFBFBF"
+
+MAIN_HEADERS = [
+    "大分類",
+    "中分類",
+    "小分類",
+    "機能ID",
+    "機能名",
+    "概要",
+    "アクター",
+    "実行形態",
+    "根拠",
+    "提供状態",
+]
 
 
-def _is_future(r):
-    """行/画面が『将来対応』（将来バージョンで提供予定）か。
-    推奨キーは future。将来 / out_v1 / 対象外 も後方互換で受け付ける。"""
-    return bool(r.get("future") or r.get("将来") or r.get("out_v1") or r.get("対象外"))
+def esc(value):
+    if value is None:
+        value = ""
+    return html.escape(str(value)).replace("\n", "<br>")
 
 
-def _fmt_date(v):
-    """YYYY-MM-DD / YYYY/MM/DD を『YYYY年MM月DD日』へ。それ以外は素通し。"""
-    if isinstance(v, str):
+def _as_list(value):
+    if value is None:
+        return []
+    return value if isinstance(value, list) else [value]
+
+
+def _fmt_date(value):
+    if isinstance(value, str):
         for fmt in ("%Y-%m-%d", "%Y/%m/%d"):
             try:
-                d = datetime.strptime(v, fmt)
-                return f"{d.year}年{d.month:02d}月{d.day:02d}日"
+                parsed = datetime.strptime(value, fmt)
+                return f"{parsed.year}年{parsed.month:02d}月{parsed.day:02d}日"
             except ValueError:
-                continue
-    return v
+                pass
+    return value
 
 
-def _as_list(v):
-    if v is None:
-        return []
-    return v if isinstance(v, list) else [v]
+def _is_future(item):
+    return item.get("status") == "future" or any(item.get(k) for k in ("future", "out_v1", "将来"))
 
 
-def _colgroup(widths):
-    """列幅を CSS class で指定し、style 属性を成果物へ出さない。"""
-    if not widths:
-        return ""
-    try:
-        cols = "".join(f'<col class="{WIDTH_CLASSES[w]}">' for w in widths)
-    except KeyError as exc:
-        raise ValueError(f"未定義の列幅です: {exc.args[0]}") from exc
-    return f"<colgroup>{cols}</colgroup>"
+def _category_label(category):
+    category_id = str(category.get("id", "")).strip()
+    badge = f'<span class="idbadge">{esc(category_id)}</span> ' if category_id else ""
+    return badge + esc(category.get("name", ""))
 
 
-def validate_config(cfg):
-    """新スキーマの必須品質と画面参照を、描画前に検証する。"""
-    errors = []
-    function_list = cfg.get("function_list")
-    if not isinstance(function_list, list) or not function_list:
-        errors.append("function_list は1件以上の配列で指定してください")
-        function_list = []
-
-    screens = cfg.get("screens", []) or []
-    screen_ids = [str(s.get("id", "")).strip() for s in screens]
-    defined_screen_ids = {sid for sid in screen_ids if sid}
-    for index, screen in enumerate(screens, 1):
-        if not str(screen.get("id", "")).strip():
-            errors.append(f"画面 {index}: 画面IDが空です")
-        if not str(screen.get("name", "")).strip():
-            errors.append(f"画面 {index}: 画面名が空です")
-    if len(defined_screen_ids) != len([sid for sid in screen_ids if sid]):
-        errors.append("screens の画面IDが重複しています")
-
-    referenced_screen_ids = set()
-    question_rows = []
-    row_count = 0
-    for dai in function_list:
-        for chu in dai.get("children", []):
-            for sho in chu.get("children", []):
-                for row in sho.get("rows", []):
-                    row_count += 1
-                    name = str(row.get("機能名") or row.get("細分類") or "").strip()
-                    is_new = any(k in row for k in ("機能名", "業務ルール", "画面"))
-                    if not name:
-                        errors.append(f"機能行 {row_count}: 機能名が空です")
-                    if not is_new:
-                        continue
-                    if not str(row.get("概要", "")).strip():
-                        errors.append(f"機能行 {row_count} ({name}): 概要が空です")
-                    rules = [str(x).strip() for x in _as_list(row.get("業務ルール")) if str(x).strip()]
-                    if not rules:
-                        errors.append(f"機能行 {row_count} ({name}): 業務ルールが空です")
-                    elif any("要確認" in rule for rule in rules):
-                        question_rows.append((name, set(re.findall(r"FR-\d+", str(row.get("FR", ""))))))
-                    row_screens = [str(x).strip() for x in _as_list(row.get("画面")) if str(x).strip()]
-                    if not row_screens:
-                        errors.append(f"機能行 {row_count} ({name}): 画面が空です")
-                    for screen in row_screens:
-                        if screen.startswith("SCR-"):
-                            referenced_screen_ids.add(screen)
-                            if screen not in defined_screen_ids:
-                                errors.append(
-                                    f"機能行 {row_count} ({name}): 未定義の画面ID {screen} を参照しています"
-                                )
-                    if not str(row.get("FR") or row.get("由来FR") or "").strip():
-                        errors.append(f"機能行 {row_count} ({name}): 要求IDが空です")
-
-    unused_screen_ids = defined_screen_ids - referenced_screen_ids
-    if unused_screen_ids:
-        errors.append("どの機能からも参照されない画面があります: " + ", ".join(sorted(unused_screen_ids)))
-    question_entries = [
-        f'{item.get("項目", "")} {item.get("内容", "")}'
-        for item in (cfg.get("criteria", []) or [])
-        if item.get("区分") == "要確認"
-    ]
-    for name, fr_ids in question_rows:
-        if not any(name in entry or any(fr_id in entry for fr_id in fr_ids) for entry in question_entries):
-            errors.append(f"機能行 ({name}): 業務ルールの要確認事項が criteria にありません")
-    if row_count == 0:
-        errors.append("function_list に機能行がありません")
-    if errors:
-        raise ValueError("設計データの検証に失敗しました:\n- " + "\n- ".join(errors))
+def _badges(values, css_class="ref"):
+    return " ".join(f'<span class="{css_class}">{esc(v)}</span>' for v in _as_list(values) if str(v).strip())
 
 
-def normalize_row(r):
-    """機能行を (機能名, 概要, 業務ルール[list], 画面[list], 要求ID) に正規化。
-
-    新スキーマ（業務ルール/画面 あり）と旧スキーマ（機能/概要 のみ）の両対応:
-      - 新: 概要=概要, 業務ルール=業務ルール
-      - 旧: 概要=機能（動作説明）, 業務ルール=[概要]（旧概要を1ルールに退避）
-    これにより旧Excel版の design.json もそのまま描画できる。
-    """
-    name = r.get("機能名") or r.get("細分類") or ""
-    if "業務ルール" in r or "画面" in r:          # 新スキーマ
-        gaiyo = r.get("概要", "")
-        rules = _as_list(r.get("業務ルール"))
-    else:                                          # 旧スキーマ（後方互換）
-        gaiyo = r.get("機能", "")
-        rules = [r["概要"]] if r.get("概要") else []
-    screens = _as_list(r.get("画面"))
-    fr = r.get("FR") or r.get("由来FR") or ""
-    return name, gaiyo, rules, screens, fr
+def _plain_list(values, empty="該当なし"):
+    values = [str(v).strip() for v in _as_list(values) if str(v).strip()]
+    if not values:
+        return f'<span class="muted">{esc(empty)}</span>'
+    return "<ul>" + "".join(f"<li>{esc(v)}</li>" for v in values) + "</ul>"
 
 
-def _rules_html(rules):
-    """業務ルールを箇条書き（・）に。1 行に収め diff を安定させる。"""
-    rules = [str(x).strip() for x in rules if str(x).strip()]
+def _execution(function, interfaces):
+    execution = function.get("execution") or {}
+    kind = execution.get("type", "")
+    labels = {
+        "screen": "画面",
+        "api": "API",
+        "batch": "バッチ",
+        "event": "イベント",
+        "external-interface": "外部連携",
+        "manual": "手動運用",
+        "cross-cutting": "横断制御",
+    }
+    refs = []
+    for ref in _as_list(execution.get("refs")):
+        interface = interfaces.get(str(ref), {})
+        refs.append(f"{ref} {interface.get('name', '')}".strip())
+    suffix = "<br>" + "<br>".join(esc(v) for v in refs) if refs else ""
+    return f'<span class="kind kind-{esc(kind)}">{esc(labels.get(kind, kind))}</span>{suffix}'
+
+
+def _status(function):
+    if _is_future(function):
+        return '<span class="status future-tag">将来対応</span>'
+    return '<span class="status current-tag">現行</span>'
+
+
+def _rules(function):
+    rules = function.get("business_rules", []) or []
     if not rules:
-        return '<span class="muted">—</span>'
-    return "<br>".join(f"・{esc(x)}" for x in rules)
+        return '<span class="muted">該当なし</span>'
+    labels = {"specified": "spec記載", "derived": "設計導出", "confirmed": "確認済み"}
+    parts = ["<ol class=\"rules\">"]
+    for rule in rules:
+        if isinstance(rule, str):
+            parts.append(f"<li>{esc(rule)}</li>")
+            continue
+        basis = rule.get("basis", "")
+        rationale = rule.get("rationale")
+        parts.append(
+            "<li>"
+            + esc(rule.get("text", ""))
+            + f' <span class="basis basis-{esc(basis)}">{esc(labels.get(basis, basis))}</span> '
+            + _badges(rule.get("source_refs"))
+            + (f'<div class="rationale">導出理由: {esc(rationale)}</div>' if rationale else "")
+            + "</li>"
+        )
+    parts.append("</ol>")
+    return "".join(parts)
 
 
-def _screens_html(screens, screen_names):
-    """画面参照を『SCR-020 予約入力画面』形式に解決。SCR id は淡色バッジ表示。"""
-    screens = [str(x).strip() for x in screens if str(x).strip()]
-    if not screens:
-        return '<span class="muted">—</span>'
-    out = []
-    for s in screens:
-        if s in screen_names:
-            out.append(f'<span class="scr">{esc(s)}</span> {esc(screen_names[s])}')
+def _exceptions(function):
+    values = function.get("exceptions", []) or []
+    if not values:
+        return '<span class="muted">該当なし</span>'
+    out = ["<ul>"]
+    for value in values:
+        if isinstance(value, dict):
+            text = f"{value.get('condition', '')} → {value.get('behavior', '')}".strip(" →")
+            basis = value.get("basis", "")
+            labels = {"specified": "spec記載", "derived": "設計導出", "confirmed": "確認済み"}
+            rationale = value.get("rationale")
+            out.append(
+                f'<li>{esc(text)} <span class="basis basis-{esc(basis)}">{esc(labels.get(basis, basis))}</span> '
+                f'{_badges(value.get("source_refs"))}'
+                + (f'<div class="rationale">導出理由: {esc(rationale)}</div>' if rationale else "")
+                + "</li>"
+            )
         else:
-            out.append(esc(s))   # 「全画面共通」等の自由記述はそのまま
-    return "<br>".join(out)
+            out.append(f"<li>{esc(value)}</li>")
+    out.append("</ul>")
+    return "".join(out)
 
 
-def build_function_rows(cfg, screen_names):
-    """機能一覧 tbody の <tr> 群を 1 行 = 1 機能行 で生成（diff 安定のため）。"""
+def _main_rows(cfg, interfaces):
     lines = []
-    sho_idx = 0
-    for dai in cfg["function_list"]:
-        dai_rows = [r for c in dai["children"] for s in c["children"] for r in s["rows"]]
-        dai_n = len(dai_rows)
-        dai_fut = dai_n > 0 and all(_is_future(r) for r in dai_rows)
-        dai_done = False
-        for chu in dai["children"]:
-            chu_rows = [r for s in chu["children"] for r in s["rows"]]
-            chu_n = len(chu_rows)
-            chu_fut = chu_n > 0 and all(_is_future(r) for r in chu_rows)
-            chu_done = False
-            for sho in chu["children"]:
-                sho_cls = f"sho{sho_idx % 2}"
-                sho_idx += 1
-                sho_n = len(sho["rows"])
-                sho_fut = sho_n > 0 and all(_is_future(r) for r in sho["rows"])
-                sho_done = False
-                for r in sho["rows"]:
-                    fut = _is_future(r)
-                    name, gaiyo, rules, screens, fr = normalize_row(r)
-                    name = esc(name)
-                    if fut and name:
-                        name = '<span class="ftag">将来対応</span> ' + name
-                    cells = []
-                    if not dai_done:
-                        c = "future" if dai_fut else "dai"
-                        cells.append(f'<td class="{c}" rowspan="{dai_n}">{esc(dai["name"])}</td>')
-                        cells.append(f'<td class="{c} c" rowspan="{dai_n}">{esc(dai.get("id", ""))}</td>')
-                        dai_done = True
-                    if not chu_done:
-                        c = "future" if chu_fut else "chu"
-                        cells.append(f'<td class="{c}" rowspan="{chu_n}">{esc(chu["name"])}</td>')
-                        cells.append(f'<td class="{c} c" rowspan="{chu_n}">{esc(chu.get("id", ""))}</td>')
-                        chu_done = True
-                    if not sho_done:
-                        c = "future" if sho_fut else sho_cls
-                        cells.append(f'<td class="{c}" rowspan="{sho_n}">{esc(sho["name"])}</td>')
-                        cells.append(f'<td class="{c} c" rowspan="{sho_n}">{esc(sho.get("id", ""))}</td>')
-                        sho_done = True
-                    f = ' future' if fut else ''
-                    cells.append(f'<td class="g{f}">{name}</td>')                          # 機能名
-                    cells.append(f'<td class="g{f}">{esc(gaiyo)}</td>')                     # 概要
-                    cells.append(f'<td class="g rule{f}">{_rules_html(rules)}</td>')        # 業務ルール
-                    cells.append(f'<td class="g scrcol{f}">{_screens_html(screens, screen_names)}</td>')  # 画面
-                    cells.append(f'<td class="g frcol c{f}">{esc(fr)}</td>')                # 要求ID
-                    lines.append("      <tr>" + "".join(cells) + "</tr>")
+    for major in cfg.get("function_list", []):
+        for middle in major.get("children", []):
+            for minor_index, minor in enumerate(middle.get("children", [])):
+                for function in minor.get("rows", []) or []:
+                    # 分類セルを各行へ持たせる。検索で行を非表示にしても分類が欠落しない。
+                    cells = [
+                        f'<td class="dai">{_category_label(major)}</td>',
+                        f'<td class="chu">{_category_label(middle)}</td>',
+                        f'<td class="sho{minor_index % 2}">{_category_label(minor)}</td>',
+                    ]
+                    fid = function.get("id", "")
+                    future = " future" if _is_future(function) else ""
+                    cells.extend(
+                        [
+                            f'<td class="c{future}"><a class="fnlink" href="#detail-{esc(fid)}" data-detail="{esc(fid)}">{esc(fid)}</a></td>',
+                            f'<td class="g{future}">{esc(function.get("name", ""))}</td>',
+                            f'<td class="g{future}">{esc(function.get("summary", ""))}</td>',
+                            f'<td class="g{future}">{"<br>".join(esc(v) for v in _as_list(function.get("actors")))}</td>',
+                            f'<td class="g{future}">{_execution(function, interfaces)}</td>',
+                            f'<td class="g{future}">{_badges(function.get("source_refs"))}</td>',
+                            f'<td class="c{future}">{_status(function)}</td>',
+                        ]
+                    )
+                    search = " ".join(
+                        [
+                            str(fid),
+                            str(function.get("name", "")),
+                            str(function.get("summary", "")),
+                            " ".join(map(str, _as_list(function.get("actors")))),
+                            " ".join(map(str, _as_list(function.get("source_refs")))),
+                        ]
+                    )
+                    lines.append(
+                        f'<tr data-search="{esc(search.casefold())}" data-status="{esc(function.get("status", ""))}" '
+                        f'data-execution="{esc((function.get("execution") or {}).get("type", ""))}">'
+                        + "".join(cells)
+                        + "</tr>"
+                    )
     return lines
 
 
-def _table(title, headers, rows, center_cols=(), col_widths=None, anchor="", row_future=None):
-    """補助セクション用の素直な表。1 行 = HTML 1 行。row_future(i)->bool で淡色化。"""
-    out = []
-    a = f' id="{anchor}"' if anchor else ""
-    out.append(f'    <h2{a}>{esc(title)}</h2>')
-    cg = _colgroup(col_widths)
-    out.append(f'    <table class="aux">{cg}')
-    out.append("      <thead><tr>" + "".join(f'<th>{esc(h)}</th>' for h in headers) + "</tr></thead>")
-    out.append("      <tbody>")
-    for i, row in enumerate(rows):
-        f = ' future' if (row_future and row_future(i)) else ''
-        tds = []
-        for j, v in enumerate(row):
-            cls = "c" if j in center_cols else ""
-            cls = (cls + f).strip()
-            attr = f' class="{cls}"' if cls else ""
-            tds.append(f'<td{attr}>{esc(v)}</td>')
-        out.append("      <tr>" + "".join(tds) + "</tr>")
-    out.append("      </tbody>")
-    out.append("    </table>")
+def _details(cfg, interfaces):
+    out = ['<h2 id="details">機能詳細</h2>']
+    for major, middle, minor, function in flatten_functions(cfg):
+        fid = function.get("id", "")
+        future = " future-card" if _is_future(function) else ""
+        out.append(f'<article class="function-card{future}" id="detail-{esc(fid)}">')
+        out.append(
+            f'<header><span class="fnid">{esc(fid)}</span><h3>{esc(function.get("name", ""))}</h3>{_status(function)}</header>'
+        )
+        out.append(
+            f'<p class="breadcrumb">{_category_label(major)} ／ {_category_label(middle)} ／ {_category_label(minor)}</p>'
+        )
+        out.append(f'<p class="summary">{esc(function.get("summary", ""))}</p>')
+        out.append('<dl class="detail-grid">')
+        entries = [
+            ("アクター", "<br>".join(esc(v) for v in _as_list(function.get("actors")))),
+            ("起動契機", esc(function.get("trigger", ""))),
+            ("実行形態", _execution(function, interfaces)),
+            ("入力", _plain_list(function.get("inputs"))),
+            ("出力", _plain_list(function.get("outputs"))),
+            ("事前条件", _plain_list(function.get("preconditions"))),
+            ("事後状態", _plain_list(function.get("postconditions"))),
+            ("業務ルール", _rules(function)),
+            ("例外・失敗時", _exceptions(function)),
+            ("対象データ", _plain_list(function.get("data_entities"))),
+            ("根拠", _badges(function.get("source_refs"))),
+        ]
+        for label, value in entries:
+            out.append(f"<dt>{esc(label)}</dt><dd>{value}</dd>")
+        out.append("</dl></article>")
+    return out
+
+
+def _traceability(cfg, item_by_id):
+    out = ['<h2 id="traceability">トレーサビリティ</h2>', '<table class="aux"><caption>spec規範要素と機能の対応</caption>']
+    out.append(
+        "<thead><tr>"
+        + "".join(f'<th scope="col">{h}</th>' for h in ("根拠ID", "種別", "spec記載", "機能ID", "カバレッジ", "理由"))
+        + "</tr></thead><tbody>"
+    )
+    for entry in cfg.get("traceability", []) or []:
+        source_id = entry.get("source_id", "")
+        item = item_by_id.get(source_id, {})
+        coverage = entry.get("coverage", "")
+        funcs = " ".join(
+            f'<a class="fnlink" href="#detail-{esc(fid)}" data-detail="{esc(fid)}">{esc(fid)}</a>'
+            for fid in _as_list(entry.get("function_ids"))
+        ) or '<span class="muted">—</span>'
+        out.append(
+            "<tr>"
+            f'<td class="c">{_badges([source_id])}</td>'
+            f'<td>{esc(TYPE_LABELS.get(item.get("type"), item.get("type", "")))}</td>'
+            f'<td>{esc(item.get("text", entry.get("summary", "")))}</td>'
+            f"<td>{funcs}</td>"
+            f'<td class="c"><span class="coverage coverage-{esc(coverage)}">{esc(coverage)}</span></td>'
+            f'<td>{esc(entry.get("rationale", ""))}</td>'
+            "</tr>"
+        )
+    out.append("</tbody></table>")
+    return out
+
+
+def _interfaces(cfg):
+    out = ['<h2 id="interfaces">インターフェース</h2>', '<table class="aux"><caption>機能の実行接点</caption>']
+    out.append(
+        "<thead><tr>"
+        + "".join(f'<th scope="col">{h}</th>' for h in ("ID", "種別", "名称", "概要", "アクター", "状態"))
+        + "</tr></thead><tbody>"
+    )
+    for interface in cfg.get("interfaces", []) or []:
+        out.append(
+            "<tr>"
+            f'<td class="c">{esc(interface.get("id", ""))}</td>'
+            f'<td class="c">{esc(interface.get("type", ""))}</td>'
+            f'<td>{esc(interface.get("name", ""))}</td>'
+            f'<td>{esc(interface.get("summary", ""))}</td>'
+            f'<td>{"<br>".join(esc(v) for v in _as_list(interface.get("actors")))}</td>'
+            f'<td class="c">{_status(interface)}</td>'
+            "</tr>"
+        )
+    out.append("</tbody></table>")
+    return out
+
+
+def _quality(cfg, report):
+    out = ['<h2 id="quality">確認・品質情報</h2>', '<div class="quality-summary">']
+    cards = [
+        ("判定", report.get("status", "draft")),
+        ("ブロッキング", report.get("blocking_error_count", 0)),
+        ("警告", report.get("warning_count", 0)),
+        ("未解決", report.get("unresolved_count", 0)),
+        ("根拠なし", report.get("unsubstantiated_count", 0)),
+    ]
+    for label, value in cards:
+        out.append(f'<div class="quality-card"><span>{esc(label)}</span><strong>{esc(value)}</strong></div>')
+    out.append("</div>")
+    out.append('<h3>規範要素カバレッジ</h3><table class="aux compact"><caption>種別ごとの要求網羅率</caption>')
+    out.append('<thead><tr><th scope="col">種別</th><th scope="col">解決</th><th scope="col">総数</th><th scope="col">網羅率</th></tr></thead><tbody>')
+    for kind, values in (report.get("coverage") or {}).items():
+        out.append(
+            f'<tr><td>{esc(TYPE_LABELS.get(kind, kind))}</td><td class="c">{esc(values.get("resolved", 0))}</td>'
+            f'<td class="c">{esc(values.get("total", 0))}</td><td class="c">{esc(values.get("percent", 0))}%</td></tr>'
+        )
+    out.append("</tbody></table>")
+    for key, heading in (("errors", "ブロッキングエラー"), ("warnings", "警告")):
+        out.append(f"<h3>{heading}</h3>{_plain_list(report.get(key), 'なし')}")
+    pending_questions = [
+        f"[{q.get('status', 'open')}] {q.get('question', '')}"
+        for q in cfg.get("open_questions", [])
+        if q.get("status", "open") != "resolved"
+    ]
+    out.append(f'<h3>ユーザー確認待ち</h3>{_plain_list(pending_questions, "なし")}')
+    decisions = [f"{d.get('id', '')}: {d.get('question', '')} → {d.get('answer', '')}" for d in cfg.get("decisions", [])]
+    out.append(f'<h3>確認済み決定</h3>{_plain_list(decisions, "なし")}')
     return out
 
 
 CSS = """
-:root{ --grid:%(grid)s; --hdr:%(hdr)s; --dai:%(dai)s; --chu:%(chu)s;
-       --sho0:%(sho0)s; --sho1:%(sho1)s; --future:%(future)s; }
-*{ box-sizing:border-box; }
-body{ font-family:"游ゴシック","Yu Gothic",YuGothic,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;
-      font-size:13px; color:#222; margin:0; padding:24px; background:#fff; line-height:1.5; }
-.titlebar{ display:flex; align-items:flex-end; justify-content:space-between;
-           gap:24px; margin:4px 0 16px; flex-wrap:wrap; }
-.title{ font-size:26px; font-weight:700; margin:0; letter-spacing:.04em; }
-table.meta{ border-collapse:collapse; font-size:12px; }
-table.meta td{ border:1px solid var(--grid); padding:3px 10px; white-space:nowrap; }
-table.meta td.k{ background:var(--hdr); text-align:center; }
-h2{ font-size:16px; margin:6px 0 8px; padding-left:8px; border-left:6px solid var(--dai); }
-table{ border-collapse:collapse; width:100%%; table-layout:fixed; }
-col.w025{ width:2.5%%; } col.w055{ width:5.5%%; } col.w060{ width:6%%; }
-col.w065{ width:6.5%%; } col.w090{ width:9%%; } col.w100{ width:10%%; }
-col.w130{ width:13%%; } col.w160{ width:16%%; } col.w180{ width:18%%; }
-col.w220{ width:22%%; } col.w240{ width:24%%; } col.w260{ width:26%%; }
-col.w295{ width:29.5%%; } col.w440{ width:44%%; } col.w720{ width:72%%; }
-col.w780{ width:78%%; }
-th,td{ border:1px solid var(--grid); padding:5px 7px; vertical-align:top;
-       word-break:break-word; overflow-wrap:anywhere; }
-thead th{ background:var(--hdr); text-align:center; vertical-align:middle;
-          position:sticky; top:46px; z-index:2; }  /* タブバー(上部固定)の下に貼り付く */
-td.c{ text-align:center; }
-td.dai,td.chu,td.sho0,td.sho1{ vertical-align:middle; font-weight:600; }
-td.dai{ background:var(--dai); }
-td.chu{ background:var(--chu); }
-td.sho0{ background:var(--sho0); }
-td.sho1{ background:var(--sho1); }
-td.g{ background:#fff; }
-td.rule{ font-size:12.5px; }
-td.frcol{ font-size:12px; color:#555; white-space:nowrap; }
-.scr{ font-size:11px; color:#1f6f86; font-weight:700;
-      background:#eaf4f8; border:1px solid #c7e2ea; border-radius:3px; padding:0 3px; }
-.muted{ color:#aaa; }
-/* 将来対応（将来バージョンで提供予定）: 淡色＋「将来対応」バッジで控えめに示す（取消線は使わない） */
-td.future{ background:var(--future); color:#888; }
-td.dai.future,td.chu.future,td.sho0.future,td.sho1.future{ font-weight:600; }
-.ftag{ font-size:10.5px; color:#8a5a00; background:#fdeccb; border:1px solid #f0d39a;
-       border-radius:3px; padding:0 4px; margin-right:4px; white-space:nowrap; }
-.legend{ font-size:11px; color:#888; margin:6px 0 0; }
-/* シート切替（上部に固定。見つけやすく、長い表でもスクロール追従で確認しやすい） */
-.panel{ display:none; }
-.panel.active{ display:block; }
-.tabbar{ position:sticky; top:0; z-index:6; display:flex; gap:4px; align-items:flex-end;
-         background:#fff; border-bottom:2px solid var(--dai); padding:6px 0 0; margin:0 0 12px;
-         overflow-x:auto; min-height:40px; }
-.tabbar button{ font:inherit; font-size:13px; border:1px solid #d4dde4; border-bottom:none;
-                background:#eef2f5; color:#456; padding:7px 18px; border-radius:6px 6px 0 0;
-                cursor:pointer; white-space:nowrap; }
-.tabbar button:hover{ background:#e3eaef; }
-.tabbar button.active{ background:var(--dai); color:#fff; font-weight:700; border-color:var(--dai); }
-@media print{
-  body{ padding:0; font-size:10px; }
-  thead th{ position:static; }
-  tr{ break-inside:avoid; }
-  thead{ display:table-header-group; }  /* 各ページにヘッダを繰り返す */
-  .tabbar{ display:none; }
-  .panel{ display:block !important; }   /* 印刷は全シートを通しで出す */
-  .panel + .panel{ page-break-before:always; }
-}
+:root{--grid:%(grid)s;--hdr:%(hdr)s;--dai:%(dai)s;--chu:%(chu)s;--sho0:%(sho0)s;--sho1:%(sho1)s;--future:%(future)s;}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:"游ゴシック","Yu Gothic",YuGothic,Meiryo,sans-serif;font-size:13px;color:#222;margin:0;padding:24px;background:#fff;line-height:1.5}
+.titlebar{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin:4px 0 16px;flex-wrap:wrap}.title{font-size:26px;font-weight:700;margin:0;letter-spacing:.04em}table.meta{border-collapse:collapse;font-size:12px;width:auto}table.meta td{border:1px solid var(--grid);padding:3px 10px;white-space:nowrap}table.meta td.k{background:var(--hdr);text-align:center}
+h2{font-size:17px;margin:6px 0 10px;padding-left:8px;border-left:6px solid var(--dai)}h3{font-size:14px;margin:18px 0 7px}table{border-collapse:collapse;width:100%%;table-layout:fixed}caption{font-weight:700;text-align:left;margin:0 0 6px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+th,td{border:1px solid var(--grid);padding:5px 7px;vertical-align:top;word-break:break-word;overflow-wrap:anywhere}thead th{background:var(--hdr);text-align:center;vertical-align:middle;position:sticky;top:46px;z-index:2}td.c{text-align:center}td.dai,td.chu,td.sho0,td.sho1{vertical-align:middle;font-weight:600}td.dai{background:var(--dai)}td.chu{background:var(--chu)}td.sho0{background:var(--sho0)}td.sho1{background:var(--sho1)}td.g{background:#fff}td.future,.future-card{background:var(--future);color:#666}.muted{color:#888}.idbadge,.fnid,.ref{font-size:11px;font-weight:700;background:#edf4f7;border:1px solid #c7dde5;border-radius:3px;padding:1px 4px;white-space:nowrap}.fnlink{color:#12677d;font-weight:700}.status,.kind,.basis,.coverage{display:inline-block;font-size:11px;font-weight:700;border-radius:10px;padding:1px 7px;white-space:nowrap}.current-tag{background:#e5f4ea;color:#27643a}.future-tag{background:#fdeccb;color:#805300}.kind{background:#eaf1f8;color:#315c7b}.basis-specified{background:#e8f3fb;color:#245d83}.basis-derived{background:#fff1da;color:#805300}.basis-confirmed{background:#e5f4ea;color:#27643a}.coverage-covered{background:#e5f4ea}.coverage-partial,.coverage-unresolved{background:#fde5e5;color:#8b2929}.coverage-future{background:#fdeccb}.coverage-out-of-scope{background:#eee;color:#555}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}.toolbar label{font-size:12px;font-weight:600}.toolbar input,.toolbar select{font:inherit;border:1px solid #aebbc4;border-radius:4px;padding:5px 8px;background:#fff}.funclist th:nth-child(1),.funclist th:nth-child(2),.funclist th:nth-child(3){width:7%%}.funclist th:nth-child(4){width:6%%}.funclist th:nth-child(5){width:10%%}.funclist th:nth-child(6){width:19%%}.funclist th:nth-child(7){width:8%%}.funclist th:nth-child(8){width:10%%}.funclist th:nth-child(9){width:12%%}.funclist th:nth-child(10){width:7%%}
+.function-card{border:1px solid var(--grid);border-left:5px solid var(--dai);border-radius:4px;margin:0 0 14px;padding:12px;background:#fff}.function-card header{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.function-card h3{font-size:16px;margin:0}.breadcrumb{font-size:12px;color:#567;margin:6px 0}.summary{font-weight:600}.detail-grid{display:grid;grid-template-columns:130px minmax(0,1fr);margin:0;border-top:1px solid var(--grid);border-left:1px solid var(--grid)}.detail-grid dt,.detail-grid dd{margin:0;padding:6px 8px;border-right:1px solid var(--grid);border-bottom:1px solid var(--grid)}.detail-grid dt{background:#eef5f7;font-weight:700}.detail-grid ul,.rules{margin:0;padding-left:20px}.rationale{font-size:12px;color:#66512b;margin-top:2px}
+.aux th:nth-child(1){width:11%%}.aux th:nth-child(2){width:13%%}.aux th:nth-child(4){width:15%%}.aux th:nth-child(5){width:12%%}.compact{max-width:720px}.quality-summary{display:flex;gap:8px;flex-wrap:wrap}.quality-card{border:1px solid var(--grid);border-top:4px solid var(--dai);min-width:130px;padding:8px 12px}.quality-card span{display:block;font-size:11px;color:#667}.quality-card strong{font-size:20px}.panel{display:none}.panel.active{display:block}.tabbar{position:sticky;top:0;z-index:6;display:flex;gap:4px;align-items:flex-end;background:#fff;border-bottom:2px solid var(--dai);padding:6px 0 0;margin:0 0 12px;overflow-x:auto;min-height:40px}.tabbar button{font:inherit;font-size:13px;border:1px solid #d4dde4;border-bottom:none;background:#eef2f5;color:#456;padding:7px 18px;border-radius:6px 6px 0 0;cursor:pointer;white-space:nowrap}.tabbar button:hover,.tabbar button:focus{background:#e3eaef}.tabbar button.active{background:var(--dai);color:#fff;font-weight:700;border-color:var(--dai)}
+@media(max-width:900px){body{padding:12px}.funclist{min-width:1100px}.panel{overflow-x:auto}.detail-grid{grid-template-columns:100px minmax(0,1fr)}}@media print{body{padding:0;font-size:10px}thead th{position:static}tr,.function-card{break-inside:avoid}thead{display:table-header-group}.tabbar,.toolbar{display:none}.panel{display:block!important}.panel+.panel{page-break-before:always}}
 """.strip()
 
-TAB_SCRIPT = """
+
+SCRIPT = """
 <script>
 (function(){
-  var tabs=[].slice.call(document.querySelectorAll('.tabbar button'));
-  var panels=[].slice.call(document.querySelectorAll('.panel'));
-  function show(id){
-    panels.forEach(function(p){ p.classList.toggle('active', p.id===id); });
-    tabs.forEach(function(t){ t.classList.toggle('active', t.dataset.target===id); });
-    window.scrollTo(0,0);
-  }
-  tabs.forEach(function(t){ t.addEventListener('click', function(){ show(t.dataset.target); }); });
+  var tabs=[].slice.call(document.querySelectorAll('[role="tab"]'));
+  var panels=[].slice.call(document.querySelectorAll('[role="tabpanel"]'));
+  function show(id,focus){panels.forEach(function(p){p.classList.toggle('active',p.id===id);});tabs.forEach(function(t){var on=t.getAttribute('aria-controls')===id;t.classList.toggle('active',on);t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;});if(focus){var tab=tabs.find(function(t){return t.getAttribute('aria-controls')===id;});if(tab){tab.focus();}}}
+  tabs.forEach(function(t,i){t.addEventListener('click',function(){show(t.getAttribute('aria-controls'));});t.addEventListener('keydown',function(e){var n=i;if(e.key==='ArrowRight')n=(i+1)%tabs.length;else if(e.key==='ArrowLeft')n=(i-1+tabs.length)%tabs.length;else if(e.key==='Home')n=0;else if(e.key==='End')n=tabs.length-1;else return;e.preventDefault();show(tabs[n].getAttribute('aria-controls'),true);});});
+  document.querySelectorAll('[data-detail]').forEach(function(a){a.addEventListener('click',function(){show('panel-details');setTimeout(function(){var el=document.getElementById('detail-'+a.dataset.detail);if(el)el.scrollIntoView();},0);});});
+  var query=document.getElementById('filter-query'),status=document.getElementById('filter-status'),execution=document.getElementById('filter-execution');function filter(){var q=(query.value||'').toLowerCase();document.querySelectorAll('#function-body tr').forEach(function(row){var ok=(!q||row.dataset.search.indexOf(q)>=0)&&(!status.value||row.dataset.status===status.value)&&(!execution.value||row.dataset.execution===execution.value);row.hidden=!ok;});}[query,status,execution].forEach(function(el){el.addEventListener('input',filter);});
+  if(window.location.hash.indexOf('#detail-FNC-')===0){show('panel-details');}
 })();
 </script>
 """.strip()
 
 
-def render(cfg):
-    validate_config(cfg)
+def render(config, spec_text=None, allow_draft=True):
+    cfg = normalize_config(config)
+    items = []
+    if spec_text is not None:
+        cfg, report, items = validate_design(spec_text, config)
+        if report["errors"] and not allow_draft:
+            raise ValueError("設計品質ゲートに失敗しました:\n- " + "\n- ".join(report["errors"]))
+    else:
+        report = cfg.get("quality") or {
+            "status": "draft",
+            "blocking_error_count": 0,
+            "warning_count": 1,
+            "unresolved_count": len(cfg.get("open_questions", [])),
+            "unsubstantiated_count": sum(1 for _, _, _, f in flatten_functions(cfg) if not f.get("source_refs")),
+            "coverage": {},
+            "errors": [],
+            "warnings": ["spec.md未指定のため要求網羅性は未検証です"],
+        }
+    item_by_id = {item["id"]: item for item in items}
+    interfaces = {str(i.get("id")): i for i in cfg.get("interfaces", []) or []}
     title = cfg.get("title", "機能一覧")
-    meta = cfg.get("meta", {})
-    screens = cfg.get("screens", []) or []
-    screen_names = {s["id"]: s.get("name", "") for s in screens if s.get("id")}
-    css = CSS % {"grid": GRID, "hdr": HEADER_BG, "dai": DAI_BG, "chu": CHU_BG,
-                 "sho0": SHO_BG[0], "sho1": SHO_BG[1], "future": FUTURE_BG}
+    meta = cfg.get("meta", {}) or {}
 
-    # ── 各シート（パネル）の中身を組み立てる。tab=(key, ラベル, [行...])
-    sheets = []
+    main = [
+        '<h2 id="functions">機能一覧</h2>',
+        '<div class="toolbar" aria-label="機能一覧の絞り込み">',
+        '<label>検索 <input id="filter-query" type="search" placeholder="ID・名称・根拠"></label>',
+        '<label>状態 <select id="filter-status"><option value="">すべて</option><option value="current">現行</option><option value="future">将来</option></select></label>',
+        '<label>実行形態 <select id="filter-execution"><option value="">すべて</option>'
+        + "".join(f'<option value="{v}">{v}</option>' for v in ("screen", "api", "batch", "event", "external-interface", "manual", "cross-cutting"))
+        + "</select></label></div>",
+        '<table class="funclist"><caption class="sr-only">基本設計 機能一覧</caption>',
+        "<thead><tr>" + "".join(f'<th scope="col">{esc(h)}</th>' for h in MAIN_HEADERS) + "</tr></thead>",
+        '<tbody id="function-body">',
+        *_main_rows(cfg, interfaces),
+        "</tbody></table>",
+    ]
+    sheets = [
+        ("functions", "機能一覧", main),
+        ("details", "機能詳細", _details(cfg, interfaces)),
+        ("traceability", "トレーサビリティ", _traceability(cfg, item_by_id)),
+        ("interfaces", "インターフェース", _interfaces(cfg)),
+        ("quality", "確認・品質情報", _quality(cfg, report)),
+    ]
 
-    # 機能一覧
-    fl = []
-    fl.append('    <h2 id="func">機能一覧</h2>')
-    fl.append('    <table class="funclist">')
-    fl.append("    " + _colgroup(COL_WIDTHS))
-    fl.append("      <thead><tr>" + "".join(f"<th>{esc(h)}</th>" for h in HEADERS) + "</tr></thead>")
-    fl.append("      <tbody>")
-    fl.extend(build_function_rows(cfg, screen_names))
-    fl.append("      </tbody>")
-    fl.append("    </table>")
-    if any(_is_future(r) for d in cfg["function_list"] for c in d["children"]
-           for s in c["children"] for r in s["rows"]):
-        fl.append('    <p class="legend">※ 「将来対応」の行は将来バージョンで提供予定。'
-                  '「画面」列の SCR-xxx は「画面一覧」タブに対応。</p>')
-    sheets.append(("func", "機能一覧", fl))
-
-    # 画面一覧（画面マスタ）
-    if screens:
-        rows = [[s.get("id", ""),
-                 s.get("name", "") + ("（将来対応）" if _is_future(s) else ""),
-                 s.get("summary", ""), s.get("roles", "")] for s in screens]
-        lines = _table("画面一覧（画面マスタ）", ["画面ID", "画面名", "概要", "主な対象ロール"],
-                       rows, center_cols=(0,), anchor="screens",
-                       col_widths=["10%", "22%", "44%", "24%"],
-                       row_future=lambda i: _is_future(screens[i]))
-        sheets.append(("screens", "画面一覧", lines))
-
-    # ユーザーストーリー
-    us = cfg.get("user_stories")
-    if us:
-        rows = [[u.get("id", ""), u.get("story", ""), u.get("priority", ""),
-                 u.get("scope", ""), u.get("summary", ""), u.get("acceptance", "")] for u in us]
-        lines = _table("ユーザーストーリー・受入基準",
-                       ["ID", "ストーリー", "優先度", "スコープ単位", "概要", "受入シナリオ"],
-                       rows, center_cols=(0, 2), anchor="us",
-                       col_widths=["6%", "26%", "6%", "16%", "22%", "24%"],
-                       row_future=lambda i: _is_future(us[i]))
-        sheets.append(("us", "ユーザーストーリー", lines))
-
-    # 成功基準・前提・対象外
-    crit = cfg.get("criteria")
-    if crit:
-        rows = [[c.get("区分", ""), c.get("項目", ""), c.get("内容", "")] for c in crit]
-        lines = _table("成功基準・前提・対象外・要確認事項", ["区分", "ID／項目", "内容"],
-                       rows, center_cols=(0,), anchor="crit",
-                       col_widths=["10%", "18%", "72%"],
-                       row_future=lambda i: _is_future(crit[i]))
-        sheets.append(("crit", "成功基準ほか", lines))
-
-    # データエンティティ
-    ents = cfg.get("entities")
-    if ents:
-        rows = [[e.get("name", ""), e.get("desc", "")] for e in ents]
-        lines = _table("主要データエンティティ", ["エンティティ", "説明"],
-                       rows, anchor="ent", col_widths=["22%", "78%"],
-                       row_future=lambda i: _is_future(ents[i]))
-        sheets.append(("ent", "データエンティティ", lines))
-
-    # ── HTML 組み立て
-    out = []
-    out.append("<!DOCTYPE html>")
-    out.append('<html lang="ja">')
-    out.append("<head>")
-    out.append('<meta charset="utf-8">')
-    out.append('<meta name="viewport" content="width=device-width, initial-scale=1">')
-    out.append(f"<title>{esc(title)}</title>")
-    out.append("<style>")
-    out.append(css)
-    out.append("</style>")
-    out.append("</head>")
-    out.append("<body>")
-
-    out.append('  <div class="titlebar">')
-    out.append(f'    <h1 class="title">{esc(title)}</h1>')
+    css = CSS % {"grid": GRID, "hdr": HEADER_BG, "dai": DAI_BG, "chu": CHU_BG, "sho0": SHO_BG[0], "sho1": SHO_BG[1], "future": FUTURE_BG}
+    out = [
+        "<!DOCTYPE html>",
+        '<html lang="ja">',
+        "<head>",
+        '<meta charset="utf-8">',
+        '<meta name="viewport" content="width=device-width, initial-scale=1">',
+        f"<title>{esc(title)}</title>",
+        f"<style>{css}</style>",
+        "</head>",
+        "<body>",
+        '<div class="titlebar">',
+        f'<h1 class="title">{esc(title)}</h1>',
+    ]
     meta_rows = []
-    for k in ("作成日", "作成者", "更新日", "更新者"):
-        v = _fmt_date(meta.get(k, "")) if k in ("作成日", "更新日") else meta.get(k, "")
-        meta_rows.append(f'<tr><td class="k">{esc(k)}</td><td>{esc(v)}</td></tr>')
-    out.append('    <table class="meta">' + "".join(meta_rows) + "</table>")
-    out.append("  </div>")
-
-    out.append('  <nav class="tabbar">')
-    for i, (key, label, _lines) in enumerate(sheets):
-        active = " active" if i == 0 else ""
-        out.append(f'    <button class="{active.strip()}" data-target="panel-{key}">{esc(label)}</button>')
-    out.append("  </nav>")
-
-    for i, (key, _label, lines) in enumerate(sheets):
-        active = " active" if i == 0 else ""
-        out.append(f'  <section class="panel{active}" id="panel-{key}">')
+    for key in ("作成日", "作成者", "更新日", "更新者"):
+        value = _fmt_date(meta.get(key, "")) if key in ("作成日", "更新日") else meta.get(key, "")
+        meta_rows.append(f'<tr><td class="k">{esc(key)}</td><td>{esc(value)}</td></tr>')
+    out.extend(['<table class="meta"><caption class="sr-only">文書情報</caption>' + "".join(meta_rows) + "</table>", "</div>"])
+    out.append('<nav class="tabbar" role="tablist" aria-label="設計書シート">')
+    for index, (key, label, _) in enumerate(sheets):
+        active = " active" if index == 0 else ""
+        selected = "true" if index == 0 else "false"
+        tabindex = "0" if index == 0 else "-1"
+        out.append(f'<button type="button" role="tab" class="{active.strip()}" id="tab-{key}" aria-controls="panel-{key}" aria-selected="{selected}" tabindex="{tabindex}">{esc(label)}</button>')
+    out.append("</nav>")
+    for index, (key, _, lines) in enumerate(sheets):
+        active = " active" if index == 0 else ""
+        out.append(f'<section class="panel{active}" id="panel-{key}" role="tabpanel" aria-labelledby="tab-{key}">')
         out.extend(lines)
-        out.append("  </section>")
+        out.append("</section>")
+    out.extend([SCRIPT, "</body>", "</html>", ""])
+    return "\n".join(out), report
 
-    out.append("  " + TAB_SCRIPT)
-    out.append("</body>")
-    out.append("</html>")
-    out.append("")  # 末尾改行
-    return "\n".join(out)
+
+def _output_path(cfg, config_path, override):
+    if override:
+        return Path(override)
+    configured = cfg.get("output_html") or cfg.get("output")
+    if configured:
+        path = Path(configured)
+        if path.name.endswith(".design.json"):
+            return path.with_name(path.name[: -len(".design.json")] + ".html")
+        return path.with_suffix(".html")
+    name = config_path.name
+    if name.endswith(".design.json"):
+        return config_path.with_name(name[: -len(".design.json")] + ".html")
+    return config_path.with_suffix(".html")
 
 
 def main():
-    ap = argparse.ArgumentParser(description="基本設計書(機能一覧) HTML ジェネレータ")
-    ap.add_argument("config", help="設計データ JSON のパス")
-    ap.add_argument("-o", "--output", help="出力 .html パス（省略時は JSON の output キーの拡張子を .html に）")
-    args = ap.parse_args()
+    parser = argparse.ArgumentParser(description="検証済み基本設計データから自己完結HTMLを生成")
+    parser.add_argument("config", help="v2設計データ (*.design.json)")
+    parser.add_argument("--spec", help="要求の正本 spec.md。確定版生成では必須")
+    parser.add_argument("-o", "--output", help="出力HTML")
+    parser.add_argument("--allow-draft", action="store_true", help="品質エラーがあってもレビュー用ドラフトを生成")
+    args = parser.parse_args()
 
-    with open(args.config, encoding="utf-8") as f:
-        cfg = json.load(f)
-
-    out = args.output or cfg.get("output_html")
-    if not out:
-        base = cfg.get("output")
-        if base:
-            out = base.rsplit(".", 1)[0] + ".html" if "." in base else base + ".html"
-    if not out:
-        sys.exit("出力パスが指定されていません（-o か JSON の output_html / output キー）")
-
-    html_text = render(cfg)
-    with open(out, "w", encoding="utf-8") as f:
-        f.write(html_text)
-
-    nfr = sum(len(s["rows"]) for d in cfg["function_list"]
-              for c in d["children"] for s in c["children"])
-    nscr = len(cfg.get("screens", []) or [])
-    nsheet = 1 + (1 if nscr else 0) + sum(1 for k in ("user_stories", "criteria", "entities") if cfg.get(k))
-    print(f"saved {out}  (機能一覧 {nfr}行 / 画面 {nscr}件 / シート {nsheet}枚)")
+    config_path = Path(args.config)
+    cfg = json.loads(config_path.read_text(encoding="utf-8"))
+    spec_path = Path(args.spec) if args.spec else None
+    if spec_path is None:
+        configured_spec = str((cfg.get("source") or {}).get("spec", "")).strip()
+        if configured_spec:
+            candidate = Path(configured_spec)
+            if not candidate.exists():
+                candidate = config_path.parent / configured_spec
+            if candidate.exists():
+                spec_path = candidate
+    if cfg.get("schema_version") == 2 and spec_path is None and not args.allow_draft:
+        parser.error("確定版生成には --spec が必要です。未検証出力は --allow-draft を明示してください")
+    spec_text = spec_path.read_text(encoding="utf-8") if spec_path else None
+    try:
+        html_text, report = render(cfg, spec_text, allow_draft=args.allow_draft)
+    except ValueError as exc:
+        parser.exit(1, str(exc) + "\n")
+    output = _output_path(cfg, config_path, args.output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(html_text, encoding="utf-8")
+    count = len(flatten_functions(normalize_config(cfg)))
+    print(f"saved {output} (機能 {count}件 / 品質 {report['status']} / 警告 {report['warning_count']}件)")
 
 
 if __name__ == "__main__":
