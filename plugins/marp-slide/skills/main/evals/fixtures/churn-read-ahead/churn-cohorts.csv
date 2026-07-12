@@ -1,0 +1,7 @@
+contract_month,setup_within_7d,customers,retained_90d,retention_rate_percent
+2026-01,true,218,170,78.0
+2026-01,false,194,105,54.1
+2026-02,true,225,171,76.0
+2026-02,false,201,105,52.2
+2026-03,true,211,162,76.8
+2026-03,false,191,97,50.8

@@ -1,0 +1,43 @@
+{
+  "width": 780,
+  "height": 300,
+  "title": {
+    "text": "初週設定完了群は全cohortで90日継続率が高い",
+    "subtitle": "点は推定値、線は95% Wilson区間｜観察データ｜source: demo customer dataset"
+  },
+  "layer": [
+    {
+      "mark": { "type": "rule", "strokeWidth": 3 },
+      "encoding": {
+        "x": { "field": "contract_month", "type": "ordinal", "title": "契約月" },
+        "y": { "field": "ci95_low", "type": "quantitative", "title": "90日有料継続率（%）", "scale": { "domain": [40, 90] } },
+        "y2": { "field": "ci95_high" },
+        "xOffset": { "field": "setup_within_7d" },
+        "color": { "field": "setup_within_7d", "type": "nominal", "title": "初週設定", "scale": { "domain": ["完了", "未完了"], "range": ["#24685e", "#a6422c"] } }
+      }
+    },
+    {
+      "mark": { "type": "point", "filled": true, "size": 120 },
+      "encoding": {
+        "x": { "field": "contract_month", "type": "ordinal" },
+        "y": { "field": "retention_rate_percent", "type": "quantitative" },
+        "xOffset": { "field": "setup_within_7d" },
+        "color": { "field": "setup_within_7d", "type": "nominal", "scale": { "domain": ["完了", "未完了"], "range": ["#24685e", "#a6422c"] } },
+        "tooltip": [
+          { "field": "contract_month", "title": "契約月" },
+          { "field": "setup_within_7d", "title": "初週設定" },
+          { "field": "retention_rate_percent", "title": "90日継続率", "format": ".1f" },
+          { "field": "customers", "title": "母数" }
+        ]
+      }
+    }
+  ],
+  "config": {
+    "background": "#ffffff",
+    "font": "Noto Sans CJK JP",
+    "axis": { "labelFontSize": 16, "titleFontSize": 16, "gridColor": "#e4dfd6" },
+    "title": { "fontSize": 20, "subtitleFontSize": 14, "anchor": "start" },
+    "legend": { "labelFontSize": 15, "titleFontSize": 15 },
+    "view": { "stroke": null }
+  }
+}

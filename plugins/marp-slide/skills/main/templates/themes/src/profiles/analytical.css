@@ -1,0 +1,22 @@
+/* Profile fragment: analytical */
+:root {
+  --deck-bg: #fbfaf6;
+  --deck-surface: #ffffff;
+  --deck-soft: #eee9df;
+  --deck-table-head: #e7e1d7;
+  --deck-ink: #252522;
+  --deck-muted: #6b675f;
+  --deck-line: #d4cec3;
+  --deck-accent: #a6422c;
+  --deck-signal: #24685e;
+  --deck-link: #1f6158;
+  --deck-code-bg: #2a2926;
+  --deck-code-ink: #f7f2e8;
+  --deck-font-sans: 'Noto Sans CJK JP', sans-serif;
+  --deck-font-mono: 'Source Code Pro', monospace;
+}
+h1, h2, section.quote blockquote { font-family: 'Noto Serif CJK JP', serif; }
+section.cover { background: #252522; color: #fbfaf6; border-left: 18px solid var(--deck-accent); }
+section.cover h1, section.cover h2 { color: #fbfaf6; }
+section.cover footer, section.cover::after { display: none; }
+section.section-break { border-left: 18px solid var(--deck-accent); }

@@ -1,0 +1,8 @@
+flowchart LR
+  subgraph BEFORE["現状｜中央値27分"]
+    F["FAQ"] --> R["規約"] --> H["過去回答"] --> M["手順書"] --> C["引用元を記録"]
+  end
+  subgraph POC["PoC｜横断検索"]
+    S["5情報源を1回で検索"] --> E["根拠候補・更新日・矛盾を提示"] --> V["人が最終確認"]
+  end
+  BEFORE --> POC

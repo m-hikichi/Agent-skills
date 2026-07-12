@@ -1,18 +1,26 @@
 {
   "name": "marp-mcp-server",
-  "version": "1.1.0",
-  "description": "MCP server for Marp slide export with custom theme CSS and per-slide PNG images (Docker)",
+  "version": "2.0.0",
+  "description": "Deterministic, workspace-confined Marp, Vega-Lite, and Mermaid renderer",
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test": "npm run build && node --test dist/tests.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.1",
-    "zod": "^3.24.4"
+    "@marp-team/marp-cli": "4.4.0",
+    "@marp-team/marp-core": "4.3.0",
+    "@mermaid-js/mermaid-cli": "11.16.0",
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "puppeteer-core": "24.39.1",
+    "sharp": "0.35.3",
+    "vega": "6.2.0",
+    "vega-lite": "6.4.3",
+    "zod": "3.24.4"
   },
   "devDependencies": {
-    "typescript": "^5.8.3",
-    "@types/node": "^22.15.3"
+    "@types/node": "22.15.3",
+    "typescript": "5.8.3"
   }
 }

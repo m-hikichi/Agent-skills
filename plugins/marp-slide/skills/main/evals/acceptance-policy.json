@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "minimum_candidate_preferences": 4,
+  "blind_dimensions": [
+    "audience_goal_fit",
+    "visual_semantics",
+    "readability",
+    "deck_cohesion",
+    "professional_polish"
+  ],
+  "non_regression_checks": [
+    "evidence_fidelity",
+    "must_include_coverage",
+    "export_success"
+  ],
+  "candidate_hard_gates": [
+    "evidence_fidelity",
+    "must_include_coverage",
+    "export_success",
+    "overflow_free",
+    "assets_complete",
+    "chart_scales_clear",
+    "informative_alt_complete",
+    "artifact_bundle_complete"
+  ],
+  "case_hard_gates": {
+    "1": ["real_data_chart"],
+    "2": ["long_japanese_title_readable"],
+    "3": ["structure_diagram", "presenter_notes"],
+    "4": ["uncertainty_visual"],
+    "5": ["meaningful_local_visual", "brand_constraints"]
+  }
+}

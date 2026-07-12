@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="430" viewBox="0 0 1080 430" role="img" aria-labelledby="title desc">
+  <title id="title">cohort別90日継続率</title><desc id="desc">3cohortすべてで初週設定完了群の継続率が未完了群より高い</desc>
+  <rect width="1080" height="430" rx="18" fill="#fff"/>
+  <g font-family="sans-serif"><text x="76" y="44" font-size="17" fill="#6b675f">90日有料継続率（%）｜点は推定値、線は95% Wilson区間</text>
+  <g stroke="#ddd7cc"><path d="M180 340H1010M180 276H1010M180 212H1010M180 148H1010M180 84H1010"/></g>
+  <g fill="#6b675f" font-size="14" text-anchor="end"><text x="164" y="345">40%</text><text x="164" y="281">50%</text><text x="164" y="217">60%</text><text x="164" y="153">70%</text><text x="164" y="89">80%</text></g>
+  <g fill="#252522" font-size="17" text-anchor="middle"><text x="340" y="382">1月cohort</text><text x="590" y="382">2月cohort</text><text x="840" y="382">3月cohort</text></g>
+  <g stroke="#24685e" stroke-width="8" stroke-linecap="round"><path d="M310 70v60M560 82v58M810 76v60"/></g><g fill="#24685e"><circle cx="310" cy="101" r="10"/><circle cx="560" cy="112" r="10"/><circle cx="810" cy="108" r="10"/></g>
+  <g stroke="#a6422c" stroke-width="8" stroke-linecap="round"><path d="M370 230v80M620 246v78M870 236v80"/></g><g fill="#a6422c"><circle cx="370" cy="269" r="10"/><circle cx="620" cy="285" r="10"/><circle cx="870" cy="278" r="10"/></g>
+  <g font-size="15" font-weight="700"><text x="286" y="62" fill="#24685e">78%</text><text x="536" y="74" fill="#24685e">76%</text><text x="786" y="68" fill="#24685e">77%</text><text x="382" y="334" fill="#a6422c">54%</text><text x="632" y="348" fill="#a6422c">52%</text><text x="882" y="340" fill="#a6422c">51%</text></g>
+  <rect x="770" y="18" width="14" height="14" rx="7" fill="#24685e"/><text x="792" y="31" font-size="14" fill="#252522">初週設定完了</text><rect x="908" y="18" width="14" height="14" rx="7" fill="#a6422c"/><text x="930" y="31" font-size="14" fill="#252522">未完了</text></g>
+</svg>

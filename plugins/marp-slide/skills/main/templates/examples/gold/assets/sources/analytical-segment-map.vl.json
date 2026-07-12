@@ -1,0 +1,30 @@
+{
+  "width": 790,
+  "height": 300,
+  "title": {
+    "text": "価格理由の解約は、低利用かつ設定未完了の領域に集中",
+    "subtitle": "説明用sample｜点は企業｜source: demo customer dataset"
+  },
+  "mark": { "type": "point", "filled": true, "opacity": 0.85, "size": 150 },
+  "encoding": {
+    "x": { "field": "weekly_uses", "type": "quantitative", "title": "初週利用回数（回）", "scale": { "zero": true } },
+    "y": { "field": "employees", "type": "quantitative", "title": "企業規模（従業員数）", "scale": { "zero": true } },
+    "color": { "field": "exit_reason", "type": "nominal", "title": "退会理由", "scale": { "domain": ["価格", "その他"], "range": ["#a6422c", "#9aa49f"] } },
+    "shape": { "field": "setup_status", "type": "nominal", "title": "初週設定" },
+    "tooltip": [
+      { "field": "company_id", "title": "企業" },
+      { "field": "weekly_uses", "title": "初週利用回数" },
+      { "field": "employees", "title": "従業員数" },
+      { "field": "exit_reason", "title": "退会理由" },
+      { "field": "setup_status", "title": "初週設定" }
+    ]
+  },
+  "config": {
+    "background": "#ffffff",
+    "font": "Noto Sans CJK JP",
+    "axis": { "labelFontSize": 16, "titleFontSize": 16, "gridColor": "#e4dfd6" },
+    "title": { "fontSize": 20, "subtitleFontSize": 14, "anchor": "start" },
+    "legend": { "labelFontSize": 14, "titleFontSize": 14 },
+    "view": { "stroke": null }
+  }
+}

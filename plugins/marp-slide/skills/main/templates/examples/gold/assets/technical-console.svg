@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="430" viewBox="0 0 1080 430" role="img" aria-labelledby="title desc">
+  <title id="title">annotated incident console</title><desc id="desc">deploy後にcheckoutの504とpayment timeoutが増えたlogを注釈した画面</desc>
+  <rect width="1080" height="430" rx="14" fill="#080f1e" stroke="#3a4b68"/>
+  <g font-family="monospace"><rect x="0" y="0" width="1080" height="46" rx="14" fill="#17233a"/><text x="28" y="29" font-size="14" fill="#a9b6ca">incident.log — aligned by UTC</text>
+  <g font-size="17" fill="#a9b6ca"><text x="42" y="92">10:01:58 checkout v2.7.4 p95=218ms status=200</text><text x="42" y="132" fill="#fbbf24">10:02:11 deploy checkout version=2.8.0 completed</text><text x="42" y="172">10:04:42 search   v5.1.2 p95=181ms status=200</text><text x="42" y="212" fill="#fb7185">10:05:03 checkout v2.8.0 p95=4217ms status=504</text><text x="42" y="252" fill="#fb7185">10:05:03 dependency=payment timeout=3000ms</text><text x="42" y="292">10:05:07 profile  v3.4.1 p95=205ms status=200</text></g>
+  <rect x="708" y="90" width="326" height="84" rx="9" fill="#26334a" stroke="#fbbf24"/><text x="730" y="120" font-size="15" fill="#fbbf24">① 直前の変更</text><text x="730" y="148" font-size="14" fill="#edf3fc">checkoutだけがv2.8.0へ</text><path d="M708 133H650L610 132" stroke="#fbbf24" stroke-width="3" fill="none"/>
+  <rect x="708" y="206" width="326" height="92" rx="9" fill="#382337" stroke="#fb7185"/><text x="730" y="238" font-size="15" fill="#fb7185">② 依存先の差</text><text x="730" y="268" font-size="14" fill="#edf3fc">paymentだけ3秒timeout</text><path d="M708 250H660L626 250" stroke="#fb7185" stroke-width="3" fill="none"/>
+  <rect x="42" y="336" width="994" height="54" rx="8" fill="#13243a"/><text x="66" y="370" font-size="16" fill="#50dc88">観測 ≠ 原因確定：旧版との差を次に確認する</text></g>
+</svg>

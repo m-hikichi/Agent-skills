@@ -1,147 +1,115 @@
-# marp-slide プラグイン
+# marp-slide
 
-Claude Codeで、聞き手・目的・根拠・発表条件に合わせたMarp資料を作成するプラグインです。ストーリーボードを先に設計し、外部テーマとローカル画像/SVGで資料化し、作成者とは別のreviewerが全ページPNGを確認します。
+聞き手・目的・根拠から構成を設計し、写真、データchart、静的diagramを使ったMarp資料を制作するClaude Code pluginです。action-titleの論理検査、実内容入りデザイン案の統合確認、全ページ2倍PNG、machine QA、独立したcontent/visual reviewを経て仕上げます。
 
-## v0.8の変更点
-
-- 固定archetypeと行数制限中心の評価を廃止
-- 独立・厳格・証拠ベースのrubric v2へ変更
-- inline CSSを外部テーマへ分離
-- executive-clean / editorial / technicalの3テーマを追加
-- proposal / executive-update / report / training / researchの完成例を分離
-- ローカル画像、SVG、事前変換したMermaid図を許可
-- ハッシュとreview attemptの計算をスクリプトへ移動
-
-## 必要なもの
+## Setup
 
 - Claude Code 1.0.33以降
-- Docker
-- bash
-- `sha256sum`または`shasum`
+- Docker（固定Marp renderer / MCP）
 
-## セットアップ
-
-MCPサーバをビルドします。
+Node.js 20以降がホストにあればlifecycle CLIは直接実行します。Nodeがない環境では同梱launcherがDocker image内のNodeへ自動的にfallbackします。
 
 ```bash
 cd plugins/marp-slide/mcp-server
 docker build -t marp-mcp-server .
-```
-
-プラグインを読み込みます。
-
-```bash
 claude --plugin-dir <repo>/plugins/marp-slide
 ```
 
-Claude Codeで実行します。
+Claude Codeで呼び出します。
 
 ```text
 /marp-slide:main
 ```
 
-## ワークフロー
+## Workflow
 
-1. Gather: 聞き手、目的、発表形態、根拠、デザイン条件を確認
-2. Storyboard: 各ページの役割、メッセージ、根拠、視覚表現を設計
-3. Draft: 資料タイプに合うテーマと完成例を選んで作成
-4. Review: 別reviewerがPDF/PNGとMarkdownをrubric v2で評価
-5. Export: passしたソースから必要な形式を出力
+1. source inventoryと根拠ID
+2. deck thesis、narrative spine、action-title ghost test
+3. ページ別visual briefとvisual direction
+4. 実内容入り3案とaction-title一覧の統合確認1回
+5. 提供素材、data chart、静的diagram、Web／生成画像の順でasset制作
+6. Marp compose、2倍PNG、contact sheet、machine QA
+7. 独立content reviewerとvisual reviewer
+8. 必須の修正・再レンダー後にrubric v3 finalize
 
-## 外部テーマ
+新規案件の作業領域はcross-platform CLIで作ります。
 
-| theme | 主な用途 |
-|---|---|
-| `executive-clean` | 提案、経営更新、意思決定 |
-| `editorial` | 分析報告、調査、研究 |
-| `technical` | 研修、技術説明、手順 |
-
-生成時は選んだCSSを `slides/theme.css` にコピーします。
-
-```yaml
----
-marp: true
-theme: executive-clean
----
+```powershell
+& "$env:CLAUDE_PLUGIN_ROOT/scripts/run-cli.ps1" init --root .
 ```
 
-MCP出力ではthemeを指定します。
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/run-cli.sh" init --root .
+```
+
+## Renderer tools
 
 ```text
-marp_export(
+marp_render_deck({
   source: "slides/presentation.md",
-  format: "pdf",
-  output: ".slide-work/presentation.pdf",
-  theme: "slides/theme.css"
-)
+  theme: "slides/theme.css",
+  formats: ["pdf", "png"],
+  output_dir: ".slide-work",
+  image_scale: 2
+})
 ```
 
-themeは任意です。従来のinline CSSデッキもそのまま出力できます。
+- `marp_render_deck`: PDF/PNG/HTML/PPTX、notes、render manifest、machine QAを同じ固定環境で生成
+- `marp_render_chart`: Vega-Lite specとCSV/JSONから静的SVGを生成
+- `marp_render_diagram`: Mermaid sourceから静的SVGを生成
+- `marp_export`: 既存呼び出し向けの互換wrapper
 
-## rubric v2
+通常PPTXはレンダリング画像を格納するため、object単位で編集できません。editable PPTXは標準対象外です。
 
-### ハードゲート
-
-- H1: 聞き手と目的への適合
-- H2: must_includeの充足
-- H3: 事実・数値・引用の根拠
-- H4: 資料タイプに合うストーリー
-- H5: レンダリング結果の可読性
-
-### 5段階評価
-
-- ストーリーと聞き手適合
-- 根拠と内容の信頼性
-- 視覚階層と図解の適切さ
-- 統一感と完成度
-
-全ハードゲートpass、全評価4以上、critical/majorなしでpassです。reviewerは問題ごとにスライド番号、観測事実、理由、修正案を記録します。
-
-## 状態ファイル
+## Artifacts
 
 ```text
 .slide-work/
-|-- request.yaml
-|-- storyboard.md
-|-- review.json
-|-- presentation.pdf
-`-- rendered-pages/
+├── request.yaml
+├── storyboard.md
+├── deck-plan.json
+├── asset-manifest.json
+├── render-manifest.json
+├── machine-qa.json
+├── content-review.json
+├── visual-review.json
+├── review.json
+├── run-state.json
+├── contact-sheet.png
+├── presentation.pdf
+├── presentation-notes.txt
+└── rendered-pages/page-001.png ...
 slides/
-|-- presentation.md
-|-- theme.css
-`-- assets/
-    `-- SOURCES.md
+├── presentation.md
+├── theme.css
+└── assets/
 ```
 
-旧rubricのreview.jsonはv0.8では無効です。現在のソースに対し `rubric_version: 2` で再レビューしてください。
+`review.json`はrubric v3で、source、request、theme、asset manifest、参照／登録された全ローカルassetを含むartifact fingerprintへ結び付きます。いずれかを変更すると古いpassは失効します。renderer条件はfingerprintとは別にrender manifestへ固定versionとして記録します。finalizeにはrender 2以降と、現iterationに対応する具体的な改善記録が必要です。
 
-## lint
+`run-state.json`は`active / needs_user / blocked / complete`を取り、確認待ちや外部阻害でも`completed: false`を維持します。`complete`は`finalize`だけが設定し、完了後のstateは変更できません。
 
-lintは品質を判定せず、frontmatter、theme、ローカルアセット、枚数指定だけを確認します。
+notesファイルは全deckで生成します。`read-ahead`は空のnotes artifactを許容し、`live / hybrid`は実内容を持つMarpit presenter notesがlint必須です。
 
-```bash
-bash scripts/deck-lint.sh \
-  --source slides/presentation.md \
-  --target 10 \
-  --slide-count-mode target \
-  --theme slides/theme.css
-```
+## Theme and examples
 
-`exact`だけが枚数不一致をFAILにします。`target`はWARN、`flexible`は判定しません。
+themeは `base + profile + deck tokens` から単一の `slides/theme.css` へcompileします。互換用の自己完結themeと3本のgold deckも同梱しています。
 
-## レビュー状態
+- executive decision：比較chart、選択肢、判定gate、roadmap
+- analytical read-ahead：方法、cohort/segment chart、限界、実験設計
+- technical training：structure diagram、annotated log、exercise、presenter notes
 
-レビュー開始前にスクリプトがハッシュとattemptを計算します。
+旧5例とHTML starterはcomponent galleryへ再編しました。frontmatterのHTML実行許可、CSS幅の疑似bar chart、runtime Mermaid/Vegaは使用しません。
 
-```bash
-bash scripts/review-gate.sh prepare
-```
+## Constraints
 
-Stop hookはpass判定について次を確認します。
+- 確認できない数値は仮説または要確認として表示
+- 外部素材はURL、license、取得日をmanifestへ記録
+- AI画像は背景・概念illustrationに限定し、文章・数値・chartを描かせない
+- 全ページPNGを実際に開いたvisual reviewなしでpassにしない
+- geometry checkが`not_run`のmachine QAはpassとして扱わない
+- workspaceの任意Marp config、workspace外のCSS/SVG参照、runtime JavaScriptを読み込まない
 
-- rubric_versionが2
-- source_sha256が現在のMarkdownと一致
-- 全ページPNGを確認済み
-- 5ハードゲートがpass
-- 4評価がすべて4以上
-- critical/major問題がない
+## Evaluation
+
+`skills/main/evals/` に、CSV付き経営提案、長い日本語見出しのread-ahead、SRE研修、研究不確実性、ブランド素材の5 fixtureがあります。v0.8 snapshotとのblind A/Bで、5件中4件以上の総合選好と、根拠忠実性・export成功率の非後退を受入条件にします。再現可能なworkspace作成、匿名化、受入集計、gold deck regressionのコマンドは[`skills/main/evals/README.md`](skills/main/evals/README.md)に集約しています。

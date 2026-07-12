@@ -5,8 +5,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/review-gate.sh\" gate",
-            "timeout": 30
+            "command": "docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint node -v \"${CLAUDE_PLUGIN_ROOT}:/plugin:ro\" -v \".:/workspace:ro\" -w /workspace marp-mcp-server /plugin/scripts/marp-slide.mjs gate --root /workspace",
+            "timeout": 45
           }
         ]
       }

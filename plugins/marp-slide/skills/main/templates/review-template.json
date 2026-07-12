@@ -1,33 +1,54 @@
 {
-  "rubric_version": 2,
-  "status": "missing_info",
-  "reviewed_at": "",
-  "source_sha256": "",
-  "review_attempt": 0,
-  "missing_required": [],
-  "questions_for_user": [],
+  "rubric_version": 3,
+  "status": "needs_user",
+  "reviewed_at": "1970-01-01T00:00:00Z",
+  "artifact_fingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
+  "review_attempt": 1,
+  "render_iteration": 1,
+  "missing_required": ["Replace with the concrete missing requirement before validation."],
+  "questions_for_user": ["Replace with the concrete question that must be answered."],
   "issues": [],
   "strengths": [],
-  "hard_gates": {
-    "H1_audience_goal_fit": { "status": "not_run", "evidence": "" },
-    "H2_must_include_coverage": { "status": "not_run", "evidence": "" },
-    "H3_evidence_integrity": { "status": "not_run", "evidence": "" },
-    "H4_story_coherence": { "status": "not_run", "evidence": "" },
-    "H5_rendered_readability": { "status": "not_run", "evidence": "" }
+  "machine_qa": {
+    "status": "not_run",
+    "checks": {
+      "asset_integrity": { "status": "not_run", "evidence": "" },
+      "overflow": { "status": "not_run", "evidence": "" },
+      "clipping": { "status": "not_run", "evidence": "" },
+      "slide_count": { "status": "not_run", "evidence": "" },
+      "minimum_text_size": { "status": "not_run", "evidence": "" },
+      "contrast": { "status": "not_run", "evidence": "" },
+      "alt_text": { "status": "not_run", "evidence": "" },
+      "manifest_integrity": { "status": "not_run", "evidence": "" }
+    }
   },
-  "scores": {
-    "story_audience_fit": { "score": 0, "reason": "" },
-    "evidence_content_quality": { "score": 0, "reason": "" },
-    "visual_hierarchy_semantics": { "score": 0, "reason": "" },
-    "cohesion_polish": { "score": 0, "reason": "" }
-  },
-  "artifacts": {
-    "pdf": ".slide-work/presentation.pdf",
-    "page_images": []
+  "content_review": {
+    "status": "not_run",
+    "hard_gates": {
+      "audience_goal_fit": { "status": "not_run", "evidence": "" },
+      "must_include_coverage": { "status": "not_run", "evidence": "" },
+      "evidence_integrity": { "status": "not_run", "evidence": "" },
+      "story_coherence": { "status": "not_run", "evidence": "" }
+    },
+    "scores": {
+      "story_audience_fit": { "score": 0, "reason": "" },
+      "evidence_content_quality": { "score": 0, "reason": "" }
+    }
   },
   "visual_review": {
-    "executed": false,
+    "status": "not_run",
+    "contact_sheet": null,
     "checked_page_count": 0,
+    "page_images": [],
+    "hard_gates": {
+      "rendered_readability": { "status": "not_run", "evidence": "" },
+      "visual_semantics": { "status": "not_run", "evidence": "" },
+      "accessibility": { "status": "not_run", "evidence": "" }
+    },
+    "scores": {
+      "visual_hierarchy_semantics": { "score": 0, "reason": "" },
+      "cohesion_polish": { "score": 0, "reason": "" }
+    },
     "page_findings": []
   }
 }

@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "generated_at": "1970-01-01T00:00:00Z",
+  "artifact_fingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
+  "render_iteration": 2,
+  "improvements": [
+    {
+      "iteration": 2,
+      "description": "Replace with an observed, concrete improvement from render 1.",
+      "slides": [1]
+    }
+  ],
+  "slide_count": 1,
+  "source": {
+    "path": "slides/presentation.md",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "request": {
+    "path": ".slide-work/request.yaml",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "theme": {
+    "path": "slides/theme.css",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "assets": [
+    {
+      "path": "slides/assets/example.svg",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "formats": ["pdf", "png", "notes"],
+  "outputs": [
+    {
+      "format": "pdf",
+      "path": ".slide-work/presentation.pdf",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "format": "notes",
+      "path": ".slide-work/presentation-notes.txt",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "page_images": [
+    {
+      "slide": 1,
+      "path": ".slide-work/rendered-pages/page-001.png",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "width": 2560,
+      "height": 1440
+    }
+  ],
+  "contact_sheet": {
+    "path": ".slide-work/contact-sheet.png",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "width": 368,
+    "height": 256
+  },
+  "environment": {
+    "marp_cli": "4.4.0",
+    "marp_core": "4.3.0",
+    "chromium": "example",
+    "node": "example",
+    "platform": "example",
+    "fonts": [
+      {
+        "name": "Noto Sans CJK JP",
+        "url": "local://Noto-Sans-CJK-JP",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    ]
+  }
+}

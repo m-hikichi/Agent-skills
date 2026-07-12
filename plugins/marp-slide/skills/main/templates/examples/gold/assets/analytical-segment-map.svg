@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="430" viewBox="0 0 1080 430" role="img" aria-labelledby="title desc">
+  <title id="title">価格理由解約者のsegment map</title><desc id="desc">価格理由の解約者が低利用かつ初週設定未完了の領域に集中する</desc>
+  <rect width="1080" height="430" rx="18" fill="#fff"/>
+  <g font-family="sans-serif"><rect x="170" y="70" width="760" height="290" fill="#fbfaf6" stroke="#d4cec3"/><rect x="170" y="215" width="380" height="145" fill="#f4dfd9"/><text x="190" y="342" font-size="16" font-weight="700" fill="#a6422c">設定未完了・低利用</text>
+  <g stroke="#ddd7cc"><path d="M360 70v290M550 70v290M740 70v290M170 142h760M170 215h760M170 287h760"/></g>
+  <g fill="#a6422c" opacity=".78"><circle cx="248" cy="318" r="13"/><circle cx="302" cy="292" r="10"/><circle cx="360" cy="305" r="16"/><circle cx="418" cy="262" r="12"/><circle cx="472" cy="278" r="9"/><circle cx="520" cy="230" r="11"/></g>
+  <g fill="#24685e" opacity=".75"><circle cx="590" cy="190" r="8"/><circle cx="652" cy="170" r="10"/><circle cx="714" cy="138" r="9"/><circle cx="790" cy="126" r="12"/><circle cx="848" cy="104" r="8"/><circle cx="894" cy="92" r="7"/></g>
+  <g fill="#6b675f" font-size="14"><text x="468" y="405">初週利用回数 →</text><text transform="translate(50 270) rotate(-90)">企業規模（従業員数） →</text><text x="170" y="382">0</text><text x="538" y="382">10</text><text x="912" y="382">20回</text></g>
+  <rect x="748" y="28" width="12" height="12" rx="6" fill="#a6422c"/><text x="768" y="40" font-size="14" fill="#252522">価格理由・設定未完了</text><rect x="914" y="28" width="12" height="12" rx="6" fill="#24685e"/><text x="934" y="40" font-size="14" fill="#252522">その他</text>
+  <path d="M560 252c70-46 120-54 176-66" stroke="#a6422c" stroke-width="3" fill="none"/><text x="612" y="238" font-size="16" font-weight="700" fill="#a6422c">集中領域</text></g>
+</svg>

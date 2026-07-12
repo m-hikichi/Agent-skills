@@ -1,0 +1,396 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-12T14:43:43.149Z",
+  "catalog_sha256": "881788c36fa9440e10506b4934bf2452992fb9fd846fe3e4a421006c49e4ba3b",
+  "input_fingerprint": {
+    "sha256": "d9148ec8d49be4cf3cb693364a9cdf2e10440224029bcca223c50b83a71c04db",
+    "files": [
+      {
+        "deck": "_shared",
+        "field": "shared_input",
+        "path": "templates/themes/src",
+        "sha256": "7d61a1b7e177597c94f761e0d42cf8bd91c0952f21840b427931e895e56ff892"
+      },
+      {
+        "deck": "executive-decision",
+        "field": "source",
+        "path": "templates/examples/gold/executive-decision.md",
+        "sha256": "ede48dd8edab1c2313a754b13d11363e143dc8200cf6b30e289807a18ae997d2"
+      },
+      {
+        "deck": "executive-decision",
+        "field": "theme",
+        "path": "templates/themes/executive-clean.css",
+        "sha256": "d919949bdd66a4dd4066196078745d1e25e0a9664e2a589718a1684bf28fd066"
+      },
+      {
+        "deck": "executive-decision",
+        "field": "assets",
+        "path": "templates/examples/gold/assets",
+        "sha256": "63eb890ac281daaa7d22b3042d9446a14a26c0de652162e24600561f261ea13d"
+      },
+      {
+        "deck": "analytical-read-ahead",
+        "field": "source",
+        "path": "templates/examples/gold/analytical-read-ahead.md",
+        "sha256": "8cb1102573d001c125a6ba9fb40b6484a450e2640a02f1c28eebdfdf4c26eb0c"
+      },
+      {
+        "deck": "analytical-read-ahead",
+        "field": "theme",
+        "path": "templates/themes/editorial.css",
+        "sha256": "2e784964338bb67c0b9f1ca5b79647c18c71fc3ec6071e37119760b488ae0e37"
+      },
+      {
+        "deck": "analytical-read-ahead",
+        "field": "assets",
+        "path": "templates/examples/gold/assets",
+        "sha256": "63eb890ac281daaa7d22b3042d9446a14a26c0de652162e24600561f261ea13d"
+      },
+      {
+        "deck": "technical-training",
+        "field": "source",
+        "path": "templates/examples/gold/technical-training.md",
+        "sha256": "67307de7894f0335d5a853b0173e47d06e427bab59bf03bb5db6b5a3807c9f27"
+      },
+      {
+        "deck": "technical-training",
+        "field": "theme",
+        "path": "templates/themes/technical.css",
+        "sha256": "9e35e3cb01599af6eb36a7a1e99a8e0f5be94f440913c5a7d3929d09ead14af5"
+      },
+      {
+        "deck": "technical-training",
+        "field": "assets",
+        "path": "templates/examples/gold/assets",
+        "sha256": "63eb890ac281daaa7d22b3042d9446a14a26c0de652162e24600561f261ea13d"
+      }
+    ]
+  },
+  "decks": [
+    {
+      "id": "executive-decision",
+      "slide_count": 8,
+      "environment": {
+        "chromium": "Chromium 150.0.7871.100 built on Debian GNU/Linux 12 (bookworm)",
+        "fonts": [
+          {
+            "name": "BIZ UDPGothic Regular",
+            "sha256": "258d7156c165f2ff774b6efee637c22c3b950de0d8a10e501137061bc8085d01",
+            "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/bizudpgothic/BIZUDPGothic-Regular.ttf"
+          },
+          {
+            "name": "BIZ UDPGothic Bold",
+            "sha256": "30eba52fc837e8b62c97d4b82e6706583149fb7294e3712dd71a655eaea80a90",
+            "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/bizudpgothic/BIZUDPGothic-Bold.ttf"
+          },
+          {
+            "name": "Source Code Pro Variable",
+            "sha256": "b400fc584e10aff25d0e775ce181b4fc1c5ea1b5dc37b81aeb2084375b945790",
+            "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/sourcecodepro/SourceCodePro%5Bwght%5D.ttf"
+          },
+          {
+            "name": "Source Code Pro Italic Variable",
+            "sha256": "6db77d25aa7b30eff449305b5c998e475694c74d398421127ea5a60f536413cd",
+            "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/sourcecodepro/SourceCodePro-Italic%5Bwght%5D.ttf"
+          },
+          {
+            "name": "Noto Sans CJK Regular TTC",
+            "sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a",
+            "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1"
+          },
+          {
+            "name": "Noto Sans CJK Bold TTC",
+            "sha256": "faa5f3656a78b2e2d450d27fe8382c778bc2b6bb5ea29c986664a6a435056ceb",
+            "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1"
+          },
+          {
+            "name": "Noto Serif CJK Regular TTC",
+            "sha256": "a04178ec485dffdff7cc0c0c20e1fce9202d7e2160d805e8e44a4c8841c58481",
+            "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1"
+          },
+          {
+            "name": "Noto Serif CJK Bold TTC",
+            "sha256": "a5d4b046c127da3d7c72f98b46c41489cd29bf52abfdf18aba920903e920d4ac",
+            "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1"
+          }
+        ],
+        "marp_cli": "4.4.0",
+        "marp_core": "4.3.0",
+        "node": "v20.19.4",
+        "platform": "linux-x64"
+      },
+      "pages": [
+        {
+          "page": 1,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "49498897b2b478c0170ba852bf3f69bf6456b52fb6cea8827f0031fc165d39e5"
+        },
+        {
+          "page": 2,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "a60509abe5fd2cb415eb6a34635e58defcc05592ecf5e82fc9aa91f0586efc61"
+        },
+        {
+          "page": 3,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "b47344717a5fb08940705006876e9492f6374fdaff6e748bb5b43f69c0fe0ddb"
+        },
+        {
+          "page": 4,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "bc9235bf1178dd38384fc4530a403cb2ab01ef3dd57d1262c390fa3793e7ed7a"
+        },
+        {
+          "page": 5,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "8b265888952556e73bba55daa2cbac223af72a4f8ff18dc53ce0e7065c5b4762"
+        },
+        {
+          "page": 6,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "c82a3690cb26443945f0582e919f29ee03e0bc187575d21b264a7b0565a42dcb"
+        },
+        {
+          "page": 7,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "88f3a880d7c6c44e6fa98f4586acf2756cc683efac0182a83f34b4eafabcb25b"
+        },
+        {
+          "page": 8,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "51784cdcd12eff1b4d29b84bab24027bcdacbb2c4308575f194ac4f3cf7a95fd"
+        }
+      ],
+      "contact_sheet": {
+        "width": 1048,
+        "height": 712,
+        "normalized_png_sha256": "f4e4685abac5053e2767aba16612d03e1be1728b02c2456af0a671de79e5f27e"
+      }
+    },
+    {
+      "id": "analytical-read-ahead",
+      "slide_count": 8,
+      "environment": {
+        "chromium": "Chromium 150.0.7871.100 built on Debian GNU/Linux 12 (bookworm)",
+        "fonts": [
+          {
+            "name": "BIZ UDPGothic Regular",
+            "sha256": "258d7156c165f2ff774b6efee637c22c3b950de0d8a10e501137061bc8085d01",
+            "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/bizudpgothic/BIZUDPGothic-Regular.ttf"
+          },
+          {
+            "name": "BIZ UDPGothic Bold",
+            "sha256": "30eba52fc837e8b62c97d4b82e6706583149fb7294e3712dd71a655eaea80a90",
+            "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/bizudpgothic/BIZUDPGothic-Bold.ttf"
+          },
+          {
+            "name": "Source Code Pro Variable",
+            "sha256": "b400fc584e10aff25d0e775ce181b4fc1c5ea1b5dc37b81aeb2084375b945790",
+            "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/sourcecodepro/SourceCodePro%5Bwght%5D.ttf"
+          },
+          {
+            "name": "Source Code Pro Italic Variable",
+            "sha256": "6db77d25aa7b30eff449305b5c998e475694c74d398421127ea5a60f536413cd",
+            "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/sourcecodepro/SourceCodePro-Italic%5Bwght%5D.ttf"
+          },
+          {
+            "name": "Noto Sans CJK Regular TTC",
+            "sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a",
+            "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1"
+          },
+          {
+            "name": "Noto Sans CJK Bold TTC",
+            "sha256": "faa5f3656a78b2e2d450d27fe8382c778bc2b6bb5ea29c986664a6a435056ceb",
+            "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1"
+          },
+          {
+            "name": "Noto Serif CJK Regular TTC",
+            "sha256": "a04178ec485dffdff7cc0c0c20e1fce9202d7e2160d805e8e44a4c8841c58481",
+            "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1"
+          },
+          {
+            "name": "Noto Serif CJK Bold TTC",
+            "sha256": "a5d4b046c127da3d7c72f98b46c41489cd29bf52abfdf18aba920903e920d4ac",
+            "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1"
+          }
+        ],
+        "marp_cli": "4.4.0",
+        "marp_core": "4.3.0",
+        "node": "v20.19.4",
+        "platform": "linux-x64"
+      },
+      "pages": [
+        {
+          "page": 1,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "b85b2e3977f74c6a793ce1801675db6b309919de992946b2e8e0f0852b03bc88"
+        },
+        {
+          "page": 2,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "5b9b4ff21e712883b1c3931a52dcebf43811076c471647ee0809392e7bca791b"
+        },
+        {
+          "page": 3,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "1f47f3c801b603883714c1101cabc0baf269b88938da8abacc363aeb023cc2b9"
+        },
+        {
+          "page": 4,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "3d4a542a33885c019f9065156bab171a7602bf2c399d34b952ef9f107c650697"
+        },
+        {
+          "page": 5,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "93a69f7fb7b3972b92f3de0f2f25d6800a46e7207453b94e7bfcc2e3db5eebdb"
+        },
+        {
+          "page": 6,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "fc360362e7fbfdfd88d49c7da31707def0384c162dde5070ac5f4dc863c52242"
+        },
+        {
+          "page": 7,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "48d5acb82558753d7f9910c16cc1e50a385ddc7d32bef7f4d049cc997a8ce33b"
+        },
+        {
+          "page": 8,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "3c88435e5f447d9e5f2ca8bea67d79b59505e9bdeb6db15fb45d424b49f393a6"
+        }
+      ],
+      "contact_sheet": {
+        "width": 1048,
+        "height": 712,
+        "normalized_png_sha256": "bde77189a94ac4c18260a574e507bda9760f54e1b68a5b10d5004b83f2f2594a"
+      }
+    },
+    {
+      "id": "technical-training",
+      "slide_count": 8,
+      "environment": {
+        "chromium": "Chromium 150.0.7871.100 built on Debian GNU/Linux 12 (bookworm)",
+        "fonts": [
+          {
+            "name": "BIZ UDPGothic Regular",
+            "sha256": "258d7156c165f2ff774b6efee637c22c3b950de0d8a10e501137061bc8085d01",
+            "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/bizudpgothic/BIZUDPGothic-Regular.ttf"
+          },
+          {
+            "name": "BIZ UDPGothic Bold",
+            "sha256": "30eba52fc837e8b62c97d4b82e6706583149fb7294e3712dd71a655eaea80a90",
+            "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/bizudpgothic/BIZUDPGothic-Bold.ttf"
+          },
+          {
+            "name": "Source Code Pro Variable",
+            "sha256": "b400fc584e10aff25d0e775ce181b4fc1c5ea1b5dc37b81aeb2084375b945790",
+            "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/sourcecodepro/SourceCodePro%5Bwght%5D.ttf"
+          },
+          {
+            "name": "Source Code Pro Italic Variable",
+            "sha256": "6db77d25aa7b30eff449305b5c998e475694c74d398421127ea5a60f536413cd",
+            "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/sourcecodepro/SourceCodePro-Italic%5Bwght%5D.ttf"
+          },
+          {
+            "name": "Noto Sans CJK Regular TTC",
+            "sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a",
+            "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1"
+          },
+          {
+            "name": "Noto Sans CJK Bold TTC",
+            "sha256": "faa5f3656a78b2e2d450d27fe8382c778bc2b6bb5ea29c986664a6a435056ceb",
+            "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1"
+          },
+          {
+            "name": "Noto Serif CJK Regular TTC",
+            "sha256": "a04178ec485dffdff7cc0c0c20e1fce9202d7e2160d805e8e44a4c8841c58481",
+            "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1"
+          },
+          {
+            "name": "Noto Serif CJK Bold TTC",
+            "sha256": "a5d4b046c127da3d7c72f98b46c41489cd29bf52abfdf18aba920903e920d4ac",
+            "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1"
+          }
+        ],
+        "marp_cli": "4.4.0",
+        "marp_core": "4.3.0",
+        "node": "v20.19.4",
+        "platform": "linux-x64"
+      },
+      "pages": [
+        {
+          "page": 1,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "57d60443d9d56bc8814c26538c3ddd320e46e6a8cb6a29dbc240b91b7ca29e48"
+        },
+        {
+          "page": 2,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "467cf641c18a82173efb74faeeb7d2b886ac4c903aa646193043de313235e21e"
+        },
+        {
+          "page": 3,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "a01ea661d58a5a9d6961fb14eca963dbf324cfc96a09ea0850db801e767af022"
+        },
+        {
+          "page": 4,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "422ec5df928ef9b225a9a93c442fda54c6ce7b187c3a4ad16263b9a73f29c9cc"
+        },
+        {
+          "page": 5,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "244a0a7b6dd9d0f882b94997a76d12a9ac4e825bbc9dbb3bb210dc05c66a2449"
+        },
+        {
+          "page": 6,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "7fac960aa21b8cef73c9c36292d0c2c8561025cf1861cea44d5946f165fe72a6"
+        },
+        {
+          "page": 7,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "fd51fbfee31c05330639744d6e488859c77f5f26acfb7722f2c670cf0a52f407"
+        },
+        {
+          "page": 8,
+          "width": 2560,
+          "height": 1440,
+          "normalized_png_sha256": "42c443b5790aa3b33efc45622a2240d341f2f51e7e3d96cf5393728b13b6ec58"
+        }
+      ],
+      "contact_sheet": {
+        "width": 1048,
+        "height": 712,
+        "normalized_png_sha256": "d0194a57b1c2d545d65361e6cd6519266bf2bf1837664604e3fda553ded7e81d"
+      }
+    }
+  ]
+}

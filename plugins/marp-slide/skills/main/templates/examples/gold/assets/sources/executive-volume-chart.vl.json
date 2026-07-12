@@ -1,0 +1,51 @@
+{
+  "width": 820,
+  "height": 300,
+  "title": {
+    "text": "問い合わせ分類別の月平均件数",
+    "subtitle": "2026年4〜6月｜全4,380件｜上位3分類が72%｜source: demo fixture"
+  },
+  "layer": [
+    { "mark": { "type": "bar", "cornerRadiusEnd": 4 } },
+    {
+      "mark": { "type": "text", "align": "left", "baseline": "middle", "dx": 7, "fontSize": 15 },
+      "encoding": {
+        "text": { "field": "monthly_cases", "type": "quantitative", "format": "," },
+        "color": { "value": "#142033" }
+      }
+    }
+  ],
+  "encoding": {
+    "y": {
+      "field": "category",
+      "type": "nominal",
+      "sort": "-x",
+      "title": null
+    },
+    "x": {
+      "field": "monthly_cases",
+      "type": "quantitative",
+      "title": "月平均件数（件）",
+      "scale": { "zero": true }
+    },
+    "color": {
+      "condition": {
+        "test": "indexof(['配送確認', '契約変更', '請求'], datum.category) >= 0",
+        "value": "#174a7e"
+      },
+      "value": "#aeb9c7"
+    },
+    "tooltip": [
+      { "field": "category", "type": "nominal" },
+      { "field": "monthly_cases", "type": "quantitative", "title": "月平均件数", "format": "," },
+      { "field": "period", "type": "nominal", "title": "期間" }
+    ]
+  },
+  "config": {
+    "background": "#ffffff",
+    "font": "Noto Sans CJK JP",
+    "axis": { "labelFontSize": 16, "titleFontSize": 16, "gridColor": "#dce3eb" },
+    "title": { "fontSize": 20, "subtitleFontSize": 14, "anchor": "start" },
+    "view": { "stroke": null }
+  }
+}

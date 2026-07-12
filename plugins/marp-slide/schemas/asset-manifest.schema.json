@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-skills.local/marp-slide/asset-manifest.schema.json",
+  "title": "Marp slide asset manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "generated_at", "assets"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "assets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/asset" }
+    }
+  },
+  "$defs": {
+    "safePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?![A-Za-z]:)(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)(?!.*[\\u0000-\\u001f]).+$"
+    },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": { "source": { "properties": { "kind": { "const": "web" } } } }
+          },
+          "then": {
+            "properties": {
+              "source": { "properties": { "url": { "type": "string", "minLength": 1, "pattern": "^https?://" } } },
+              "license": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "source": { "properties": { "kind": { "const": "user" } } } }
+          },
+          "then": {
+            "properties": { "source": { "properties": { "path": { "$ref": "#/$defs/safePath" } } } }
+          }
+        },
+        {
+          "if": {
+            "properties": { "source": { "properties": { "kind": { "const": "data" } } } }
+          },
+          "then": {
+            "properties": {
+              "source": { "properties": { "path": { "$ref": "#/$defs/safePath" } } },
+              "generator": {
+                "type": "object",
+                "properties": {
+                  "kind": { "enum": ["vega-lite", "mermaid"] },
+                  "spec_path": { "$ref": "#/$defs/safePath" }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "source": { "properties": { "kind": { "const": "generated" } } } }
+          },
+          "then": { "properties": { "generator": { "type": "object" } } }
+        },
+        {
+          "if": {
+            "properties": {
+              "generator": {
+                "type": "object",
+                "properties": { "kind": { "const": "image-generation" } }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "generator": {
+                "properties": {
+                  "model": { "type": "string", "minLength": 1 },
+                  "prompt_sha256": { "$ref": "#/$defs/sha256" }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "required": [
+        "id",
+        "path",
+        "pages",
+        "type",
+        "source",
+        "license",
+        "alt",
+        "decorative",
+        "crop",
+        "generator",
+        "sha256"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "path": { "$ref": "#/$defs/safePath" },
+        "pages": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 },
+          "uniqueItems": true
+        },
+        "type": {
+          "enum": [
+            "photo",
+            "illustration",
+            "chart",
+            "diagram",
+            "logo",
+            "screenshot",
+            "icon",
+            "font",
+            "data",
+            "other"
+          ]
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "path", "url"],
+          "properties": {
+            "kind": { "enum": ["user", "data", "web", "generated"] },
+            "path": { "anyOf": [{ "$ref": "#/$defs/safePath" }, { "type": "null" }] },
+            "url": { "type": ["string", "null"] }
+          }
+        },
+        "license": { "type": ["string", "null"] },
+        "alt": { "type": "string" },
+        "decorative": { "type": "boolean" },
+        "crop": {
+          "anyOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["x", "y", "width", "height"],
+              "properties": {
+                "x": { "type": "number", "minimum": 0, "maximum": 1 },
+                "y": { "type": "number", "minimum": 0, "maximum": 1 },
+                "width": { "type": "number", "minimum": 0, "maximum": 1 },
+                "height": { "type": "number", "minimum": 0, "maximum": 1 }
+              }
+            }
+          ]
+        },
+        "generator": {
+          "anyOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "spec_path", "model", "prompt_sha256"],
+              "properties": {
+                "kind": { "enum": ["vega-lite", "mermaid", "image-generation", "other"] },
+                "spec_path": { "anyOf": [{ "$ref": "#/$defs/safePath" }, { "type": "null" }] },
+                "model": { "type": ["string", "null"] },
+                "prompt_sha256": { "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] }
+              }
+            }
+          ]
+        },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}

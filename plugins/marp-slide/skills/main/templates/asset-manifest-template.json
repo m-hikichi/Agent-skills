@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "generated_at": "1970-01-01T00:00:00Z",
+  "assets": [
+    {
+      "id": "A-001",
+      "path": "slides/assets/example.svg",
+      "pages": [1],
+      "type": "illustration",
+      "source": {
+        "kind": "user",
+        "path": "source-assets/example.svg",
+        "url": null
+      },
+      "license": null,
+      "alt": "",
+      "decorative": false,
+      "crop": null,
+      "generator": null,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ]
+}

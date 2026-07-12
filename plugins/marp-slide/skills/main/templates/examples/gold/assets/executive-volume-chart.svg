@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="440" viewBox="0 0 1080 440" role="img" aria-labelledby="title desc">
+  <title id="title">問い合わせ分類別の月間件数</title><desc id="desc">上位3分類が全4,380件の72%を占める横棒グラフ</desc>
+  <rect width="1080" height="440" rx="18" fill="#fff"/>
+  <g font-family="sans-serif"><text x="88" y="44" font-size="18" fill="#58697f">月平均件数｜2026年4〜6月｜全4,380件</text>
+  <g stroke="#d6e0eb" stroke-width="1"><path d="M230 70v300M430 70v300M630 70v300M830 70v300M1030 70v300"/></g>
+  <g fill="#58697f" font-size="14"><text x="222" y="396">0</text><text x="416" y="396">400</text><text x="616" y="396">800</text><text x="807" y="396">1,200</text><text x="1008" y="396">1,600</text></g>
+  <g font-size="18" fill="#142238"><text x="88" y="112">配送確認</text><text x="88" y="174">契約変更</text><text x="88" y="236">請求</text><text x="88" y="298">製品操作</text><text x="88" y="360">その他</text></g>
+  <rect x="230" y="86" width="740" height="34" rx="5" fill="#174a7e"/><rect x="230" y="148" width="460" height="34" rx="5" fill="#2b689c"/><rect x="230" y="210" width="380" height="34" rx="5" fill="#4b83b2"/>
+  <rect x="230" y="272" width="310" height="34" rx="5" fill="#c7d5e3"/><rect x="230" y="334" width="300" height="34" rx="5" fill="#c7d5e3"/>
+  <g font-size="17" font-weight="700" fill="#142238"><text x="982" y="110">1,480</text><text x="702" y="172">920</text><text x="622" y="234">760</text><text x="552" y="296">620</text><text x="542" y="358">600</text></g>
+  <path d="M976 74h74v190H616" fill="none" stroke="#e0782f" stroke-width="3" stroke-dasharray="7 6"/><text x="858" y="60" font-size="20" font-weight="700" fill="#d76520">上位3分類 = 72%</text></g>
+</svg>

@@ -1,0 +1,4 @@
+{
+  "description": "A two-slide Marp deck encoded with explicit CRLF line endings for platform-neutral tests.",
+  "content": "---\r\nmarp: true\r\ntheme: test-theme\r\nlang: ja-JP\r\ntitle: 長い日本語タイトル and English\r\ndescription: CRLF fixture\r\nauthor: Test Author\r\n---\r\n\r\n# 1枚目\r\n\r\n```text\r\n---\r\n```\r\n\r\n---\r\n\r\n# Slide 2\r\n"
+}

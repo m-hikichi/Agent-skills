@@ -1,0 +1,9 @@
+/* Deck-specific fragment. Replace values; keep only classes the deck actually uses. */
+:root {
+  --deck-accent: #174a7e;
+  --deck-signal: #e0782f;
+}
+/* Example of a semantic, reusable deck motif. */
+section[data-section='decision'] {
+  border-top: 10px solid var(--deck-signal);
+}

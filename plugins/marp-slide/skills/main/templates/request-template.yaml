@@ -1,19 +1,27 @@
-topic:
-audience:
-audience_knowledge:
-presentation_context:
-presentation_type:
-goal:
-target_slide_count:
+topic: ""
+audience: ""
+audience_knowledge: null
+presentation_context: null
+presentation_type: ""
+goal: ""
+target_slide_count: 8
 slide_count_mode: target
 delivery_mode: live
-duration_minutes:
-desired_tone:
-audience_decision_criteria:
-output_formats: []
+duration_minutes: null
+desired_tone: null
+audience_decision_criteria: null
+output_formats:
+  - pdf
+  - png
 must_include: []
 source_materials: []
 evidence_policy: cite-or-label-assumption
-design_reference:
-brand_constraints:
+design_reference: null
+brand_constraints: null
 available_assets: []
+language: ja-JP
+author: ""
+approval_mode: single-checkpoint
+image_policy: hybrid
+brand_strictness: guided
+accessibility_target: standard
