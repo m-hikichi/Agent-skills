@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="96" viewBox="0 0 360 96" role="img" aria-labelledby="title">
+  <title id="title">Northstar wordmark</title>
+  <rect width="360" height="96" fill="#f5f1e8"/>
+  <path d="m42 70 18-45 18 45-18-12z" fill="#f28c52"/><circle cx="60" cy="45" r="8" fill="#143b5d"/>
+  <text x="96" y="63" font-family="sans-serif" font-size="42" font-weight="700" letter-spacing="1" fill="#143b5d">NORTHSTAR</text>
+</svg>

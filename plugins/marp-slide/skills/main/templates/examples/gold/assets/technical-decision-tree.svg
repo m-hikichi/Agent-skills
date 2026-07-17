@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="420" viewBox="0 0 1080 420" role="img" aria-labelledby="title desc">
+  <title id="title">checkout latencyのdecision tree</title><desc id="desc">payment timeout設定とDB pool枯渇の仮説を最小確認で切り分ける</desc>
+  <rect width="1080" height="420" rx="18" fill="#17233a"/>
+  <g font-family="monospace"><rect x="52" y="152" width="204" height="98" rx="10" fill="#0f172a" stroke="#45c7fa" stroke-width="2"/><text x="154" y="190" text-anchor="middle" font-size="17" font-weight="700" fill="#edf3fc">checkout p95</text><text x="154" y="220" text-anchor="middle" font-size="17" fill="#fb7185">4.2s</text>
+  <path d="M256 201h86M342 201l78-92M342 201l78 92" stroke="#45c7fa" stroke-width="4" fill="none"/>
+  <rect x="430" y="48" width="244" height="112" rx="10" fill="#26334a"/><text x="552" y="86" text-anchor="middle" font-size="16" fill="#fbbf24">仮説 A</text><text x="552" y="116" text-anchor="middle" font-size="17" fill="#edf3fc">payment timeout設定</text><text x="552" y="143" text-anchor="middle" font-size="14" fill="#a9b6ca">旧版との差を比較</text>
+  <rect x="430" y="260" width="244" height="112" rx="10" fill="#26334a"/><text x="552" y="298" text-anchor="middle" font-size="16" fill="#fbbf24">仮説 B</text><text x="552" y="328" text-anchor="middle" font-size="17" fill="#edf3fc">DB pool枯渇</text><text x="552" y="355" text-anchor="middle" font-size="14" fill="#a9b6ca">pool利用率を確認</text>
+  <path d="M674 104h74M674 316h74" stroke="#50dc88" stroke-width="4"/><path d="m738 92 18 12-18 12M738 304l18 12-18 12" fill="#50dc88"/>
+  <rect x="766" y="48" width="260" height="112" rx="10" fill="#18342c" stroke="#50dc88"/><text x="896" y="86" text-anchor="middle" font-size="16" font-weight="700" fill="#50dc88">最初の確認</text><text x="896" y="116" text-anchor="middle" font-size="15" fill="#edf3fc">v2.7.4 / v2.8.0の</text><text x="896" y="142" text-anchor="middle" font-size="15" fill="#edf3fc">timeout値をdiff</text>
+  <rect x="766" y="260" width="260" height="112" rx="10" fill="#202d45" stroke="#3a4b68"/><text x="896" y="298" text-anchor="middle" font-size="16" font-weight="700" fill="#a9b6ca">次点の確認</text><text x="896" y="328" text-anchor="middle" font-size="15" fill="#edf3fc">checkout DB pool</text><text x="896" y="354" text-anchor="middle" font-size="15" fill="#edf3fc">利用率・待ち時間</text></g>
+</svg>

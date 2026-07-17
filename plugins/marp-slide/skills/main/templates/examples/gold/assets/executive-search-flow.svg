@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="480" viewBox="0 0 720 480" role="img" aria-labelledby="title desc">
+  <title id="title">探索業務のbefore-after</title><desc id="desc">現状は5情報源を順番に探索し、PoCでは横断検索で根拠候補を提示する</desc>
+  <rect width="720" height="480" rx="20" fill="#f5f8fc"/>
+  <g font-family="sans-serif"><text x="52" y="54" font-size="20" font-weight="700" fill="#58697f">現状｜中央値 27分</text><text x="404" y="54" font-size="20" font-weight="700" fill="#174a7e">PoC｜横断検索</text>
+  <g fill="#fff" stroke="#cbd7e4"><rect x="52" y="84" width="238" height="48" rx="9"/><rect x="52" y="148" width="238" height="48" rx="9"/><rect x="52" y="212" width="238" height="48" rx="9"/><rect x="52" y="276" width="238" height="48" rx="9"/><rect x="52" y="340" width="238" height="48" rx="9"/></g>
+  <g font-size="16" fill="#42566e"><text x="76" y="114">1. FAQを検索</text><text x="76" y="178">2. 規約を確認</text><text x="76" y="242">3. 過去回答を検索</text><text x="76" y="306">4. 手順書を確認</text><text x="76" y="370">5. 引用元を控える</text></g>
+  <path d="M332 236h44" stroke="#e0782f" stroke-width="6"/><path d="m370 224 18 12-18 12" fill="#e0782f"/>
+  <rect x="416" y="102" width="250" height="108" rx="14" fill="#174a7e"/><text x="446" y="147" font-size="20" font-weight="700" fill="#fff">1回の検索</text><text x="446" y="178" font-size="16" fill="#dbe9f7">5情報源を横断</text>
+  <rect x="416" y="238" width="250" height="150" rx="14" fill="#fff" stroke="#b7c8da"/><text x="446" y="278" font-size="18" font-weight="700" fill="#174a7e">根拠候補を提示</text><text x="446" y="310" font-size="15" fill="#42566e">・引用元と更新日</text><text x="446" y="338" font-size="15" fill="#42566e">・矛盾する記述</text><text x="446" y="366" font-size="15" fill="#42566e">・人が最終確認</text>
+  <text x="52" y="432" font-size="15" fill="#58697f">出典：20件の業務観察、2026-06-03〜14</text></g>
+</svg>

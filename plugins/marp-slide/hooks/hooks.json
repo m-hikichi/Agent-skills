@@ -4,8 +4,9 @@
       {
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "あなたは marp-slide の completion gate です。以下の手順で判定してください。\n\n1. `slides/presentation.md` が存在するか確認する\n   - 存在しない → 正当な待機状態（まだドラフト未作成）とみなし、空オブジェクト `{}` を返して stop を許可する\n2. `slides/presentation.md` が存在する場合、`.slide-work/review.json` を読む\n   - 読めない／存在しない → reviewer 未実行。ブロックする\n   - 読めた場合、`status` フィールドを確認する\n3. `review.json.status == \"pass\"` なら空オブジェクト `{}` を返して stop を許可する\n4. それ以外（`fail`, `missing_info`, 欠如）なら以下の形式でブロックする:\n\n```json\n{\n  \"decision\": \"block\",\n  \"reason\": \"review gate が満たされていません: status=<値>. reviewer サブエージェントを呼び出し、review.json.exact_fix_instructions または questions_for_user に従って対応してください.\"\n}\n```\n\n**重要**: `review.json.status` 以外の項目（gate_results の個別値、timestamp など）を見て独自判定してはいけません。単一のステータスだけ見ます。gate を抜け道で通してはいけません。"
+            "type": "command",
+            "command": "docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint node -v \"${CLAUDE_PLUGIN_ROOT}:/plugin:ro\" -v \".:/workspace:ro\" -w /workspace marp-mcp-server /plugin/scripts/marp-slide.mjs gate --root /workspace",
+            "timeout": 45
           }
         ]
       }

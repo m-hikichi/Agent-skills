@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-skills.local/marp-slide/render-manifest.schema.json",
+  "title": "Marp slide render manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "artifact_fingerprint",
+    "render_iteration",
+    "improvements",
+    "slide_count",
+    "source",
+    "request",
+    "theme",
+    "assets",
+    "formats",
+    "outputs",
+    "page_images",
+    "contact_sheet",
+    "environment"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "artifact_fingerprint": { "$ref": "#/$defs/sha256" },
+    "render_iteration": { "type": "integer", "minimum": 1 },
+    "improvements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["iteration", "description", "slides"],
+        "properties": {
+          "iteration": { "type": "integer", "minimum": 2 },
+          "description": { "type": "string", "minLength": 1 },
+          "slides": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 1 },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "slide_count": { "type": "integer", "minimum": 1 },
+    "source": { "$ref": "#/$defs/fileSnapshot" },
+    "request": { "$ref": "#/$defs/fileSnapshot" },
+    "theme": {
+      "anyOf": [{ "$ref": "#/$defs/fileSnapshot" }, { "type": "null" }]
+    },
+    "assets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/fileSnapshot" }
+    },
+    "formats": {
+      "type": "array",
+      "items": { "enum": ["pdf", "png", "html", "pptx", "notes"] },
+      "uniqueItems": true,
+      "allOf": [
+        { "contains": { "const": "png" } },
+        { "contains": { "const": "notes" } }
+      ]
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["format", "path", "sha256"],
+        "properties": {
+          "format": { "enum": ["pdf", "html", "pptx", "notes"] },
+          "path": { "$ref": "#/$defs/safePath" },
+          "sha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    "page_images": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["slide", "path", "sha256", "width", "height"],
+        "properties": {
+          "slide": { "type": "integer", "minimum": 1 },
+          "path": { "$ref": "#/$defs/safePath" },
+          "sha256": { "$ref": "#/$defs/sha256" },
+          "width": { "type": "integer", "minimum": 1 },
+          "height": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "contact_sheet": { "$ref": "#/$defs/imageSnapshot" },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["marp_cli", "marp_core", "chromium", "node", "platform", "fonts"],
+      "properties": {
+        "marp_cli": { "type": "string" },
+        "marp_core": { "type": "string" },
+        "chromium": { "type": "string" },
+        "node": { "type": "string" },
+        "platform": { "type": "string" },
+        "fonts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "url", "sha256"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "url": { "type": "string" },
+              "sha256": { "$ref": "#/$defs/sha256" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "safePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?![A-Za-z]:)(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)(?!.*[\\u0000-\\u001f]).+$"
+    },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "fileSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "$ref": "#/$defs/safePath" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "imageSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "width", "height"],
+      "properties": {
+        "path": { "$ref": "#/$defs/safePath" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

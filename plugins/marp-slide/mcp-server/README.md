@@ -1,180 +1,79 @@
-# marp-mcp-server 利用マニュアル
+# Marp MCP Server v2
 
-Marp Markdown ファイルを PDF・PPTX・HTML・PNG にエクスポートするための MCP サーバーです。Docker コンテナ内に Marp CLI、Chromium、日本語フォント (Noto Sans CJK) がすべて同梱されているため、ローカル環境への追加インストールは不要です。
+Marp 4.4.0、Vega-Lite、Mermaidを使い、workspace内の入力だけから静的なスライド成果物を生成するDocker MCPサーバです。実行時ネットワーク、workspace外参照、任意config、runtime Mermaid/Vega、editable PPTXは使用しません。
 
-## 前提条件
-
-- Docker がインストール済みであること
-
-## セットアップ
-
-### 1. Docker イメージのビルド
+## Build / test
 
 ```bash
-cd plugins/marp-slide/mcp-server
+npm ci
+npm test
 docker build -t marp-mcp-server .
 ```
 
-ビルドは初回のみ必要です。Dockerfile や依存パッケージを更新した場合は再ビルドしてください。
+依存は `package.json` と `package-lock.json` で完全version固定されています。Node base imageはdigest、ChromiumとNoto CJKはDebian package version、追加fontはimmutable URLとSHA-256で固定します。Dockerは非root・read-only root filesystem・network noneで起動し、永続書込みはbind mountしたworkspaceだけです。
 
-### 2. 動作確認
+TypeScript 5.8は、Vega-Liteなど上流packageの巨大な型unionを展開しない`noCheck` transpileで実行物を作ります。local interfaceは明示型で境界を固定し、MCP tool登録、実Vega SVG、Mermaid、path/security、QAをDocker build内のruntime testで検証します。
 
-```bash
-docker images marp-mcp-server
+## `marp_render_deck`
+
+入力:
+
+```json
+{
+  "source": "slides/presentation.md",
+  "theme": "slides/theme.css",
+  "formats": ["pdf", "png"],
+  "output_dir": ".slide-work",
+  "image_scale": 2
+}
 ```
 
-`marp-mcp-server` イメージが表示されればセットアップ完了です。
+- `source`: 必須のworkspace相対 `.md`
+- `theme`: 任意のworkspace相対 `.css`
+- `formats`: `html | pdf | pptx | png` の重複なし配列。既定は `pdf, png`。visual review用PNGとcontact sheetは省略指定でも常に生成
+- `output_dir`: 既定 `.slide-work`
+- `image_scale`: 1〜4、既定2
 
-## 使い方
+標準成果物:
 
-### 基本コマンド
+- `.slide-work/presentation.pdf`（PDF outlineあり、PDF notes注釈なし）
+- `.slide-work/rendered-pages/page-001.png` …
+- `.slide-work/contact-sheet.png`
+- `.slide-work/presentation-notes.txt`
+- `.slide-work/render-manifest.json`
+- `.slide-work/machine-qa.json`
 
-Docker コンテナ内の Marp CLI を直接呼び出してエクスポートします。`-v` オプションでスライドがあるディレクトリをコンテナ内の `/workspace` にマウントし、`--entrypoint marp` で Marp CLI を直接起動します。
+`presentation-notes.txt`は常に生成します。`read-ahead`でspeaker noteがない場合は空ファイルを正当な成果物として保持し、`live / hybrid`ではlifecycle lintが実presenter notesを必須にします。
 
-```bash
-docker run --rm \
-  -v "$(pwd):/workspace" \
-  --entrypoint marp \
-  marp-mcp-server \
-  "スライドファイル.md" --html --allow-local-files --pdf -o "出力ファイル.pdf"
+`request.yaml` と `asset-manifest.json` は `output_dir` または `.slide-work` に必要です。manifestはsource/request/theme/assetsの統合fingerprint、全成果物hash、PNG寸法、CLI/Core/Chromium/font情報を記録します。machine QAはページ数、asset、overflow/clipping、最小文字サイズ、contrast、画像alt、manifest整合性を記録します。
+
+`html: true` と `headingDivider` は受け付けません。スライド境界にはliteral `---`、動的HTMLの代わりには静的SVGを使います。local assetはMarkdown画像、reference-style画像、CSS、`backgroundImage` directiveから再帰追跡し、remote/data URLとactive SVGを描画前に拒否します。
+
+## `marp_render_chart`
+
+```json
+{
+  "spec": "slides/assets/volume.vl.json",
+  "data": "slides/assets/volume.csv",
+  "output": "slides/assets/volume.svg"
+}
 ```
 
-> **Note:** Windows (PowerShell) の場合は `$(pwd)` を `${PWD}` に置き換えてください。
-> ```powershell
-> docker run --rm -v "${PWD}:/workspace" --entrypoint marp marp-mcp-server "スライドファイル.md" --html --allow-local-files --pdf -o "出力ファイル.pdf"
-> ```
+`data`は任意です。spec内のlocal `data.url` も読めます。CSV/TSV/JSONをinline valuesへ展開してからVega-Liteをcompileし、static SVGだけを書き出します。remote URL、href、image markは拒否します。
 
-### PDF にエクスポート
+## `marp_render_diagram`
 
-```bash
-docker run --rm \
-  -v "$(pwd):/workspace" \
-  --entrypoint marp \
-  marp-mcp-server \
-  "slides/presentation.md" --html --allow-local-files --pdf -o "output/presentation.pdf"
+```json
+{
+  "source": "slides/assets/architecture.mmd",
+  "output": "slides/assets/architecture.svg",
+  "theme": "neutral",
+  "background": "transparent"
+}
 ```
 
-### PPTX (PowerPoint) にエクスポート
+入力は `.mmd | .mermaid`、出力は `.svg` です。init override、click callback、remote resource、script、foreignObjectを拒否し、決定的IDを使います。
 
-```bash
-docker run --rm \
-  -v "$(pwd):/workspace" \
-  --entrypoint marp \
-  marp-mcp-server \
-  "slides/presentation.md" --html --allow-local-files --pptx -o "output/presentation.pptx"
-```
+## `marp_export` compatibility
 
-### HTML にエクスポート
-
-```bash
-docker run --rm \
-  -v "$(pwd):/workspace" \
-  --entrypoint marp \
-  marp-mcp-server \
-  "slides/presentation.md" --html --allow-local-files -o "output/presentation.html"
-```
-
-### PNG (スライド単位の画像) にエクスポート
-
-```bash
-docker run --rm \
-  -v "$(pwd):/workspace" \
-  --entrypoint marp \
-  marp-mcp-server \
-  "slides/presentation.md" --html --allow-local-files --images png -o "output/slide.png"
-```
-
-スライドが複数ページある場合、`slide.001.png`、`slide.002.png`、... のように連番ファイルが生成されます。
-
-## ソースファイルの要件
-
-エクスポート対象の Markdown ファイルは、先頭に Marp フロントマターが必要です。
-
-```markdown
----
-marp: true
-theme: default
-paginate: true
----
-
-# スライドタイトル
-
-内容...
-
----
-
-# 次のスライド
-
-内容...
-```
-
-- `marp: true` がフロントマターに含まれていないとエクスポートに失敗します
-- スライド区切りは `---` (水平線) です
-- `--html` フラグにより、Markdown 内の HTML タグがそのままレンダリングされます
-
-## オプション一覧
-
-よく使う Marp CLI のオプションです。詳細は `docker run --rm --entrypoint marp marp-mcp-server --help` で確認できます。
-
-| オプション | 説明 |
-|---|---|
-| `--pdf` | PDF 形式で出力 |
-| `--pptx` | PPTX 形式で出力 |
-| `--images png` | スライド単位の PNG 画像で出力 |
-| `--images jpeg` | スライド単位の JPEG 画像で出力 |
-| `--html` | Markdown 内の HTML タグを有効化 |
-| `-o <path>` | 出力ファイルパスを指定 |
-| `--theme <name>` | テーマを指定 (default, gaia, uncover) |
-| `--allow-local-files` | ローカルファイル (画像など) の参照を許可 |
-
-## Docker コンテナの構成
-
-| 項目 | 内容 |
-|---|---|
-| ベースイメージ | `node:20-slim` |
-| Chromium | `/usr/bin/chromium` (PDF/PNG レンダリング用) |
-| 日本語フォント | `fonts-noto-cjk` (Noto Sans CJK) |
-| Marp CLI | グローバルインストール済み |
-| ワークスペース | `/workspace` (マウントポイント) |
-
-## トラブルシューティング
-
-### PDF/PNG が生成されない
-
-Chromium 関連のエラーが出る場合は、`--no-sandbox` フラグを試してください。
-
-```bash
-docker run --rm \
-  -v "$(pwd):/workspace" \
-  --entrypoint marp \
-  marp-mcp-server \
-  "slides/presentation.md" --html --pdf -o "output/presentation.pdf" \
-  -- --no-sandbox
-```
-
-### 日本語が文字化けする
-
-Docker イメージに `fonts-noto-cjk` が含まれているため、通常は発生しません。カスタムフォントを使いたい場合は、フォントファイルをマウントするか Dockerfile を拡張してください。
-
-```bash
-docker run --rm \
-  -v "$(pwd):/workspace" \
-  -v "/path/to/fonts:/usr/share/fonts/custom" \
-  --entrypoint marp \
-  marp-mcp-server \
-  "slides/presentation.md" --html --pdf -o "output/presentation.pdf"
-```
-
-### 画像やローカルファイルが読み込まれない
-
-Markdown から参照するファイルは、マウントしたディレクトリ内に存在する必要があります。相対パスで参照し、必要に応じて `--allow-local-files` を付けてください。
-
-## MCP サーバーとしての利用 (Claude Code 連携)
-
-Claude Code から MCP サーバーとして利用する場合は、marp-slide プラグインをロードすれば自動的に接続されます。手動での MCP サーバー操作は不要です。
-
-```bash
-claude --plugin-dir <path>/plugins/marp-slide
-```
-
-MCP サーバーは `marp_export` ツールを公開しており、Claude Code が `source` (入力ファイル)、`format` (html/pdf/pptx/png)、`output` (出力先) を指定して呼び出します。
+旧interface `source / format / output? / theme?` を維持しています。内部では同じpath・asset検証とMarp実行器を使います。新規workflowではmanifestとQAを生成する `marp_render_deck` を使ってください。

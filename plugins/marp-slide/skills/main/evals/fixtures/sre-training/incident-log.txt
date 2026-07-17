@@ -1,0 +1,6 @@
+2026-07-08T10:01:58Z service=checkout version=2.7.4 p95_ms=218 status=200
+2026-07-08T10:02:11Z event=deploy service=checkout version=2.8.0 status=completed
+2026-07-08T10:04:42Z service=search version=5.1.2 p95_ms=181 status=200
+2026-07-08T10:05:03Z service=checkout version=2.8.0 p95_ms=4217 status=504
+2026-07-08T10:05:03Z service=checkout dependency=payment timeout_ms=3000
+2026-07-08T10:05:07Z service=profile version=3.4.1 p95_ms=205 status=200

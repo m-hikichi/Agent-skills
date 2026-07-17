@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="410" viewBox="0 0 1080 410" role="img" aria-labelledby="title desc">
+  <title id="title">障害対応の最初の15分</title><desc id="desc">検知、影響確認、指揮系統、変更凍結、仮説検証へ進むflow</desc>
+  <rect width="1080" height="410" rx="18" fill="#17233a"/>
+  <g font-family="monospace"><text x="58" y="48" font-size="16" fill="#a9b6ca">T+00 — T+15 / keep evidence intact</text>
+  <line x1="112" y1="176" x2="968" y2="176" stroke="#3a4b68" stroke-width="6"/>
+  <g><circle cx="120" cy="176" r="34" fill="#45c7fa"/><circle cx="330" cy="176" r="34" fill="#45c7fa"/><circle cx="540" cy="176" r="34" fill="#50dc88"/><circle cx="750" cy="176" r="34" fill="#50dc88"/><circle cx="960" cy="176" r="34" fill="#fbbf24"/></g>
+  <g text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a"><text x="120" y="182">00</text><text x="330" y="182">03</text><text x="540" y="182">05</text><text x="750" y="182">08</text><text x="960" y="182">15</text></g>
+  <g text-anchor="middle" fill="#edf3fc"><text x="120" y="244" font-size="18" font-weight="700">検知</text><text x="120" y="272" font-size="14" fill="#a9b6ca">症状を記録</text><text x="330" y="244" font-size="18" font-weight="700">影響</text><text x="330" y="272" font-size="14" fill="#a9b6ca">範囲と優先度</text><text x="540" y="244" font-size="18" font-weight="700">指揮</text><text x="540" y="272" font-size="14" fill="#a9b6ca">役割とchannel</text><text x="750" y="244" font-size="18" font-weight="700">凍結</text><text x="750" y="272" font-size="14" fill="#a9b6ca">不要変更を停止</text><text x="960" y="244" font-size="18" font-weight="700">検証</text><text x="960" y="272" font-size="14" fill="#a9b6ca">最小の確認</text></g>
+  <rect x="282" y="330" width="516" height="46" rx="23" fill="#0f172a" stroke="#fb7185"/><text x="540" y="359" text-anchor="middle" font-size="16" fill="#fb7185">復旧を急いでも、証拠を消す変更は避ける</text></g>
+</svg>

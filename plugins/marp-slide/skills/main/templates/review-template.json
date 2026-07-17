@@ -1,30 +1,54 @@
 {
-  "status": "missing_info",
-  "reviewed_at": "",
-  "failed_gates": [],
-  "missing_required": [],
+  "rubric_version": 3,
+  "status": "needs_user",
+  "reviewed_at": "1970-01-01T00:00:00Z",
+  "artifact_fingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
+  "review_attempt": 1,
+  "render_iteration": 1,
+  "missing_required": ["Replace with the concrete missing requirement before validation."],
+  "questions_for_user": ["Replace with the concrete question that must be answered."],
   "issues": [],
-  "exact_fix_instructions": [],
-  "questions_for_user": [],
-  "artifacts": {
-    "pdf": ".slide-work/presentation.pdf",
-    "page_images": []
+  "strengths": [],
+  "machine_qa": {
+    "status": "not_run",
+    "checks": {
+      "asset_integrity": { "status": "not_run", "evidence": "" },
+      "overflow": { "status": "not_run", "evidence": "" },
+      "clipping": { "status": "not_run", "evidence": "" },
+      "slide_count": { "status": "not_run", "evidence": "" },
+      "minimum_text_size": { "status": "not_run", "evidence": "" },
+      "contrast": { "status": "not_run", "evidence": "" },
+      "alt_text": { "status": "not_run", "evidence": "" },
+      "manifest_integrity": { "status": "not_run", "evidence": "" }
+    }
   },
-  "gate_results": {
-    "G1_takeaway_titles": "not_run",
-    "G2_opening_hook": "not_run",
-    "G3_closing_action": "not_run",
-    "G4_bullet_independence": "not_run",
-    "G5_must_include_coverage": "not_run",
-    "G6_no_overflow": "not_run",
-    "G7_text_density": "not_run",
-    "G8_archetype_variety": "not_run",
-    "G9_custom_styling_applied": "not_run",
-    "G10_slide_count": "not_run"
+  "content_review": {
+    "status": "not_run",
+    "hard_gates": {
+      "audience_goal_fit": { "status": "not_run", "evidence": "" },
+      "must_include_coverage": { "status": "not_run", "evidence": "" },
+      "evidence_integrity": { "status": "not_run", "evidence": "" },
+      "story_coherence": { "status": "not_run", "evidence": "" }
+    },
+    "scores": {
+      "story_audience_fit": { "score": 0, "reason": "" },
+      "evidence_content_quality": { "score": 0, "reason": "" }
+    }
   },
   "visual_review": {
-    "executed": false,
+    "status": "not_run",
+    "contact_sheet": null,
     "checked_page_count": 0,
+    "page_images": [],
+    "hard_gates": {
+      "rendered_readability": { "status": "not_run", "evidence": "" },
+      "visual_semantics": { "status": "not_run", "evidence": "" },
+      "accessibility": { "status": "not_run", "evidence": "" }
+    },
+    "scores": {
+      "visual_hierarchy_semantics": { "score": 0, "reason": "" },
+      "cohesion_polish": { "score": 0, "reason": "" }
+    },
     "page_findings": []
   }
 }

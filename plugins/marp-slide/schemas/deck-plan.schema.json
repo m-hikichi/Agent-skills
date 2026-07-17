@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-skills.local/marp-slide/deck-plan.schema.json",
+  "title": "Marp slide deck plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "deck_thesis",
+    "success_criteria",
+    "visual_direction",
+    "ghost_deck_status",
+    "integrated_approval",
+    "slides"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "deck_thesis": { "type": "string", "minLength": 1 },
+    "success_criteria": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "visual_direction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["concept", "palette", "type", "spacing", "image_treatment", "motif", "density"],
+      "properties": {
+        "concept": { "type": "string", "minLength": 1 },
+        "palette": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 2,
+          "uniqueItems": true
+        },
+        "type": { "type": "string", "minLength": 1 },
+        "spacing": { "type": "string", "minLength": 1 },
+        "image_treatment": { "type": "string", "minLength": 1 },
+        "motif": { "type": "string", "minLength": 1 },
+        "density": { "type": "string", "minLength": 1 }
+      }
+    },
+    "ghost_deck_status": { "enum": ["pending", "pass", "fail"] },
+    "integrated_approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "options", "recommended", "selected", "approved_at", "rationale"],
+      "properties": {
+        "mode": { "enum": ["single-checkpoint", "autonomous"] },
+        "options": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 3,
+          "maxItems": 3,
+          "uniqueItems": true
+        },
+        "recommended": { "type": "string", "minLength": 1 },
+        "selected": { "type": "string", "minLength": 1 },
+        "approved_at": {
+          "anyOf": [
+            { "type": "string", "format": "date-time" },
+            { "type": "null" }
+          ]
+        },
+        "rationale": { "type": "string", "minLength": 1 }
+      }
+    },
+    "slides": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "number",
+          "role",
+          "action_title",
+          "narrative_goal",
+          "evidence_ids",
+          "visual_kind",
+          "visual_brief",
+          "layout",
+          "density",
+          "citation",
+          "alt",
+          "speaker_notes"
+        ],
+        "properties": {
+          "number": { "type": "integer", "minimum": 1 },
+          "role": { "type": "string", "minLength": 1 },
+          "action_title": { "type": "string", "minLength": 1 },
+          "narrative_goal": { "type": "string", "minLength": 1 },
+          "evidence_ids": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          },
+          "visual_kind": { "type": "string", "minLength": 1 },
+          "visual_brief": { "type": "string", "minLength": 1 },
+          "layout": { "type": "string", "minLength": 1 },
+          "density": { "type": "string", "minLength": 1 },
+          "citation": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          },
+          "alt": { "type": "string" },
+          "speaker_notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}

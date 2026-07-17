@@ -1,0 +1,92 @@
+{
+  "skill_name": "main",
+  "evals": [
+    {
+      "id": 1,
+      "name": "executive-decision-with-source-chart",
+      "prompt": "経営会議向けに、問い合わせ業務の生成AI支援PoCを承認してもらう8枚前後の資料を作ってください。添付CSVだけを実績根拠にし、比較チャート、費用、リスク、90日後の判定条件を入れてください。未確認値は仮説と表示してください。",
+      "expected_output": "action-titleで意思決定ロジックが通り、CSV由来の静的SVG chartと同一軸の選択肢比較を含むexecutive decision deck。",
+      "files": [
+        "evals/fixtures/executive-poc/brief.md",
+        "evals/fixtures/executive-poc/inquiry-metrics.csv",
+        "evals/fixtures/executive-poc/cost-assumptions.md"
+      ],
+      "expectations": [
+        "求める判断、費用上限、対象、判定時期が明示されている",
+        "問い合わせ比較chartはCSVの分類・件数と一致し、軸・単位・期間・出典を持つ",
+        "仮説費用が実績と視覚的・言語的に区別されている",
+        "render iteration 2以降と具体的な改善履歴が保存されている"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "analytical-read-ahead-long-japanese-headings",
+      "prompt": "役員が単独で読む四半期解約分析を作ってください。契約後7日以内に初期設定を完了できなかった顧客で90日継続率が低い、という長い結論を省略せず見出しにし、方法、主要発見、限界、次の検証を含めてください。承認依頼では終えないでください。",
+      "expected_output": "長い日本語action titleが破綻せず、cohort chart、方法、相関と因果の区別、限界が自立して読めるanalytical read-ahead。",
+      "files": [
+        "evals/fixtures/churn-read-ahead/brief.md",
+        "evals/fixtures/churn-read-ahead/churn-cohorts.csv",
+        "evals/fixtures/churn-read-ahead/methodology.md"
+      ],
+      "expectations": [
+        "長い日本語見出しに孤立改行・clip・極端な縮小がない",
+        "cohort chartの値と母数がCSVに一致する",
+        "観測上の関連と因果解釈を区別している",
+        "方法、欠損、限界、次の検証があり、不自然な経営CTAがない"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "technical-training-diagram-log-exercise",
+      "prompt": "新人SRE向けに、障害対応の最初の15分を教える20分の研修資料を作ってください。添付architectureとlogを使い、構造図、annotated log、短い演習、講師用notesを入れてください。",
+      "expected_output": "観測→仮説→最小検証のmental model、静的構造図、読めるlog、演習とnotesを持つtechnical training deck。",
+      "files": [
+        "evals/fixtures/sre-training/brief.md",
+        "evals/fixtures/sre-training/incident-log.txt",
+        "evals/fixtures/sre-training/service-metrics.csv",
+        "evals/fixtures/sre-training/architecture.svg"
+      ],
+      "expectations": [
+        "architecture.svgまたはそこから派生した静的図を使用している",
+        "logの時刻・service・statusを改変せず、観測と仮説を区別している",
+        "演習に回答形式と講師用notesがある",
+        "code/logが2倍PNGで判読できる"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "research-uncertainty-and-limitations",
+      "prompt": "週4日勤務の12週間試行について研究報告を作ってください。結果は添付CSVを使い、不確実性を図で見せ、過度に一般化せず、代替説明、限界、次の研究課題を示してください。",
+      "expected_output": "推定差と区間を正しく可視化し、方法、観測結果、確信度、限界、代替説明を区別するresearch deck。",
+      "files": [
+        "evals/fixtures/research-trial/brief.md",
+        "evals/fixtures/research-trial/trial-results.csv",
+        "evals/fixtures/research-trial/study-notes.md"
+      ],
+      "expectations": [
+        "chartに平均差、区間、単位、12週間、sourceがある",
+        "区間値がCSVと一致し、点推定だけを断定していない",
+        "選択bias、季節性、自己申告の限界と代替説明がある",
+        "観測結果を一般企業の因果効果として一般化していない"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "brand-constrained-local-assets",
+      "prompt": "添付のブランドガイド、ロゴ、職場イメージを使い、採用候補者向けにプロダクトチームの働き方を紹介する7枚前後の資料を作ってください。ブランドを守りつつ、文字だけにせず、写真風visualと意味のあるaltを使ってください。",
+      "expected_output": "ロゴclear space、色、tone、画像処理を守り、local visual、meaningful alt、asset provenanceを持つbranded deck。",
+      "files": [
+        "evals/fixtures/branded-team/brief.md",
+        "evals/fixtures/branded-team/brand-guidelines.md",
+        "evals/fixtures/branded-team/logo.svg",
+        "evals/fixtures/branded-team/team-workspace.svg"
+      ],
+      "expectations": [
+        "ブランド色、ロゴclear space、禁止事項を守っている",
+        "提供されたローカル素材を使い、外部素材を無断追加していない",
+        "意味のある画像に内容を伝えるaltがあり、asset manifestへ登録されている",
+        "同一カード構図の反復でなく、写真、quote、timelineなど内容に合うレイアウトを使う"
+      ]
+    }
+  ]
+}

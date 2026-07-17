@@ -1,0 +1,4 @@
+service,before_p95_ms,after_p95_ms,window_utc
+checkout,220,4200,2026-07-08T10:00_to_10:10Z
+search,175,182,2026-07-08T10:00_to_10:10Z
+profile,198,205,2026-07-08T10:00_to_10:10Z

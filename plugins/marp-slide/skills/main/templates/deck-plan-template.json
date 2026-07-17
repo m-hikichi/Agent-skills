@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "deck_thesis": "",
+  "success_criteria": [],
+  "visual_direction": {
+    "concept": "",
+    "palette": [],
+    "type": "",
+    "spacing": "",
+    "image_treatment": "",
+    "motif": "",
+    "density": "live"
+  },
+  "ghost_deck_status": "pending",
+  "integrated_approval": {
+    "mode": "single-checkpoint",
+    "options": [],
+    "recommended": "",
+    "selected": "",
+    "approved_at": "",
+    "rationale": ""
+  },
+  "slides": [
+    {
+      "number": 1,
+      "role": "cover",
+      "action_title": "",
+      "narrative_goal": "",
+      "evidence_ids": [],
+      "visual_kind": "hero-typography",
+      "visual_brief": "",
+      "layout": "hero",
+      "density": "live",
+      "citation": [],
+      "alt": "",
+      "speaker_notes": ""
+    }
+  ]
+}

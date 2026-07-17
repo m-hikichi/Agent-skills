@@ -1,0 +1,209 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-skills.local/marp-slide/review.schema.json",
+  "title": "Marp slide combined review rubric v3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "rubric_version",
+    "status",
+    "reviewed_at",
+    "artifact_fingerprint",
+    "review_attempt",
+    "render_iteration",
+    "missing_required",
+    "questions_for_user",
+    "issues",
+    "strengths",
+    "machine_qa",
+    "content_review",
+    "visual_review"
+  ],
+  "properties": {
+    "rubric_version": { "const": 3 },
+    "status": { "enum": ["pass", "fail", "needs_user", "blocked"] },
+    "reviewed_at": { "type": "string", "format": "date-time" },
+    "artifact_fingerprint": { "$ref": "#/$defs/sha256" },
+    "review_attempt": { "type": "integer", "minimum": 1 },
+    "render_iteration": { "type": "integer", "minimum": 1 },
+    "missing_required": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "questions_for_user": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "issues": { "type": "array", "items": { "$ref": "#/$defs/issue" } },
+    "strengths": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "machine_qa": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "checks"],
+      "properties": {
+        "status": { "$ref": "#/$defs/componentStatus" },
+        "checks": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "asset_integrity",
+            "overflow",
+            "clipping",
+            "slide_count",
+            "minimum_text_size",
+            "contrast",
+            "alt_text",
+            "manifest_integrity"
+          ],
+          "properties": {
+            "asset_integrity": { "$ref": "#/$defs/check" },
+            "overflow": { "$ref": "#/$defs/check" },
+            "clipping": { "$ref": "#/$defs/check" },
+            "slide_count": { "$ref": "#/$defs/check" },
+            "minimum_text_size": { "$ref": "#/$defs/check" },
+            "contrast": { "$ref": "#/$defs/check" },
+            "alt_text": { "$ref": "#/$defs/check" },
+            "manifest_integrity": { "$ref": "#/$defs/check" }
+          }
+        }
+      }
+    },
+    "content_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "hard_gates", "scores"],
+      "properties": {
+        "status": { "$ref": "#/$defs/componentStatus" },
+        "hard_gates": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "audience_goal_fit",
+            "must_include_coverage",
+            "evidence_integrity",
+            "story_coherence"
+          ],
+          "properties": {
+            "audience_goal_fit": { "$ref": "#/$defs/check" },
+            "must_include_coverage": { "$ref": "#/$defs/check" },
+            "evidence_integrity": { "$ref": "#/$defs/check" },
+            "story_coherence": { "$ref": "#/$defs/check" }
+          }
+        },
+        "scores": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["story_audience_fit", "evidence_content_quality"],
+          "properties": {
+            "story_audience_fit": { "$ref": "#/$defs/score" },
+            "evidence_content_quality": { "$ref": "#/$defs/score" }
+          }
+        }
+      }
+    },
+    "visual_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "contact_sheet",
+        "checked_page_count",
+        "page_images",
+        "hard_gates",
+        "scores",
+        "page_findings"
+      ],
+      "properties": {
+        "status": { "$ref": "#/$defs/componentStatus" },
+        "contact_sheet": {
+          "anyOf": [{ "$ref": "#/$defs/safePath" }, { "type": "null" }]
+        },
+        "checked_page_count": { "type": "integer", "minimum": 0 },
+        "page_images": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/safePath" },
+          "uniqueItems": true
+        },
+        "hard_gates": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["rendered_readability", "visual_semantics", "accessibility"],
+          "properties": {
+            "rendered_readability": { "$ref": "#/$defs/check" },
+            "visual_semantics": { "$ref": "#/$defs/check" },
+            "accessibility": { "$ref": "#/$defs/check" }
+          }
+        },
+        "scores": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["visual_hierarchy_semantics", "cohesion_polish"],
+          "properties": {
+            "visual_hierarchy_semantics": { "$ref": "#/$defs/score" },
+            "cohesion_polish": { "$ref": "#/$defs/score" }
+          }
+        },
+        "page_findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["slide", "severity", "finding"],
+            "properties": {
+              "slide": { "type": "integer", "minimum": 1 },
+              "severity": { "enum": ["critical", "major", "minor"] },
+              "finding": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "safePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?![A-Za-z]:)(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)(?!.*[\\u0000-\\u001f]).+$"
+    },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "componentStatus": { "enum": ["pass", "fail", "not_run", "blocked"] },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence"],
+      "properties": {
+        "status": { "enum": ["pass", "fail", "not_run"] },
+        "evidence": { "type": "string" }
+      }
+    },
+    "score": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["score", "reason"],
+      "properties": {
+        "score": { "type": "integer", "minimum": 0, "maximum": 5 },
+        "reason": { "type": "string" }
+      }
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["severity", "slide", "problem", "evidence", "rationale", "suggested_change"],
+      "properties": {
+        "severity": { "enum": ["critical", "major", "minor"] },
+        "slide": {
+          "anyOf": [
+            { "type": "integer", "minimum": 1 },
+            { "type": "null" }
+          ]
+        },
+        "problem": { "type": "string", "minLength": 1 },
+        "evidence": { "type": "string", "minLength": 1 },
+        "rationale": { "type": "string", "minLength": 1 },
+        "suggested_change": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

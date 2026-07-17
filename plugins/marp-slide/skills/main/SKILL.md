@@ -1,156 +1,110 @@
 ---
 name: main
-description: Marp スライドの要件収集、ドラフト作成、批判的レビュー、PDF/PNGエクスポートを行うスキル。レビューは `reviewer` サブエージェントが別コンテキストで実施し、`.slide-work/review.json.status == "pass"` になるまで完了しない。4 状態のワークフロー（Gather → Draft → Review → Export）で進める。
+description: Marpで、意思決定資料、分析read-ahead、研修、研究報告などを高品質に設計・制作する。要求と根拠を棚卸しし、action titleで論理を検査し、写真・データチャート・静的図解を組み合わせ、全ページ画像と独立した内容・視覚レビューを通してPDF/PNG/HTML/PPTXへ仕上げる。ユーザーが「スライドを作る」「Marp資料」「プレゼンを見やすく」「図やグラフを使った資料」と依頼したら使う。
+model: opus
+effort: xhigh
 ---
 
-# Marp Slide スキル
+# Marp Slide
 
-## 目的
+聞き手が理解し、判断し、行動できる資料を作る。Marp Markdownを書く前に論理とvisual briefを設計し、レンダー後に必ず一度は直す。
 
-Marp スライドを 4 状態のワークフローで作成する:
+## 成果物と完了条件
 
-1. **S1. Gather** — 要件を会話で収集し `.slide-work/request.yaml` を埋める
-2. **S2. Draft** — `slides/presentation.md` を作成する
-3. **S3. Review** — `reviewer` サブエージェントが批判的に審査し、必要なら main agent が修正して再実行する（最大 3 回）
-4. **S4. Export & Approve** — PDF/PNG を最終確認し、ユーザーに完了報告する
+作業用ファイルは `.slide-work/`、編集可能な原稿とローカル素材は `slides/` に置く。
 
-**完了の唯一の条件は `.slide-work/review.json.status == "pass"`** です。他の条件で完了扱いにしてはいけません。
+- `request.yaml`, `storyboard.md`, `deck-plan.json`
+- `asset-manifest.json`, `render-manifest.json`, `run-state.json`
+- `content-review.json`, `visual-review.json`, 統合済み `review.json`
+- `slides/presentation.md`, `slides/theme.css`, `slides/assets/`
+- 全ページ2倍PNG、contact sheet、指定された最終形式、notes
 
-## 重要な設計原則
+完了には、現行入力の統合fingerprintと一致するrubric v3 pass、2回以上のレンダー、1件以上の具体的な改善記録が必要。初回レンダーをfinalizeしない。
 
-- **レビューは別 AI が行う**: ドラフトを作った main agent ではなく、`reviewer` サブエージェントが判定します。Claude Code の Agent ツールで `subagent_type: reviewer` を指定して呼び出します
-- **ゲートは 10 個だけ**: reviewer は 10 個のハードゲート（ストーリー 5 + ビジュアル 5）だけを見ます。詳細は `../../agents/reviewer.md`
-- **修正ループは最大 3 回**: S3 で 3 回連続 fail ならユーザーに相談して判断を仰ぐ（無限ループ防止）
-- **デザインの既定は `templates/presentation-starter.md`**: ユーザーが別のデザインリファレンスを指定していない限り、これを土台にする
+ライフサイクルCLIはホストNodeを前提にしない。PowerShellでは `& "$env:CLAUDE_PLUGIN_ROOT/scripts/run-cli.ps1"`、POSIX shellでは `bash "$CLAUDE_PLUGIN_ROOT/scripts/run-cli.sh"` を使う。どちらもNodeがなければ固定Docker imageへ自動的にfallbackする。以下の `<marp-slide-cli>` は、この環境別launcherを表し、文字どおりのcommand名として実行しない。
 
-## S1. Gather（要件収集）
+新規案件では、既定の作業領域を初期化する。
 
-### 入る条件
-- タスクが新規
-- `.slide-work/request.yaml` が存在しない、または必須項目が欠けている
-- reviewer が `missing_info` を返した
+```bash
+<marp-slide-cli> init --root .
+```
 
-### 行うこと
-1. `.slide-work/` ディレクトリを作成する
-2. `templates/request-template.yaml` をコピーして `.slide-work/request.yaml` を作る
-3. ユーザーとの会話で必須項目を埋める:
-   - `topic`, `audience`, `audience_knowledge`, `presentation_context`
-   - `presentation_type`（`proposal`, `report`, `training`, `executive-update`, `research` のいずれかに正規化）
-   - `goal`, `target_slide_count`, `output_formats`
-   - `must_include`, `source_materials`（あれば）
-4. `references/presentation-structures.md` を見て、`presentation_type` に合った構成パターンを提示し、大まかな流れ（章立て）をユーザーと合意する
+## 1. Source inventory
 
-### 対話の原則
-- 1 回に聞く質問は 2〜3 個まで。大量質問は避ける
-- ユーザーの発話から推測できることは推測し、確認だけを求める（「〜ということは、聞き手は○○の前提知識がある方々ですか？」のように仮説確認型）
-- 骨格（誰に・何のために・何を判断してもらうか）を先に固め、枚数やフォーマットは後
-- 「おまかせ」と言われた部分は妥当なデフォルトを置き、理由を一言添える
+`templates/request-template.yaml` から要求を記録する。依頼文、添付、既存ブランド、利用可能な画像、数値の単位・期間・母数・出典を棚卸しし、各根拠へ安定したIDを付ける。確認できない値を補完せず、仮説または要確認として分離する。
 
-### 抜ける条件
-- `request.yaml` の必須項目がすべて埋まっている
-- デッキの大まかな章立て（章名のリスト程度）がユーザーと合意できている
+必須情報がなく回答を待つ場合は、質問を記録してから `<marp-slide-cli> set-status --root . --status needs_user --message "不足情報の回答待ち"` を実行して停止する。回答を受けたら、作業再開前に `<marp-slide-cli> set-status --root . --status active` を実行する。
 
-## S2. Draft（ドラフト作成）
+`references/narrative.md` を読み、成功条件、1文のdeck thesis、3〜5個の根拠を決める。資料タイプ固有の流れが必要なときだけ `references/type-recipes.md` の該当節を読む。
 
-### 入る条件
-- S1 の抜ける条件を満たした
+## 2. Narrative spineとghost-deck test
 
-### 行うこと
-1. `templates/presentation-starter.md` を土台として `slides/presentation.md` を作成する
-2. `references/layout-patterns.md` を参照し、各スライドに適した archetype を選ぶ
-3. 以下のルールを守る:
-   - タイトルは topic label ではなく takeaway（結論）を断定的に書く
-   - 2 枚目に executive summary を置き、最後に next action を置く
-   - 7 枚以上のデッキには少なくとも 1 枚の `section-divider` を入れる
-   - 1 スライド 1 メッセージ、タイトル除くテキスト 6 行以下、bullet 3 つ以下
-   - 同一 archetype が 3 枚連続しないように並べる
-   - `request.yaml.must_include` の全項目を盛り込む
-   - ユーザーの言語で書く（テンプレートが英語でも、日本語依頼なら日本語で）
+`templates/storyboard-template.md` から `storyboard.md` を作る。各ページを結論または明確な問いを表すaction titleで並べ、タイトル列だけを読んでも「なぜ→何が分かった→だから何をする」が通じるか検査する。章順の転記、重複、根拠のない飛躍を直してから制作へ進む。
 
-### 抜ける条件
-- `slides/presentation.md` がレビュー可能な状態になっている
+## 3. Deck planとvisual brief
 
-## S3. Review（批判的レビュー）
+`references/visual-grammar.md` を読み、`templates/deck-plan-template.json` からページ計画を作る。各ページに `role`, `action_title`, `narrative_goal`, `evidence_ids`, `visual_kind`, `visual_brief`, `layout`, `density`, `citation`, `alt`, `speaker_notes` を記録する。
 
-### 入る条件
-- `slides/presentation.md` が存在する、または直近で変更された
-- `.slide-work/review.json` が存在しない、または status != "pass"
+`visual_brief` は配置の指定ではなく、**何を見せ、聞き手に何を読み取らせるか**を書く。palette、書体、余白、画像処理、反復モチーフ、密度をvisual directionとして先に固定し、資料タイプだけで色を決めない。
 
-### 行うこと
-1. **reviewer サブエージェントを呼び出す**:
-   - Agent ツールで `subagent_type: reviewer` を指定
-   - reviewer は別コンテキストで `slides/presentation.md` と `request.yaml` を読み、MCP で PDF/PNG を出力し、PNG を目視し、10 ゲートで判定して `.slide-work/review.json` を書き込む
-   - 詳細は `../../agents/reviewer.md` を参照
-2. **`review.json.status` を確認する**:
-   - `pass` → S4 へ
-   - `missing_info` → `questions_for_user` をユーザーに確認し、`request.yaml` を更新、S3 を再実行
-   - `fail` → `exact_fix_instructions` に従って `slides/presentation.md` を修正、S3 を再実行
+## 4. 統合承認を1回取る
 
-### 再試行上限
-- S3 の fail → 修正 → S3 再実行 のループは **最大 3 回**
-- 3 回連続で fail になったら、`review.json` の内容をユーザーに共有し、方針の判断を仰ぐ（要件の見直しか、デザインの妥協か、など）
+実内容を使った表紙または代表ページを3案レンダーする。色違いではなく、階層・構図・画像処理・トーンの異なる案にする。次を一度に提示して確認する。
 
-### 抜ける条件
-- `review.json.status == "pass"`
+1. deck thesisとaction-title一覧
+2. visual direction
+3. 3案の実画像
+4. 推奨案と、その聞き手・目的に合う理由
 
-## S4. Export & Approve（最終確認）
+`approval_mode: single-checkpoint` では、この確認後に細部の承認を繰り返さない。`autonomous` では推奨案を採用し、判断理由を記録する。
 
-### 入る条件
-- `review.json.status == "pass"`
+`single-checkpoint`で案を提示する直前に `<marp-slide-cli> set-status --root . --status needs_user --message "統合デザイン案の確認待ち"` を実行する。ユーザーの選択を受けた次のturnでは、最初に `<marp-slide-cli> set-status --root . --status active` を実行してから制作へ進む。これにより、承認待ちを未完了のまま安全に停止できる。
 
-### 行うこと
-1. `review.json.artifacts.pdf` と `page_images` のパスを確認する（既に S3 で reviewer が出力済み）
-2. ユーザーに完了を報告する:
-   - PDF のパス: `.slide-work/presentation.pdf`
-   - スライド枚数
-   - 主な takeaway（章立て）
-3. 追加で HTML や PPTX が要求されている場合（`request.yaml.output_formats`）は、MCP `marp_export` で追加出力する
-4. ユーザーの承認を待つ
+## 5. Hybrid asset pipeline
 
-### 抜ける条件
-- ユーザーが完成を承認した
+`references/asset-pipeline.md` を読む。優先順位は、ユーザー提供素材 → 元データから作るチャート／構造図 → ライセンス確認済みWeb素材 → 概念用AI画像。
 
-## 中断・再開時の判定
+- チャートはCSV/JSONとVega-Lite specから静的SVGを生成し、軸・単位・期間・出典・結論注釈を含める。
+- 図解はMermaid sourceと静的SVGを残す。runtime JavaScriptへ依存しない。
+- AI画像に文章、数値、グラフを描かせない。
+- 全素材を `asset-manifest.json` へ登録し、意味のある画像には具体的なaltを付ける。
 
-会話が途中で切れた場合や別の会話で作業を再開するときは、`.slide-work/` の状態から現在の状態を判定する:
+## 6. Marp compose
 
-| 条件 | 入る状態 |
-|------|----------|
-| `.slide-work/` が存在しない、または `request.yaml` の必須項目が不足 | S1 |
-| `request.yaml` 埋まっているが `slides/presentation.md` が存在しない | S2 |
-| `slides/presentation.md` が存在するが `review.json.status != "pass"` | S3 |
-| `review.json.status == "pass"` だがユーザー承認がまだ | S4 |
+`templates/themes/README.md` に従い、base、profile、deck tokensを単一の `slides/theme.css` へcompileする。gold deckは構成と表現の参考であり、文面やページ列を複製しない。
 
-再開時は「前回の作業を確認しました。現在 S○ の段階です」と一言伝えてから続ける。
+- `templates/examples/gold/executive-decision.md`
+- `templates/examples/gold/analytical-read-ahead.md`
+- `templates/examples/gold/technical-training.md`
+- `templates/component-gallery.md`（pure Markdownでの部品記法だけを確認するとき）
 
-## ツール境界
+frontmatterのHTML実行許可、inline styleの疑似グラフ、workspace外を参照するCSS/SVGを使わない。`lang`, `title`, `description`, `author` を設定する。`live` と `hybrid` ではstoryboardの補足をMarpit presenter notesへ移す。
 
-- `marp_export`（MCP）を呼ぶのは **reviewer サブエージェントの中** が基本。main agent も追加フォーマット出力時には呼んでよい
-- visual review（PNG 目視）は reviewer だけが行う
-- main agent は `slides/presentation.md` の作成・修正を行い、`.slide-work/review.json` は読み取り専用
+## 7. Renderとmachine QA
 
-## 作業ファイル
+compose後に `<marp-slide-cli> lint --root .` を実行し、構造上のfailを直す。次に `marp_render_deck({source: "slides/presentation.md", theme: "slides/theme.css", formats: ["pdf", "png"], output_dir: ".slide-work", image_scale: 2})` を呼ぶ。`formats`は例であり、実際にはreview用`png`と`request.output_formats`で指定された`pdf | html | pptx`の和集合にする。`notes`はformatsへ渡さなくても常に別ファイルで生成される。レンダラーが `.slide-work/render-manifest.json`、`.slide-work/machine-qa.json`、全ページPNG、contact sheet、notesを同じ条件で生成する。
 
-- `.slide-work/request.yaml` — 要件
-- `.slide-work/review.json` — reviewer の判定結果（source of truth）
-- `.slide-work/presentation.pdf` — PDF 出力
-- `.slide-work/rendered-pages/page-###.png` — ページ画像
-- `slides/presentation.md` — Marp ソース（最終成果物の本体）
+`references/quality-assurance.md` に従い、ページ数、欠損asset、overflow、clip、最小文字、contrast、alt、チャート尺度、fingerprintを確認する。geometry checkが`not_run`ならpassにしない。Markdownだけを見て可読性を判断しない。
 
-## 参照
+rendererや必要入力へアクセスできず進行不能なら、原因と再開条件を記録して `<marp-slide-cli> set-status --root . --status blocked --message "<具体的な阻害条件>"` を実行する。外部条件が解消したら`active`へ戻す。難しい、時間がかかる、修正が残るという理由だけで`blocked`にしない。
 
-- `../../agents/reviewer.md` — reviewer サブエージェントの仕様（10 ゲートの詳細はここ）
-- `templates/request-template.yaml` — request state の初期値
-- `templates/review-template.json` — review state の初期値
-- `templates/presentation-starter.md` — 既定のデザインリファレンス（visual language の土台）
-- `references/presentation-structures.md` — `presentation_type` ごとの構成パターン
-- `references/layout-patterns.md` — archetype ごとのレイアウト指針
+## 8. 独立した二系統レビュー
 
-## 運用ルール
+作成者とは別コンテキストで、同じrequest、plan、根拠、render manifestを渡す。
 
-- 完了条件は `review.json.status == "pass"` の 1 つだけ。他の条件で完了にしてはいけない
-- reviewer が fail を返したら、`exact_fix_instructions` に従って修正する。指示を読まずに stop してはいけない
-- reviewer が missing_info を返したら、`questions_for_user` をユーザーに確認する。推測で先に進めない
-- 3 回リトライしても pass しないときは、ユーザーに判断を仰ぐ
-- ユーザーが pass 後に内容を変更した場合、古い pass は無効。S3 からやり直す
-- 本スキルはシングルエージェント環境でも動作する: サブエージェントが起動できない場合、main agent が `../../agents/reviewer.md` を読み、その手順を自分で実行する（ただし批判的な視点に切り替えること）
+- `content-reviewer`: 聞き手、論理、action title、根拠、仮説、notesを評価し、`content-review.json` を書く。
+- `visual-reviewer`: contact sheetでデッキ全体のリズムを確認後、全2倍PNGを1枚ずつ評価し、`visual-review.json` を書く。
+
+`<marp-slide-cli> prepare-review --root .` の`artifact_fingerprint`と`review_attempt`を両reviewerへ渡す。両結果と、レンダラーが書いた `.slide-work/machine-qa.json` を `$CLAUDE_PLUGIN_ROOT/schemas/review.schema.json` が定めるrubric v3へ統合する。`content-review.json` のhard gates／scoresは`content_review`へ、`visual-review.json` のcontact sheet／page list／hard gates／scores／page findingsは`visual_review`へ写し、issuesとstrengthsは重複を除いてトップレベルへ集約する。中間reviewer用の`reviewer`など、schemaにないkeyを`review.json`へ持ち込まない。content reviewerが`needs_user`なら統合statusも`needs_user`、入力へアクセス不能なら`blocked`にする。
+
+machine QAのpassを手で捏造しない。critical/major、hard gate fail、評価3以下が残る状態をpassにしない。reviewerが実画像を見られない場合は `blocked` とし、自己判定でpassを作らない。
+
+統合後は `<marp-slide-cli> validate-review --root .` で厳密schemaとartifact整合を検証する。
+
+## 9. 必須の修正・再レンダー
+
+初回レビューから最も影響の大きい問題をまとめて直す。次のrenderを実行する前に、変更対象ページと具体的な理由を `render-manifest.json` の`improvements`へ、次のiteration番号で追記する。レンダラーはそのentryを保持してiterationを進める。全入力を再fingerprintし、全形式を再レンダーし、machine QAと二系統レビューを再実行する。レビュー後のソース、theme、request、asset変更は古いpassを失効させる。
+
+## 10. Finalize
+
+`<marp-slide-cli> finalize --root .` で、現行fingerprint、rubric v3 pass、実PNG数とスライド数、PNG hash・寸法、2回以上のrender、現iterationの改善履歴を検証する。指定されたPDF/PNG/HTML/PPTXとnotesを渡す。通常PPTXは画像ベースで、オブジェクト単位の編集性は保証しない。未解決のminorと素材ライセンス条件を最終報告に含める。

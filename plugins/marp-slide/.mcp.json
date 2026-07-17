@@ -4,7 +4,18 @@
       "command": "docker",
       "args": [
         "run", "--rm", "-i",
-        "-v", ".:/workspace",
+        "--read-only",
+        "--network", "none",
+        "--cap-drop", "ALL",
+        "--security-opt", "no-new-privileges:true",
+        "--pids-limit", "256",
+        "--memory", "2g",
+        "--tmpfs", "/tmp:rw,nosuid,nodev,noexec,size=1g",
+        "--tmpfs", "/dev/shm:rw,nosuid,nodev,noexec,size=512m",
+        "--user", "1000:1000",
+        "--workdir", "/workspace",
+        "--env", "WORKSPACE_DIR=/workspace",
+        "-v", ".:/workspace:rw",
         "marp-mcp-server"
       ]
     }

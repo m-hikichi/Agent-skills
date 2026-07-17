@@ -1,7 +1,7 @@
 {
   "name": "marp-slide",
-  "description": "Marp スライドの作成・批判的レビュー・PDF/PNGエクスポートを支援するプラグイン",
-  "version": "0.2.0",
+  "description": "構成設計、写真・データ図表・静的図解、全ページQA、独立レビューで高品質なMarp資料を制作するプラグイン",
+  "version": "1.0.0",
   "author": {
     "name": "agent-skills"
   },

@@ -1,0 +1,21 @@
+/* Profile fragment: technical */
+:root {
+  --deck-bg: #0f172a;
+  --deck-surface: #17233a;
+  --deck-soft: #202d45;
+  --deck-table-head: #24344f;
+  --deck-ink: #edf3fc;
+  --deck-muted: #a9b6ca;
+  --deck-line: #3a4b68;
+  --deck-accent: #45c7fa;
+  --deck-signal: #50dc88;
+  --deck-link: #7dd3fc;
+  --deck-code-bg: #080f1e;
+  --deck-code-ink: #bdffd4;
+  --deck-font-sans: 'Noto Sans CJK JP', sans-serif;
+  --deck-font-mono: 'Source Code Pro', monospace;
+}
+section.cover { background: radial-gradient(circle at 78% 18%, #1c3a61, #0f172a 50%); }
+section.cover footer, section.cover::after { display: none; }
+section.section-break, section.closing { background: #17233a; border-left: 12px solid var(--deck-accent); }
+strong { color: var(--deck-signal); }

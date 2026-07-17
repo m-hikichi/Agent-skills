@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360" viewBox="0 0 900 360" role="img" aria-labelledby="title desc">
+  <title id="title">Checkout service architecture</title><desc id="desc">Gatewayからcheckoutへ入り、paymentとorders databaseへ依存する構成</desc>
+  <rect width="900" height="360" rx="18" fill="#0f172a"/>
+  <g font-family="monospace" text-anchor="middle"><g fill="#17233a" stroke="#45c7fa" stroke-width="2"><rect x="40" y="130" width="160" height="76" rx="10"/><rect x="290" y="130" width="180" height="76" rx="10"/><rect x="570" y="62" width="180" height="76" rx="10"/><rect x="570" y="226" width="180" height="76" rx="10"/></g>
+  <g font-size="18" fill="#edf3fc"><text x="120" y="176">Gateway</text><text x="380" y="176">Checkout v2.8</text><text x="660" y="108">Payment API</text><text x="660" y="272">Orders DB</text></g>
+  <g stroke="#50dc88" stroke-width="4" fill="none"><path d="M200 168h90"/><path d="M470 156 570 102"/><path d="M470 184 570 264"/></g>
+  <path d="m280 156 18 12-18 12M560 92l18 5-12 15M560 250l18 12-18 12" fill="#50dc88"/>
+  <text x="520" y="78" font-size="14" fill="#fbbf24">timeout 3.0s</text></g>
+</svg>

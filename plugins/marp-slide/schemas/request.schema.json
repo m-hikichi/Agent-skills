@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-skills.local/marp-slide/request.schema.json",
+  "title": "Marp slide request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "topic",
+    "audience",
+    "presentation_type",
+    "goal",
+    "target_slide_count",
+    "slide_count_mode",
+    "delivery_mode",
+    "output_formats",
+    "must_include",
+    "source_materials",
+    "language",
+    "author",
+    "approval_mode",
+    "image_policy",
+    "brand_strictness",
+    "accessibility_target"
+  ],
+  "properties": {
+    "topic": { "type": "string", "minLength": 1 },
+    "audience": { "type": "string", "minLength": 1 },
+    "audience_knowledge": { "type": ["string", "null"] },
+    "presentation_context": { "type": ["string", "null"] },
+    "presentation_type": { "type": "string", "minLength": 1 },
+    "goal": { "type": "string", "minLength": 1 },
+    "target_slide_count": { "type": "integer", "minimum": 1 },
+    "slide_count_mode": { "enum": ["exact", "target", "flexible"] },
+    "delivery_mode": { "enum": ["live", "read-ahead", "hybrid"] },
+    "duration_minutes": { "type": ["integer", "null"], "minimum": 1 },
+    "desired_tone": { "type": ["string", "null"] },
+    "audience_decision_criteria": {
+      "anyOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        { "type": "null" }
+      ]
+    },
+    "output_formats": {
+      "type": "array",
+      "items": { "enum": ["pdf", "png", "html", "pptx", "notes"] },
+      "uniqueItems": true
+    },
+    "must_include": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "source_materials": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/material" }
+    },
+    "evidence_policy": { "type": ["string", "null"] },
+    "design_reference": { "type": ["string", "null"] },
+    "brand_constraints": {
+      "anyOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } },
+        { "type": "object" },
+        { "type": "null" }
+      ]
+    },
+    "available_assets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/material" }
+    },
+    "language": { "type": "string", "minLength": 1 },
+    "author": { "type": "string", "minLength": 1 },
+    "approval_mode": { "enum": ["single-checkpoint", "autonomous"] },
+    "image_policy": {
+      "enum": ["hybrid", "provided-only", "local-only", "generated-concepts"]
+    },
+    "brand_strictness": { "enum": ["strict", "guided", "flexible"] },
+    "accessibility_target": { "enum": ["standard", "enhanced"] }
+  },
+  "$defs": {
+    "material": {
+      "anyOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "title": { "type": "string" },
+            "path": { "type": "string" },
+            "url": { "type": "string" },
+            "description": { "type": "string" }
+          }
+        }
+      ]
+    }
+  }
+}

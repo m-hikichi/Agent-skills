@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "run_id": "00000000-0000-0000-0000-000000000000",
+  "status": "active",
+  "completed": false,
+  "started_at": "1970-01-01T00:00:00Z",
+  "updated_at": "1970-01-01T00:00:00Z",
+  "artifact_fingerprint": null,
+  "review_attempt": 0,
+  "render_iteration": 0,
+  "message": null
+}

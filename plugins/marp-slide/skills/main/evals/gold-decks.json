@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "environment_fields": [
+    "marp_cli",
+    "marp_core",
+    "chromium",
+    "node",
+    "platform",
+    "fonts"
+  ],
+  "shared_inputs": [
+    "templates/themes/src"
+  ],
+  "decks": [
+    {
+      "id": "executive-decision",
+      "source": "templates/examples/gold/executive-decision.md",
+      "theme": "templates/themes/executive-clean.css",
+      "assets": "templates/examples/gold/assets",
+      "expected_slide_count": 8
+    },
+    {
+      "id": "analytical-read-ahead",
+      "source": "templates/examples/gold/analytical-read-ahead.md",
+      "theme": "templates/themes/editorial.css",
+      "assets": "templates/examples/gold/assets",
+      "expected_slide_count": 8
+    },
+    {
+      "id": "technical-training",
+      "source": "templates/examples/gold/technical-training.md",
+      "theme": "templates/themes/technical.css",
+      "assets": "templates/examples/gold/assets",
+      "expected_slide_count": 8
+    }
+  ]
+}

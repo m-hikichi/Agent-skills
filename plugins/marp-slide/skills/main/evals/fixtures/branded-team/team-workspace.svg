@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Northstar product team workspace</title><desc id="desc">3人のteam memberが顧客journeyとprototypeを囲んで議論する暖色の写真風illustration</desc>
+  <defs><linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f5f1e8"/><stop offset="1" stop-color="#dfd4c2"/></linearGradient><filter id="soft"><feGaussianBlur stdDeviation="18"/></filter></defs>
+  <rect width="1200" height="720" fill="url(#wall)"/><circle cx="1040" cy="100" r="180" fill="#f28c52" opacity=".16" filter="url(#soft)"/>
+  <rect x="170" y="118" width="860" height="250" rx="12" fill="#fff" opacity=".88"/><g font-family="sans-serif"><text x="220" y="168" font-size="26" font-weight="700" fill="#143b5d">Customer journey / weekly learning</text><path d="M240 250h700" stroke="#c9bdaa" stroke-width="5"/><g fill="#f28c52"><circle cx="270" cy="250" r="16"/><circle cx="470" cy="250" r="16"/><circle cx="670" cy="250" r="16"/><circle cx="900" cy="250" r="16"/></g><g font-size="18" fill="#17212b" text-anchor="middle"><text x="270" y="302">observe</text><text x="470" y="302">frame</text><text x="670" y="302">prototype</text><text x="900" y="302">learn</text></g></g>
+  <ellipse cx="600" cy="610" rx="360" ry="70" fill="#143b5d" opacity=".16"/><rect x="310" y="505" width="580" height="58" rx="29" fill="#9d7958"/>
+  <g><circle cx="360" cy="432" r="54" fill="#c8835f"/><path d="M282 574q78-136 156 0" fill="#143b5d"/><circle cx="600" cy="416" r="56" fill="#9c634c"/><path d="M516 574q84-148 168 0" fill="#f28c52"/><circle cx="840" cy="438" r="52" fill="#d6a47f"/><path d="M764 574q76-126 152 0" fill="#637f79"/></g>
+  <rect x="520" y="464" width="160" height="92" rx="8" fill="#eef2f3" stroke="#143b5d"/><path d="M600 556v30" stroke="#143b5d" stroke-width="5"/>
+  <text x="56" y="680" font-family="sans-serif" font-size="20" fill="#143b5d">Provided local illustration — no external source</text>
+</svg>

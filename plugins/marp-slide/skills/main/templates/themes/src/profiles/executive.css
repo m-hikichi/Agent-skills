@@ -1,0 +1,22 @@
+/* Profile fragment: executive */
+:root {
+  --deck-bg: #f6f8fb;
+  --deck-surface: #ffffff;
+  --deck-soft: #e9eff7;
+  --deck-table-head: #e2eaf5;
+  --deck-ink: #142238;
+  --deck-muted: #58697f;
+  --deck-line: #ccd7e5;
+  --deck-accent: #174a7e;
+  --deck-signal: #e0782f;
+  --deck-link: #155fa0;
+  --deck-code-bg: #16283e;
+  --deck-code-ink: #edf5ff;
+  --deck-font-sans: 'BIZ UDPGothic', 'Noto Sans CJK JP', sans-serif;
+  --deck-font-mono: 'Source Code Pro', monospace;
+}
+section.cover { background: linear-gradient(135deg, #102a48, #1b598c); color: #fff; }
+section.cover h1, section.cover h2 { color: #fff; }
+section.cover footer, section.cover::after { display: none; }
+section.section-break, section.closing { background: #163d66; color: #fff; }
+section.section-break h1, section.closing h1 { color: #fff; }

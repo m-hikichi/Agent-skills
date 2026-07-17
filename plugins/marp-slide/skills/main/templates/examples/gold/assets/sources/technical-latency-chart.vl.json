@@ -1,0 +1,37 @@
+{
+  "width": 780,
+  "height": 290,
+  "title": {
+    "text": "deploy後のp95悪化はcheckoutだけ",
+    "subtitle": "10:00 vs 10:10 UTC｜対数尺度、実値ラベル併記｜source: training fixture"
+  },
+  "layer": [
+    { "mark": { "type": "line", "point": { "filled": true, "size": 120 }, "strokeWidth": 4 } },
+    {
+      "mark": { "type": "text", "dy": -15, "fontSize": 14 },
+      "encoding": {
+        "text": { "field": "p95_ms", "type": "quantitative", "format": "," }
+      }
+    }
+  ],
+  "encoding": {
+    "x": { "field": "phase", "type": "ordinal", "title": null, "sort": ["deploy前", "deploy後"] },
+    "y": { "field": "p95_ms", "type": "quantitative", "title": "p95 latency（ms、log）", "scale": { "type": "log", "domain": [100, 5000] } },
+    "color": { "field": "service", "type": "nominal", "title": "service", "scale": { "domain": ["checkout", "search", "profile"], "range": ["#fb7185", "#45c7fa", "#50dc88"] } },
+    "detail": { "field": "service" },
+    "tooltip": [
+      { "field": "service", "title": "service" },
+      { "field": "phase", "title": "phase" },
+      { "field": "p95_ms", "title": "p95（ms）", "format": "," },
+      { "field": "observed_at", "title": "観測時刻" }
+    ]
+  },
+  "config": {
+    "background": "#17233a",
+    "font": "Noto Sans CJK JP",
+    "axis": { "labelColor": "#edf3fc", "titleColor": "#edf3fc", "gridColor": "#3a4b68", "labelFontSize": 16, "titleFontSize": 16 },
+    "title": { "color": "#edf3fc", "subtitleColor": "#a9b6ca", "fontSize": 20, "subtitleFontSize": 14, "anchor": "start" },
+    "legend": { "labelColor": "#edf3fc", "titleColor": "#edf3fc", "labelFontSize": 14, "titleFontSize": 14 },
+    "view": { "stroke": null }
+  }
+}
