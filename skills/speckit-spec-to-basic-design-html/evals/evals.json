@@ -3,79 +3,130 @@
   "evals": [
     {
       "id": 0,
-      "name": "fresh-gen-equipment-lending-v2",
-      "prompt": "添付の Spec Kit spec.md から、実装とテストへ引き渡せる基本設計の機能一覧を作成してください。要求の取りこぼしと、specにない設計事項を勝手に確定することを避けたいです。gitで設計差分をレビューでき、非エンジニアはHTMLで確認できるようにしてください。",
-      "expected_output": "spec.mdを要求の正本とし、v2 design.jsonと自己完結HTMLを生成する。全規範要素を追跡し、各機能に安定ID・設計詳細・根拠を持たせる。品質ゲートがpassedである。",
-      "files": ["fixtures/equipment-lending-spec.md"],
+      "name": "simple-crud-does-not-invent-diagrams",
+      "prompt": "次のspecだけから商品カテゴリ管理の基本設計を作ってください。FR-001: 管理者はカテゴリ名を登録できる。FR-002: 管理者はカテゴリ名を変更できる。FR-003: 管理者は未使用カテゴリを削除できる。SC-001: 3操作以内で登録できる。外部連携、非同期処理、業務状態はありません。gitレビュー可能なJSONと自己完結HTMLにしてください。",
+      "expected_output": "schema_version 3の機能設計を生成する。単一画面・単一永続化境界のCRUDには無用な構成図、sequence、状態図を作らず、applicabilityへ根拠あるnot-applicable判断を記録する。",
+      "files": [],
       "expectations": [
-        "FNC-xxxを持つv2 design.jsonと対応HTMLが生成される",
-        "FR、User Story、受入シナリオ、Edge Cases、Clarifications、Assumptions、Success Criteria、Out of Scopeがtraceabilityにある",
-        "各機能にアクター、起動契機、実行形態、入出力、事前・事後条件、業務ルール、例外、対象データ、根拠がある",
-        "業務ルールはspecified・derived・confirmedを区別し、derivedには導出理由がある",
-        "現行、将来、対象外が混同されない",
-        "品質レポートのblocking_error_countが0である",
-        "HTMLに機能一覧、機能詳細、トレーサビリティ、インターフェース、確認・品質情報の5タブがある"
+        "document_levelがfunctional-designで、report.document_statusをimplementation-readyにしない",
+        "FNC IDを持つ登録・変更・削除の機能と要求トレーサビリティがある",
+        "applicability.workflowsとstate_modelsがnot-applicableで、rationale・basis・source_refsがある",
+        "workflows、state_models、architectureを架空の実装要素で埋めない",
+        "SC-001に操作数を確認するverificationがある",
+        "requirements_coverageとfunctional_designはpassedになり得るが、implementation_contractsとoperational_readinessはnot-evaluatedである",
+        "HTMLはデータのあるタブだけを表示し、空のシステム構成・フロー・契約タブを作らない"
       ]
     },
     {
       "id": 1,
-      "name": "fresh-gen-book-lending-v2",
-      "prompt": "社内図書貸出管理のspec.mdから基本設計機能一覧を作ってください。要求から導出した設計と明記された要求を区別し、実装担当が入出力・条件・失敗時動作まで確認できる形式にしてください。",
-      "expected_output": "別ドメインでもv2スキーマと全規範要素トレーサビリティを適用し、予約・取り置きを現行機能として捏造しない。自動督促をbatchまたはeventとして画面から分離する。",
-      "files": ["fixtures/book-lending-spec.md"],
+      "name": "spec-only-stays-functional-and-does-not-invent-technology",
+      "prompt": "添付の注文連携spec.mdから基本設計を作ってください。まずspecだけで作れる範囲を資料化し、プログラマーが実装を始められる状態かも判定してください。技術情報が足りなければ一般的な構成で補完しないでください。",
+      "expected_output": "spec-onlyの機能設計として要求・機能・明示された業務状態を整理する。architecture、物理DB、詳細API、再送間隔、上限到達後の復旧を捏造せず、不足をplanへ戻す。",
+      "files": ["fixtures/api-order-spec.md"],
       "expectations": [
-        "全FRと受入・エッジ・前提・成功基準・対象外を追跡する",
-        "FR-031のSHOULDを設計根拠へ保持する",
-        "自動督促を画面機能として扱わない",
-        "予約・取り置きを現行機能へ追加しない",
-        "FR-040とSC-003を将来として扱う",
-        "品質ゲートがpassedである"
+        "schema_version 3、document_level functional-design、source.artifactsのspec記録を持つ",
+        "specの全FR、User Story、Acceptance、Edge Case、Clarification、Assumption、Success Criteria、Out of Scopeを追跡する",
+        "method/path/auth/schema、runtime、database、container、transaction、lock方式をspecだけから決めない",
+        "FR-010/011から状態モデルの必要性を検出するが、不完全な許可遷移を完全と扱わない",
+        "FR-021の最大3回は保持するが、再送間隔と上限到達後の復旧を推測しない",
+        "SC-003に具体的検証方法がないことを検出する",
+        "requirements_coverageまたはfunctional_designの不足を表示し、implementation_contractsとoperational_readinessをnot-evaluatedにする",
+        "不足の戻り先として/speckit.clarifyまたは/speckit.planを示す"
       ]
     },
     {
       "id": 2,
-      "name": "legacy-html-migration",
-      "prompt": "添付の旧形式HTML機能一覧を、spec.mdを正本とする新しい基本設計形式へ移行してください。既存の分類・順序・文言は維持し、不足する設計情報は推測せず確認事項として提示してください。",
-      "expected_output": "旧HTMLからv2 design.jsonドラフトを生成し、既存13機能を保持する。不足情報と未対応の規範要素をblocking open_questionsとして提示し、確認前に確定版を生成しない。",
-      "files": ["fixtures/equipment-lending-spec.md", "fixtures/備品貸出管理デモ_基本設計_機能一覧.html"],
+      "name": "full-feature-directory-becomes-implementation-ready",
+      "prompt": "添付のSpec Kit featureディレクトリ一式から、開発者・プログラマー・マネージャー向けの実装準備基本設計を作ってください。重要な処理フローと状態遷移、論理・物理データ、型付き契約、非機能検証、運用復旧、tasksの読み取り要約まで含め、JSONと自己完結HTMLを生成してください。",
+      "expected_output": "spec、plan、research、data-model、OpenAPI、quickstart、tasksを担当領域ごとの正本としてv3設計へ統合する。Context/Container、重要sequence、完全な状態遷移、typed contracts、4軸readiness、10ビューを根拠付きで生成する。",
+      "files": [
+        "fixtures/api-order-feature/spec.md",
+        "fixtures/api-order-feature/plan.md",
+        "fixtures/api-order-feature/research.md",
+        "fixtures/api-order-feature/data-model.md",
+        "fixtures/api-order-feature/contracts/openapi.yaml",
+        "fixtures/api-order-feature/quickstart.md",
+        "fixtures/api-order-feature/tasks.md"
+      ],
       "expectations": [
-        "既存13機能と分類・順序・文言を保持する",
-        "各機能へ仮のFNC-xxxを一意に割り当てる",
-        "v1に無い設計項目をopen_questionsへ追加する",
-        "全規範要素をtraceabilityへ追加する",
-        "確認前の品質判定はfailedであり確定HTMLを生成しない"
+        "schema_version 3、document_level implementation-readyである",
+        "source.artifactsにspec/plan/research/data-model/contract/quickstart/tasksの相対path・実在locator・64桁SHA-256 fingerprintがある",
+        "Clarificationsがsource_catalogとrequirement_decisionsに自動反映され、confirmed factから参照される",
+        "architectureにSystem ContextとContainerがあり、plan/researchへのsource_refsを持つ",
+        "注文状態変更・Outbox・外部EC・自動再送・dead-letter・手動復旧を横断する重要sequenceがある",
+        "state modelはaccepted→shipping、accepted→cancelled、shipping→deliveredだけを許可し、表にない遷移拒否を表現する",
+        "entitiesに一意冪等キー、request hash、version、Outbox、attempt履歴、日次照合とtransaction/排他根拠がある",
+        "更新API契約にmethod/path/auth/request/responses/errors/idempotency/transaction/concurrency、event契約にproducer/consumer/trigger/payload/schema/version/at-least-once/ordering/deduplication/retry/recovery、batch契約にschedule/timezone/initiator/input/output/target range/overlap/transaction/retry/recovery/monitoringがある",
+        "3回失敗後のdead-letter、5分以内alert、同一event IDの手動再送が機能・flow・contract・risk・verificationで追跡できる",
+        "SC-001〜SC-004それぞれにquickstart等を根拠とする具体的verificationがある",
+        "report.readinessの4軸が個別判定され、ブロッキングエラーがなければ全軸passedか適切なnot-applicableでdocument_status implementation-readyになる",
+        "HTMLは10タブを所定順で持ち、図は決定的inline SVGと参加者名・役割・根拠を含む同内容のHTML表、ARIA/keyboard代替を持つ",
+        "レビュー概要でUser Story由来の要求優先度P1/P2を根拠付きで集計し、未指定を捏造しない",
+        "delivery_summaryはtasksのフェーズ・依存・完了2/22だけを読み取り要約し、見積り・日程・担当を捏造しない",
+        "外部URL、style属性、実行時network依存がなく、同じJSONからバイト同一HTMLを再生成できる"
       ]
     },
     {
       "id": 3,
-      "name": "api-batch-event-state-transition",
-      "prompt": "注文連携APIのspec.mdを基本設計機能一覧へ落としてください。API、イベント、日次バッチ、状態遷移を画面機能と混同せず、冪等性・再送・禁止遷移の根拠を追跡できるようにしてください。",
-      "expected_output": "API、event、batch、external-interfaceを構造化し、状態遷移、冪等制御、再送、日次照合を独立した受入可能な責務として設計する。",
-      "files": ["fixtures/api-order-spec.md"],
+      "name": "state-retry-and-verification-gaps-block-readiness",
+      "prompt": "添付のspec.mdと旧design.jsonが本当に実装準備完了か、v3の品質ゲートで監査してください。状態遷移、イベント再送、成功基準の検証に不足があっても、一般的な案で補完せず根拠付きで指摘してください。",
+      "expected_output": "v2のquality passedを信用せずv3へ移行して再判定する。完全な遷移、再送上限後の復旧、SC-002/SC-003のverification不足を検出し、implementation-readyを失敗させる。",
+      "files": ["fixtures/api-order-spec.md", "fixtures/api-order-design.json"],
       "expectations": [
-        "API・イベント・バッチ・外部連携のインターフェース種別を使い分ける",
-        "意味回帰用api-order-design.jsonと同じFR-002→FNC-002、FR-010/011→FNC-003、FR-021→FNC-004/005、FR-030→FNC-006の責務対応になる",
-        "同一冪等キーの重複防止がFR-002とClarificationへ追跡できる",
-        "配送済みから取消への禁止遷移がFR-011とEdge Caseへ追跡できる",
-        "イベント再送上限がFR-021とEdge Caseへ追跡できる",
-        "FR-040だけを将来機能として扱い、決済・返金は対象外とする",
-        "品質ゲートがpassedである"
+        "v2 quality.status passedを実装準備の根拠にしない",
+        "FR-010の全許可遷移・guard・side effectが定義されていないためfunctional_designをfailedにする",
+        "FR-021は3回目失敗後の隔離・通知・手動復旧がないためimplementation_contractsまたはoperational_readinessをfailedにする",
+        "SC-002とSC-003にmethodとexpected_resultを持つverificationがないことをrequirements_coverageで検出する",
+        "不足値を自動生成せずopen_questionsへsource_refs、affected_refs、return_toを記録する",
+        "report.document_statusをimplementation-readyにしない"
       ]
     },
     {
       "id": 4,
-      "name": "ambiguous-spec-asks-before-finalizing",
-      "prompt": "申請承認のspec.mdから確定版の基本設計機能一覧を作ってください。曖昧な点があれば、一般的な値で補完せず私に確認してください。",
-      "expected_output": "代理承認者の決定方法と通知再送条件が未定義であることを根拠付きで質問し、回答前に確定版を生成しない。回答後はClarificationsへ追記してから設計へ反映する。",
-      "files": ["fixtures/ambiguous-approval-spec.md"],
+      "name": "v2-migration-preserves-stable-identities",
+      "prompt": "添付のv2 design.jsonをspec.mdとともにv3へ移行してください。既存レビュー差分を守るため、機能ID、分類、順序、名称、要求対応を変えないでください。v2にない技術設計は推測しないでください。",
+      "expected_output": "migrate_design.pyでv3ドラフトを生成し、FNC-001〜007と分類・文言・FR対応を保持する。source.artifactsと4軸reportへ変換し、新規v3項目の不足を確認事項にする。",
+      "files": ["fixtures/api-order-spec.md", "fixtures/api-order-design.json"],
       "expectations": [
-        "代理承認者の決定方法を質問する",
-        "通知の再送間隔・回数または失敗時処理を質問する",
-        "質問にspecの該当Edge Caseと影響機能を示す",
-        "具体的な選択肢と推奨案を提示する",
-        "回答前にpassedの品質レポートや確定版HTMLを生成しない",
-        "回答後は質問をansweredとしてspec.mdとdesign.jsonへ同時記録する",
-        "設計へCL IDを反映した後だけ質問をresolvedにして確定版を生成する"
+        "schema_versionが3、document_levelがfunctional-designである",
+        "FNC-001〜FNC-007、3階層分類、順序、名称、status、interface IDを維持する",
+        "source.specをsource.artifactsのspec recordへ移しSHA-256 fingerprintを計算する",
+        "actors配列の情報を失わず役割分離の確認事項を作る",
+        "v2の文字列設計項目へ根拠を捏造せず、根拠不明はblocking questionにする",
+        "architecture/workflow/state/entity物理型/typed contractを架空値で補完しない",
+        "v2 quality passedを破棄してreport.readinessを再計算する"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "stale-html-is-rejected-by-deterministic-regeneration",
+      "prompt": "添付のdesign.jsonを作業コピーにしてtitleへ『v3監査版』を追記し、添付HTMLは変更前のままにしてください。その状態を検査した後、正しい更新手順でHTMLを再生成してください。古いHTMLを見た目が同じという理由で通さないでください。",
+      "expected_output": "変更後JSONから一時生成したHTMLと提出HTMLをバイト比較し、変更前HTMLをstaleとして拒否する。再生成後だけ検査を通す。",
+      "files": ["fixtures/api-order-spec.md", "fixtures/api-order-design.json", "fixtures/api-order-design.html"],
+      "expectations": [
+        "JSON変更後かつHTML未更新の最初の検査はnon-zeroで失敗する",
+        "エラーが古いHTMLまたは再生成不一致を明示する",
+        "HTMLを直接部分編集せず、JSONから再生成する",
+        "再生成後のHTMLは一時生成結果とバイト同一である",
+        "外部URL、style属性、ARIA/tab構造の検査も維持する"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "partial-feature-directory-does-not-auto-promote",
+      "prompt": "注文連携のspec.md、plan.md、data-model.mdだけを使い、資料レベルautoで基本設計を作ってください。足りないファイルがあっても、とりあえず実装準備完了と表示してよいかも判定してください。",
+      "expected_output": "research、quickstart、contractが不足するためautoはfunctional-designへ下げる。存在するplan情報は出典付きで参考表示できるが、typed contractやE2E検証を捏造しない。",
+      "files": [
+        "fixtures/api-order-feature/spec.md",
+        "fixtures/api-order-feature/plan.md",
+        "fixtures/api-order-feature/data-model.md"
+      ],
+      "expectations": [
+        "document_levelはfunctional-designで、report.document_statusはimplementation-readyでない",
+        "不足artifact typeとしてresearch、quickstart、contractを列挙する",
+        "plan/data-modelにある事実のsource_refsを維持する",
+        "OpenAPI method/path/schemaや検証結果を捏造しない",
+        "implementation_contractsとoperational_readinessをnot-evaluatedまたはfailedとして明示する"
       ]
     }
   ]

@@ -75,7 +75,7 @@ git submodule update --init --recursive
 ### Skill (`skills/`)
 
 - [`git-flow-commit`](skills/git-flow-commit/SKILL.md): Git Flow に沿ったブランチ運用とコミット作成を支援する Skill。保護ブランチ警告、機密情報チェック、prefix 付き日本語コミットメッセージ作成を標準化する。
-- [`speckit-spec-to-basic-design-html`](skills/speckit-spec-to-basic-design-html/SKILL.md): Spec Kit の `spec.md`（ユーザー要求・機能要件・受入条件を記述した Feature Specification）から、Gitで差分管理できる基本設計書（機能一覧）を自己完結HTMLとして生成する Skill。
+- [`speckit-spec-to-basic-design-html`](skills/speckit-spec-to-basic-design-html/SKILL.md): Spec Kit の `spec.md` から要求・機能設計を、`plan.md`・データモデル・契約等が揃えば実装準備設計までを、Git管理可能な設計JSONと自己完結HTMLとして生成する Skill。
 - [`anthropic-skills`](skills/anthropic-skills/README.md): Anthropic 公式の Skills 実装集。文書作成、デザイン、開発、業務ワークフローなどの Skill 例や、Agent Skills の仕様・テンプレートを参照するための submodule。
 
 ### Hook (`hooks/`)

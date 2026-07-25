@@ -1,211 +1,193 @@
 ---
 name: speckit-spec-to-basic-design-html
 description: >-
-  GitHub Spec Kit の spec.md または同等の要求仕様から、要求根拠と実装可能な機能詳細を持つ
-  基本設計書を、git管理可能な *.design.json と自己完結HTMLとして生成・更新する。
-  FRだけでなく受入シナリオ、Edge Cases、Clarifications、Assumptions、成功基準、対象外まで
-  双方向トレースし、根拠不足・矛盾・未確定事項はユーザー確認後にspecへ追記してから確定する。
-  「機能一覧を作って」「specを基本設計へ落として」「要求が機能で実現できるか確認して」
-  「Excelの機能一覧をgitレビュー可能にして」「既存の機能一覧を更新して」などで使う。
-  Excel(.xlsx)自体が必須の依頼には使わない。
+  GitHub Spec Kit の feature ディレクトリ、spec.md、または同等の要求仕様から、開発者・
+  プログラマー・マネージャーがレビューできる基本設計を、git管理可能な v3 design.json と
+  自己完結HTMLとして生成・更新する。specだけなら要求・機能・論理データを扱う機能設計、
+  plan/research/data-model/contracts/quickstartもあれば構成・重要フロー・状態・型付き契約・
+  非機能検証まで扱う実装準備設計にする。要求根拠、未決事項、4軸の資料準備度を検査し、
+  技術詳細を推測しない。「機能一覧を作って」「specを基本設計へ」「処理フローや状態遷移も必要か」
+  「実装へ渡せる資料にして」「Excelの設計書をgitレビュー可能に」「既存設計を更新」などで使う。
+  Excel(.xlsx)自体、詳細なタスク見積り、またはプロジェクト管理だけが目的の依頼には使わない。
 ---
 
-# Spec Kitから設計品質を検証できる機能一覧を作る
+# Spec Kitから段階的な基本設計を作る
 
-## 成果物と正本
+## 成果物と正本を分ける
 
-役割を混同しない。
+次の優先順位を守る。
 
-1. `spec.md` — 要求の正本。ユーザー確認で確定した要求・業務ルールはClarificationsへ記録する。
-2. `<対象>_基本設計_機能一覧.design.json` — specから導出した設計の正本。安定した機能ID、設計詳細、根拠、カバレッジを持つ。
-3. `<対象>_基本設計_機能一覧.html` — JSONから決定的に生成するレビュー・共有用表示。直接編集しない。
+1. feature ディレクトリの各 Spec Kit 成果物 — 担当領域ごとの正本
+2. `<対象>_基本設計.design.json` — 正本群から構成した派生設計の正本
+3. `<対象>_基本設計.html` — JSONから決定的に生成するレビュー表示
 
-HTMLだけを更新すると設計データと表示が乖離する。更新は必ずJSONを変更して再生成する。
+要求のWhat/Whyは`spec.md`、技術構成と実装方針は`plan.md`、判断理由は`research.md`、論理・
+物理データは`data-model.md`、wire契約は`contracts/`、動作確認は`quickstart.md`を正とする。
+`tasks.md`は進捗・依存関係の正本であり、HTMLにはフェーズ、依存、完了数だけを読み取り専用で要約する。
+HTMLを直接編集しない。設計変更は正本側とJSONへ反映し、再生成する。
 
-## 必須ワークフロー
+詳細なv3スキーマ、根拠オブジェクト、図、契約、品質ゲート、移行規則を使う前に
+[`references/format_spec.md`](references/format_spec.md)を全文読む。
 
-### 1. 入力と既存成果物を確認する
+## 1. 入力を発見して資料レベルを決める
 
-- `spec.md`を全文読む。補足として指定された`plan.md`等は、specと矛盾しない範囲だけ参照する。
-- 同じフォルダにv2 `*.design.json`があれば読み、既存の`FNC-xxx`、分類、文言、並び順を維持する。
-- 旧JSONまたはHTMLしかなければ、先に移行する。
+feature ディレクトリを指定されたら、次を探索する。
 
-```bash
-python <skill>/scripts/migrate_design.py spec.md 旧成果物 -o <対象>_基本設計_機能一覧.design.json
-```
+- 必須: `spec.md`
+- 実装準備に必要: `plan.md`、`research.md`、`data-model.md`、`quickstart.md`
+- 外部インターフェースがある場合に必要: `contracts/`配下のOpenAPI、AsyncAPI、JSON Schema等
+- 任意: `tasks.md`、constitution、既存コード構成
 
-移行結果はドラフトであり、不足情報を`open_questions`に持つ。確認せず確定版として扱わない。
+JSONの`document_level`を先に決める。
 
-### 2. specの規範要素をすべて追跡する
+- `spec.md`だけ、実装準備用成果物が不足、または資料レベル未指定: **機能設計** (`functional-design`)
+- ユーザーが実装準備を求め、必須成果物と必要な契約が揃う: **実装準備設計** (`implementation-ready`)
 
-対象はFRだけではない。
+部分的なplan一式があっても、欠落を推測で埋めない。機能設計として生成し、実装準備に足りない成果物を
+レビュー概要へ表示する。CLIの`--level auto`はdesign.jsonの`document_level`を使用し、未指定なら
+`functional-design`とする。`--level implementation-ready`を指定した場合は不足をブロックする。
 
-- Functional Requirements
-- User Stories
-- Acceptance Scenarios / Acceptance Criteria
-- Edge Cases
-- Clarifications
-- Assumptions
-- Success Criteria
-- Out of Scope
+各入力を`source.artifacts`へ`type`、featureディレクトリからの相対`path`、見出し・JSON Pointer等の
+`locator`、SHA-256 `fingerprint`とともに記録する。ファイル全体なら`locator: "*"`を使う。
+fingerprintは初回だけ空欄または64桁の0として検査器に計算させ、手入力しない。既存fingerprintの
+不一致は設計未追随としてブロックし、自動更新しない。正本と設計を意図的に同時更新した場合だけ、
+該当fingerprintを空欄へ戻して再記録する。
 
-各要素を`traceability`に1件ずつ置き、`covered`、`future`、`out-of-scope`のいずれかへ確定する。
-`partial`と`unresolved`は作業中だけ許可し、確定版では品質エラーにする。
+## 2. 成果物を読み、矛盾を先に解消する
 
-明示IDがない要素には、文書順で`US-xxx`、`AC-xxx-xx`、`EC-xxx`、`ASM-xxx`、`OOS-xxx`を付ける。
-品質検査が保存する`source_catalog`の本文fingerprintを使い、項目の途中挿入・移動後も既存IDを維持する。
-新規項目は同種IDの末尾へ追加し、既存IDを振り直さない。複数行の要求・受入シナリオは継続行を
-同じ規範要素として扱う。
+全文を読み、次の役割で情報を抽出する。
 
-### 3. 機能を設計する
+- `spec`: User Story、受入シナリオ、FR、Edge Case、Clarification、Assumption、Success Criteria、対象外
+- `plan`: システム境界、コンテナ、技術制約、配置・運用方針
+- `research`: 技術判断、比較案、採否理由
+- `data-model`: エンティティ、属性、関係、状態と制約
+- `contract`: API、イベント、バッチ、ファイル、手動運用の厳密な境界
+- `quickstart`: E2E確認方法と実行条件
+- `tasks`: フェーズ、依存、チェック済み件数。見積りや担当を設計判断として取り込まない
 
-各機能は、業務上独立して説明・受入確認できる責務で切る。入力、DB読込、保存、完了表示のような
-実装手順を機械的に別機能へ分けない。FR件数との固定比率で合否を決めない。
+同じ事項が矛盾する場合は都合のよい方を選ばない。要求同士は`/speckit.clarify`、設計成果物間は
+`/speckit.analyze`、技術設計の不足は`/speckit.plan`へ戻す確認事項として記録する。
 
-別機能にする根拠:
+## 3. 要求と根拠を追跡する
 
-- 独立した業務判断または状態遷移
-- 独立したアクター、起動契機、入出力
-- API、バッチ、イベント、外部連携など実行境界が異なる
-- 単独で受入確認・失敗処理を定義できる
+`traceability`へすべての規範要素を1件ずつ置く。対象はFRだけでなく、User Story、Acceptance、
+Edge Case、Clarification、Assumption、Success Criteria、Out of Scopeを含む。
 
-各機能に変更後も維持する`FNC-xxx`を付ける。既存IDは名称変更や分類移動でも変更しない。
+- `covered`: 現行機能、設計要素、または検証で充足
+- `future`: 将来機能として明示
+- `out-of-scope`: 対象外として明示
+- `partial` / `unresolved`: ドラフトのみ。確定時はブロック
 
-必須設計項目:
+明示IDがない要素はfingerprintと`source_catalog`で安定IDを維持する。機能、フロー、状態遷移、
+データ、契約、品質シナリオ、検証から元の成果物まで、両方向に追える参照を持たせる。
 
-- `name` / `summary`
-- `actors`
-- `trigger`
-- `execution.type`と`execution.refs`
-- `inputs` / `outputs`
-- `preconditions` / `postconditions`
-- `business_rules`
-- `exceptions`
-- `data_entities`
-- `source_refs`
-- `status` (`current` / `future`)
+## 4. 機能設計を作る
 
-実行形態は次の列挙値を使う。
+機能は業務上独立して説明・受入確認できる責務で切る。入力、読込、保存、表示のような実装工程を
+機械的に分割しない。実行境界、独立した業務判断・状態遷移、単独の失敗処理が分割の根拠になる。
 
-| type | 用途 |
-|---|---|
-| `screen` | 利用者が画面から操作する |
-| `api` | API要求で起動する |
-| `batch` | 定時・一括処理 |
-| `event` | イベント受信で起動する |
-| `external-interface` | 外部システムとのファイル・メッセージ連携 |
-| `manual` | システム外を含む手動運用 |
-| `cross-cutting` | 認証・監査など複数接点に横断適用する |
+各機能には安定した`FNC-xxx`と次を記録する。
 
-画面、API、バッチ等は`interfaces`マスタへ登録する。`cross-cutting`だけは参照先を持たない。
+- 名称、概要、分類、提供状態
+- User Story等に明記された要求優先度と根拠。未指定なら捏造せず「未指定」
+- アクターを起動者、処理主体、受信者、運用担当に分離
+- 起動契機、実行形態とインターフェース参照
+- 入出力、事前条件、事後条件、業務ルール、例外、対象データ
+- `specified` / `derived` / `confirmed`と根拠
 
-### 4. 根拠と設計判断を分離する
+spec単独では、要求に明記された業務フロー・状態だけを構造化する。技術スタック、コンテナ、物理DB、
+method/path、型、認証、トランザクション、排他、再試行間隔、運用復旧を一般論から作らず「未確定」とする。
 
-業務ルールは文字列ではなくオブジェクトで記録する。
+## 5. 実装準備設計を追加する
 
-```json
-{
-  "id": "BR-021-01",
-  "text": "指定期間の利用可能数を超える予約を拒否する",
-  "basis": "specified",
-  "source_refs": ["FR-021", "AC-001-02"]
-}
-```
+plan一式が揃う場合だけ、正本の記載に基づき次を加える。
 
-`basis`の意味:
+- `architecture`: C4 System ContextとContainer相当。Component/Code図は明示要求がある場合だけ
+- `workflows`: 複数機能・実行境界を横断する重要シナリオのactivityまたはsequence
+- `state_models`: 状態で操作可否が変わる業務エンティティの全許可・禁止遷移
+- `entities`: 属性、型、必須性、関係、制約と根拠
+- `interfaces[].contract`: API、イベント、バッチ、外部連携、手動運用の型付き契約
+- `quality_scenarios`: 性能、可用性、セキュリティ、運用性等を刺激・応答・測定値で表現
+- `risks`: 影響、確率、軽減策、状態、根拠
+- `verification`: Success Criteriaと重要NFRの具体的な検証方法・期待結果
+- `delivery_summary`: tasksがある場合だけ、フェーズ・依存・完了数を要約
 
-- `specified` — specに明記されている。根拠IDを必ず付ける。
-- `derived` — 要求を実現するため設計上導出した。根拠IDと`rationale`を必ず付ける。
-- `confirmed` — ユーザー回答で確定した。`CL-xxx`または確認済み決定IDを必ず付ける。
+図は全機能へ付けない。分岐、外部連携、非同期、再試行、重要異常系、または状態依存があり、表だけでは
+誤解しやすい代表シナリオに限定する。不要な場合も`applicability.workflows/state_models`へ根拠を記録する。
+構造化JSONを正本とし、同じ内容のインラインSVGとHTML表を生成する。
+workflowの表にはstepだけでなく参加者ID、名称、役割、根拠も含め、SVGのlifeline情報を欠落させない。
 
-要求にない数値、期限、既定値、エラー挙動、状態、権限、実行時刻を推測で確定しない。
-品質検査は「適切に」「必要に応じ」「代理承認者」の決定方法、失敗通知の無制約な再送など、
-代表的な曖昧表現も検出する。検出結果は一般論で埋めず、確認回答へ結び付ける。
+## 6. 未確定事項を処理する
 
-### 5. 未確定事項をユーザーへ確認する
+要求にない数値、期限、既定値、エラー挙動、状態、権限、実行時刻、技術選択を推測しない。
+影響が大きい不足は`open_questions`へ根拠、影響要素、戻り先コマンドとともに記録する。
 
-品質に影響する曖昧さを見つけたら、ファイルを確定する前に質問する。
+- 要求・業務判断: `/speckit.clarify`
+- 技術構成・契約・運用設計: `/speckit.plan`
+- 成果物間の不整合: `/speckit.analyze`
 
-- 根拠箇所と影響する機能を示す。
-- 2〜3個の具体的な選択肢と推奨案を示す。
-- 関連質問はまとめ、回答しやすくする。
-- 回答がない間は`open_questions`に`severity: blocking`で残す。
-- 回答前に確定版HTMLを生成しない。必要なら`--allow-draft`で明確にドラフト表示する。
+ユーザー回答はまずspecのClarificationsまたは該当する正本へ記録し、検査器が`requirement_decisions`へ
+質問・回答・source locatorを取り込む。そのIDを影響する設計へ反映する。
+回答済みでも設計未反映なら`answered`のままブロックし、すべての`affected_refs`が同じCL IDを
+参照した後だけ`resolved`にする。plan/research由来の技術ADRをユーザー確認IDとして代用しない。
 
-回答後は、質問IDを指定して`spec.md`と`design.json`へ同時記録する。
+## 7. 4軸の資料準備度を検査する
 
-```bash
-python <skill>/scripts/update_spec_clarification.py spec.md \
-  --design <対象>_基本設計_機能一覧.design.json \
-  --question-id Q-xxx --answer "ユーザーの回答" --date YYYY-MM-DD
-```
+単一の`quality: passed`で全体を合格させない。`report.readiness`を次の4軸で個別判定する。
 
-この時点の質問状態は`answered`であり、品質ゲートは引き続き停止する。発行された`CL-xxx`を
-影響する機能、業務ルール、トレーサビリティから参照し、設計内容を回答に合わせて更新した後だけ
-次を実行する。
+- `requirements_coverage`: 規範要素と根拠の網羅、Success Criteriaの検証対応
+- `functional_design`: 機能責務、重要フロー、必要な状態遷移、論理データの充足
+- `implementation_contracts`: 構成、型付き契約、トランザクション・排他・再試行条件の充足
+- `operational_readiness`: 監視、障害時復旧、移行、運用確認の充足
 
-```bash
-python <skill>/scripts/update_spec_clarification.py spec.md \
-  --design <対象>_基本設計_機能一覧.design.json --question-id Q-xxx --resolve
-```
+各軸は`passed` / `failed` / `not-evaluated` / `not-applicable`で判定する。機能設計では後二軸を
+`not-evaluated`として明示し、文書全体を「実装準備完了」と表示しない。
+状態を持つ要求には完全な状態遷移表または不要理由、重要な横断シナリオにはフローまたは不要理由、
+全Success Criteriaには検証方法が必要である。再送上限だけでなく、上限到達後の復旧も実装準備に必要となる。
+`TBD`、`undetermined`、`未確定`、`要確認`等のplaceholderは、型、契約、状態遷移、検証方法、測定値を
+満たしたことにならない。open questionと戻り先を残して該当軸をブロックする。
 
-`resolved`にした質問は、影響機能が同じ`CL-xxx`を参照していることも検査される。回答を機能一覧だけへ
-書き、specへ戻さない二重管理は禁止する。
-
-### 6. 品質検証してからHTMLを生成する
+## 8. 生成して再現性を確認する
 
 ```bash
-python <skill>/scripts/check_design_html.py spec.md <対象>_基本設計_機能一覧.design.json --write-report
-python <skill>/scripts/build_design_html.py <対象>_基本設計_機能一覧.design.json --spec spec.md
-python <skill>/scripts/check_design_html.py spec.md <対象>_基本設計_機能一覧.design.json <対象>_基本設計_機能一覧.html
+python <skill>/scripts/check_design_html.py <feature-dir> design.json --level auto --write-report
+python <skill>/scripts/build_design_html.py design.json --feature-dir <feature-dir> --level auto
+python <skill>/scripts/check_design_html.py <feature-dir> design.json design.html --level auto
 ```
 
-ブロッキングエラーを0件にする。警告は内容をレビューし、妥当なら残してよい。
+旧CLIの`spec.md design.json [html]`も互換用に利用できる。生成後検査では入力fingerprint、参照整合、
+HTMLの自己完結性・アクセシビリティに加え、JSONから一時再生成したHTMLとのバイト一致を確認する。
+古いHTMLを成功扱いしない。
+v3確定版ではfeatureディレクトリ検証を省略しない。buildで`--feature-dir`を省略した場合は正本specの
+親を基準に導出し、明示`--spec`と`source.artifacts`のspec path/内容が違えばブロックする。
 
-品質ゲートが拒否するもの:
+## HTMLの10ビュー
 
-- specの規範要素の未追跡
-- 根拠のない機能または業務ルール
-- `partial` / `unresolved`、ブロッキング確認事項
-- 重複・不正な機能ID、無効な根拠・インターフェース参照
-- 実行形態とインターフェース種別の不一致
-- 現行機能と将来・対象外要求の不整合
-- 導出理由のない`derived`、確認回答参照のない`confirmed`
-- 根拠区分・導出理由・確認回答参照がない例外処理
-- 未確認の曖昧表現（程度・時期、代理者決定、再送回数・間隔・終了条件）
-- JSONとトレーサビリティの双方向参照不一致
-- 回答済みだが設計へ未反映の質問、または確認回答を参照しない解決済み質問
+データがあるビューだけタブ表示する。
 
-警告としてレビューするもの:
+1. レビュー概要 — 資料レベル、4軸準備度、未決、主要リスク、入力鮮度
+2. システム構成 — Context、Container、設計判断
+3. 機能一覧 — 分類、ID、責務、役割別アクター、実行形態、状態
+4. 機能詳細 — 入出力、条件、ルール、例外、データ、根拠
+5. フロー・状態 — 重要フローと状態遷移のSVGおよび同内容の表
+6. データモデル — エンティティ、属性、関係、制約
+7. インターフェース・契約 — API、イベント、バッチ、外部連携、手動運用
+8. 品質・検証・リスク — NFRシナリオ、検証、リスク、未確定事項
+9. トレーサビリティ — 要求から設計・検証までの双方向対応
+10. 実装計画要約 — tasksがある場合のみ。フェーズ、依存、完了数
 
-- 出力・事後状態がなく、完了条件を確認しづらい機能
-- 対象データがなく、責務が曖昧な機能
-- 業務ルールが多く、責務過大の可能性がある機能
+単一HTMLにCSS/JavaScript/SVGを内蔵し、外部URLとインライン`style`属性を使わない。図とタブは
+キーボード操作、ARIA、表形式の代替表現を備える。
 
-## HTMLの構成
+## 更新とv2移行
 
-- **機能一覧** — 大・中・小分類、機能ID、名称、概要、アクター、実行形態、根拠、提供状態を俯瞰する。
-- **機能詳細** — 入出力、条件、業務ルール、例外、対象データを`FNC-xxx`単位で示す。
-- **トレーサビリティ** — specの全規範要素と機能・カバレッジの対応を示す。
-- **インターフェース** — 画面、API、バッチ、イベント、外部連携、手動接点を一覧化する。
-- **確認・品質情報** — 種別ごとの網羅率、エラー、警告、確認待ち、確認済み決定を示す。
+- 先に正本群の差分を確認し、既存`FNC-xxx`、分類、文言、インターフェースIDを維持する。
+- JSONを更新してからHTMLを再生成し、意味差分は主にJSONでレビューする。
+- 削除要求の機能を黙って消さず、廃止・将来・対象外の扱いを確認する。
+- v1/v2からは次でv3ドラフトへ移行する。
 
-HTMLはCSS/JavaScript内蔵の単一ファイルで、外部URLとインライン`style`属性を使わない。
-タブはキーボード操作とARIAに対応する。主表は検索・状態・実行形態で絞り込める。
+```bash
+python <skill>/scripts/migrate_design.py spec.md v2-design.json -o v3-design.json
+```
 
-## 更新時の規則
-
-- `spec.md`の変更を最初に確認し、既存`design.json`との差分を取る。
-- 既存の`FNC-xxx`、分類、文言、インターフェースIDを不用意に変更しない。
-- 削除された要求に対応する機能を黙って消さず、影響と提供状態を確認する。
-- 新しい規範要素をトレーサビリティへ追加し、対応機能を設計する。
-- JSON更新後に品質レポートとHTMLを再生成する。
-- HTMLの差分ではなく、主にJSONの意味差分をレビューする。
-
-## 参照ファイル
-
-- `references/format_spec.md` — v2 JSONスキーマ、カバレッジ、HTML仕様、完全な例。
-- `scripts/design_quality.py` — spec抽出、v1正規化、品質ゲートの共通実装。
-- `scripts/check_design_html.py` — spec・JSON・HTMLの検査。
-- `scripts/migrate_design.py` — 旧JSON・旧HTMLからv2ドラフトへの移行。
-- `evals/fixtures/api-order-design.json` — API・イベント・バッチ・状態遷移の意味回帰用v2設計例。
+移行では既存ID、分類、順序、文言を保持し、新しい技術情報を捏造しない。不足は準備度と確認事項にする。
