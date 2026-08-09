@@ -1,0 +1,337 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://json-video-studio.local/schemas/project-lock.schema.json",
+  "title": "JSON Video Studio resolved project lock",
+  "description": "Generated, immutable render input. Validate together with video-project.schema.json so external definitions resolve.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "lockVersion",
+    "projectDigest",
+    "lockHash",
+    "generatedAt",
+    "runtime",
+    "assets",
+    "scenes",
+    "totalFrames",
+    "fps",
+    "credits",
+    "warnings"
+  ],
+  "properties": {
+    "lockVersion": {
+      "const": "1.0.0"
+    },
+    "projectDigest": {
+      "$ref": "#/$defs/sha256"
+    },
+    "lockHash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "runtime": {
+      "$ref": "#/$defs/runtime"
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/lockedAsset"
+      },
+      "maxItems": 2000
+    },
+    "scenes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/resolvedScene"
+      },
+      "minItems": 1,
+      "maxItems": 100000
+    },
+    "totalFrames": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "fps": {
+      "const": 30
+    },
+    "credits": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2000
+      },
+      "uniqueItems": true
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2000
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,63}$"
+    },
+    "localPath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "^(?![A-Za-z]:)(?![\\\\/])(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$))(?![A-Za-z][A-Za-z0-9+.-]*:)[^\\u0000-\\u001F]+$"
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node",
+        "remotion",
+        "ffmpeg",
+        "chrome",
+        "font"
+      ],
+      "properties": {
+        "node": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "remotion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "ffmpeg": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "chrome": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "font": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "voicevox": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      }
+    },
+    "lockedAsset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "sourcePath",
+        "resolvedPath",
+        "sha256",
+        "mime",
+        "sizeBytes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "type": {
+          "enum": [
+            "image",
+            "video",
+            "audio",
+            "font",
+            "avatar",
+            "voice"
+          ]
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "resolvedPath": {
+          "$ref": "#/$defs/localPath"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "mime": {
+          "type": "string",
+          "pattern": "^[a-z0-9!#$&^_.+-]+/[a-z0-9!#$&^_.+-]+$"
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "durationMs": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rights": {
+          "$ref": "https://json-video-studio.local/schemas/video-project.schema.json#/$defs/rights"
+        },
+        "voice": {
+          "$ref": "#/$defs/voiceParameters"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {"const": "voice"}
+            },
+            "required": ["type"]
+          },
+          "then": {
+            "properties": {
+              "voice": {"$ref": "#/$defs/voiceParameters"}
+            },
+            "required": ["voice"]
+          }
+        }
+      ]
+    },
+    "voiceParameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "engineVersion",
+        "speakerUuid",
+        "speakerName",
+        "styleId",
+        "styleName",
+        "speedScale",
+        "volumeScale",
+        "pitchScale",
+        "intonationScale",
+        "cacheKey",
+        "textSha256"
+      ],
+      "properties": {
+        "provider": {"const": "voicevox"},
+        "engineVersion": {"type": "string", "minLength": 1, "maxLength": 100},
+        "speakerUuid": {"type": "string", "minLength": 1, "maxLength": 100},
+        "speakerName": {"type": "string", "minLength": 1, "maxLength": 200},
+        "styleId": {"type": "integer", "minimum": 0},
+        "styleName": {"type": "string", "minLength": 1, "maxLength": 200},
+        "speedScale": {"type": "number", "minimum": 0.5, "maximum": 2},
+        "volumeScale": {"type": "number", "minimum": 0, "maximum": 2},
+        "pitchScale": {"type": "number", "minimum": -0.15, "maximum": 0.15},
+        "intonationScale": {"type": "number", "minimum": 0, "maximum": 2},
+        "cacheKey": {"$ref": "#/$defs/sha256"},
+        "textSha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "resolvedScene": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "visual",
+        "sectionId",
+        "sectionTitle",
+        "startFrame",
+        "durationInFrames",
+        "audioDurationMs",
+        "subtitleText"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "speakerId": {
+          "$ref": "#/$defs/identifier"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "subtitle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "emotion": {
+          "$ref": "#/$defs/identifier"
+        },
+        "audioAssetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sfxAssetId": {
+          "$ref": "#/$defs/identifier"
+        },
+        "durationMs": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 3600000
+        },
+        "holdAfterMs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30000
+        },
+        "visual": {
+          "$ref": "https://json-video-studio.local/schemas/video-project.schema.json#/$defs/sceneVisual"
+        },
+        "sectionId": {
+          "$ref": "#/$defs/identifier"
+        },
+        "sectionTitle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "startFrame": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "durationInFrames": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "audioDurationMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "resolvedAudioAssetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "subtitleText": {
+          "type": "string",
+          "maxLength": 240
+        }
+      }
+    }
+  }
+}

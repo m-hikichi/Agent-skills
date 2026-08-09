@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "example-video",
+  "lockHash": "64-character-lowercase-sha256",
+  "iteration": 1,
+  "status": "fail",
+  "reviewedAt": "2026-01-01T00:00:00.000Z",
+  "gates": {
+    "noOverflowOrClipping": false,
+    "noUnintendedOverlap": true,
+    "safeMargins": true,
+    "readableContrast": true,
+    "subtitleReadable": true,
+    "visualMatchesContent": true,
+    "consistentTypography": true,
+    "thumbnailReadable": true
+  },
+  "issues": [
+    {
+      "severity": "error",
+      "sceneId": "scene-id",
+      "framePath": "relative/storyboard/path.png",
+      "problem": "何が、どこで、どう崩れているか",
+      "fix": "JSONのどの値をどう変えるか"
+    }
+  ],
+  "questionsForUser": []
+}

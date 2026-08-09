@@ -1,0 +1,41 @@
+{
+  "mcpServers": {
+    "json-video-studio": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--init",
+        "--entrypoint",
+        "node",
+        "--network",
+        "json-video-studio",
+        "-p",
+        "127.0.0.1:43120:43120",
+        "-e",
+        "JSON_VIDEO_WORKSPACE_ROOT=/workspace",
+        "-e",
+        "JSON_VIDEO_DATA_ROOT=/data",
+        "-e",
+        "JSON_VIDEO_SCHEMA_PATH=/app/schemas/video-project.schema.json",
+        "-e",
+        "JSON_VIDEO_UI_HOST=0.0.0.0",
+        "-e",
+        "JSON_VIDEO_ALLOW_CONTAINER_BIND=1",
+        "-e",
+        "JSON_VIDEO_UI_PORT=43120",
+        "-e",
+        "VOICEVOX_URL=http://voicevox:50021",
+        "-e",
+        "JSON_VIDEO_VOICEVOX_URL=http://voicevox:50021",
+        "-v",
+        "${CLAUDE_PROJECT_DIR}:/workspace",
+        "-v",
+        "${CLAUDE_PLUGIN_DATA}:/data",
+        "json-video-studio:0.1.0",
+        "/app/dist/mcp/index.js"
+      ]
+    }
+  }
+}

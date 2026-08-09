@@ -1,0 +1,17 @@
+name: json-video-studio
+
+services:
+  voicevox:
+    image: ${VOICEVOX_IMAGE:-voicevox/voicevox_engine:cpu-ubuntu24.04-0.25.1}
+    container_name: json-video-studio-voicevox
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:50021:50021"
+    networks:
+      default:
+        aliases:
+          - voicevox
+
+networks:
+  default:
+    name: json-video-studio

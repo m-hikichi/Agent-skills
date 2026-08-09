@@ -1,0 +1,950 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://json-video-studio.local/schemas/video-project.schema.json",
+  "title": "JSON Video Studio project",
+  "description": "Authoring contract for json-video/v1. All asset paths are local and relative to the project file.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "meta",
+    "canvas",
+    "theme",
+    "assets",
+    "speakers",
+    "sections",
+    "thumbnail",
+    "outputs",
+    "policies"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "meta": {
+      "$ref": "#/$defs/meta"
+    },
+    "canvas": {
+      "$ref": "#/$defs/canvas"
+    },
+    "theme": {
+      "$ref": "#/$defs/theme"
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset"
+      },
+      "maxItems": 500
+    },
+    "speakers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/speaker"
+      },
+      "maxItems": 20
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/section"
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "audio": {
+      "$ref": "#/$defs/audioMix"
+    },
+    "thumbnail": {
+      "$ref": "#/$defs/thumbnail"
+    },
+    "outputs": {
+      "$ref": "#/$defs/outputs"
+    },
+    "policies": {
+      "$ref": "#/$defs/policies"
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,63}$"
+    },
+    "color": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}(?:[0-9A-Fa-f]{2})?$"
+    },
+    "localPath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "^(?![A-Za-z]:)(?![\\\\/])(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$))(?![A-Za-z][A-Za-z0-9+.-]*:)[^\\u0000-\\u001F]+$"
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "language"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "language": {
+          "const": "ja-JP"
+        }
+      }
+    },
+    "canvas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "preset",
+        "fps"
+      ],
+      "properties": {
+        "preset": {
+          "const": "youtube-1080p"
+        },
+        "fps": {
+          "const": 30
+        }
+      }
+    },
+    "subtitleStyle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fontSize": {
+          "type": "number",
+          "minimum": 28,
+          "maximum": 96
+        },
+        "maxLines": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "backgroundColor": {
+          "$ref": "#/$defs/color"
+        },
+        "color": {
+          "$ref": "#/$defs/color"
+        }
+      }
+    },
+    "theme": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "backgroundColor",
+        "foregroundColor",
+        "accentColor",
+        "fontFamily"
+      ],
+      "properties": {
+        "backgroundColor": {
+          "$ref": "#/$defs/color"
+        },
+        "foregroundColor": {
+          "$ref": "#/$defs/color"
+        },
+        "accentColor": {
+          "$ref": "#/$defs/color"
+        },
+        "fontFamily": {
+          "const": "Noto Sans CJK JP",
+          "description": "v0.1 uses the Noto Sans CJK JP family bundled in the Docker image so resolved and rendered output use the same locked font."
+        },
+        "spacing": {
+          "enum": [
+            "compact",
+            "comfortable"
+          ]
+        },
+        "subtitleStyle": {
+          "$ref": "#/$defs/subtitleStyle"
+        }
+      }
+    },
+    "rights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "owned",
+            "licensed",
+            "public-domain",
+            "unknown"
+          ]
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "author": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "attribution": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "licensed"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "license": {"type": "string", "minLength": 1, "maxLength": 200}
+            },
+            "required": [
+              "license"
+            ]
+          }
+        }
+      ]
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "path",
+        "rights"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "type": {
+          "enum": [
+            "image",
+            "video",
+            "audio",
+            "font",
+            "avatar"
+          ]
+        },
+        "path": {
+          "$ref": "#/$defs/localPath"
+        },
+        "rights": {
+          "$ref": "#/$defs/rights"
+        }
+      }
+    },
+    "voicevoxVoice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "speakerUuid",
+        "styleId"
+      ],
+      "properties": {
+        "provider": {
+          "const": "voicevox"
+        },
+        "speakerUuid": {
+          "type": "string",
+          "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+        },
+        "styleId": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "speedScale": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2
+        },
+        "volumeScale": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "pitchScale": {
+          "type": "number",
+          "minimum": -0.15,
+          "maximum": 0.15
+        },
+        "intonationScale": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        }
+      }
+    },
+    "avatar": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "defaultAssetId": {
+          "$ref": "#/$defs/identifier"
+        },
+        "mouthOpenAssetId": {
+          "$ref": "#/$defs/identifier"
+        },
+        "expressions": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/identifier"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/identifier"
+          },
+          "maxProperties": 20
+        }
+      }
+    },
+    "speaker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "displayName"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "voice": {
+          "$ref": "#/$defs/voicevoxVoice"
+        },
+        "avatar": {
+          "$ref": "#/$defs/avatar"
+        },
+        "volume": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "speed": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2
+        }
+      }
+    },
+    "titleVisual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "title"
+      ],
+      "properties": {
+        "type": {
+          "const": "title"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "subtitle": {
+          "type": "string",
+          "maxLength": 180
+        }
+      }
+    },
+    "bulletsVisual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "items"
+      ],
+      "properties": {
+        "type": {
+          "const": "bullets"
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "minItems": 1,
+          "maxItems": 5
+        }
+      }
+    },
+    "splitVisual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "left",
+        "right"
+      ],
+      "properties": {
+        "type": {
+          "const": "split"
+        },
+        "left": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "right": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "leftTitle": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "rightTitle": {
+          "type": "string",
+          "maxLength": 80
+        }
+      }
+    },
+    "mediaVisual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "assetId"
+      ],
+      "properties": {
+        "type": {
+          "const": "media"
+        },
+        "assetId": {
+          "$ref": "#/$defs/identifier"
+        },
+        "caption": {
+          "type": "string",
+          "maxLength": 180
+        },
+        "fit": {
+          "enum": [
+            "contain",
+            "cover"
+          ]
+        }
+      }
+    },
+    "codeVisual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "variant",
+        "code"
+      ],
+      "properties": {
+        "type": {
+          "const": "code"
+        },
+        "variant": {
+          "enum": [
+            "source",
+            "diff",
+            "terminal"
+          ]
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8000
+        },
+        "language": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 100
+        }
+      }
+    },
+    "quoteVisual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "quote"
+      ],
+      "properties": {
+        "type": {
+          "const": "quote"
+        },
+        "quote": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "attribution": {
+          "type": "string",
+          "maxLength": 160
+        }
+      }
+    },
+    "metricVisual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "variant",
+        "label"
+      ],
+      "properties": {
+        "type": {
+          "const": "metric"
+        },
+        "variant": {
+          "enum": [
+            "number",
+            "bar",
+            "line"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 1,
+          "maxItems": 12
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "minItems": 1,
+          "maxItems": 12
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "variant": {
+              "const": "number"
+            },
+            "value": {"type": "string", "minLength": 1, "maxLength": 60}
+          },
+          "required": [
+            "value"
+          ],
+          "not": {
+            "anyOf": [
+              {
+                "properties": {
+                  "values": {"type": "array", "items": {"type": "number"}, "minItems": 1, "maxItems": 12}
+                },
+                "required": [
+                  "values"
+                ]
+              },
+              {
+                "properties": {
+                  "labels": {"type": "array", "items": {"type": "string", "maxLength": 40}, "minItems": 1, "maxItems": 12}
+                },
+                "required": [
+                  "labels"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "properties": {
+            "variant": {
+              "enum": [
+                "bar",
+                "line"
+              ]
+            },
+            "values": {"type": "array", "items": {"type": "number"}, "minItems": 1, "maxItems": 12}
+          },
+          "required": [
+            "values"
+          ],
+          "not": {
+            "properties": {
+              "value": {"type": "string", "minLength": 1, "maxLength": 60}
+            },
+            "required": [
+              "value"
+            ]
+          }
+        }
+      ]
+    },
+    "outroVisual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "title"
+      ],
+      "properties": {
+        "type": {
+          "const": "outro"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "subtitle": {
+          "type": "string",
+          "maxLength": 180
+        }
+      }
+    },
+    "sceneVisual": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/titleVisual"
+        },
+        {
+          "$ref": "#/$defs/bulletsVisual"
+        },
+        {
+          "$ref": "#/$defs/splitVisual"
+        },
+        {
+          "$ref": "#/$defs/mediaVisual"
+        },
+        {
+          "$ref": "#/$defs/codeVisual"
+        },
+        {
+          "$ref": "#/$defs/quoteVisual"
+        },
+        {
+          "$ref": "#/$defs/metricVisual"
+        },
+        {
+          "$ref": "#/$defs/outroVisual"
+        }
+      ]
+    },
+    "scene": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "visual"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "speakerId": {
+          "$ref": "#/$defs/identifier"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "subtitle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "emotion": {
+          "$ref": "#/$defs/identifier"
+        },
+        "audioAssetId": {
+          "$ref": "#/$defs/identifier"
+        },
+        "sfxAssetId": {
+          "$ref": "#/$defs/identifier"
+        },
+        "durationMs": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 3600000
+        },
+        "holdAfterMs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30000
+        },
+        "visual": {
+          "$ref": "#/$defs/sceneVisual"
+        }
+      },
+      "oneOf": [
+        {
+          "description": "A user-supplied audio asset determines the duration. speakerId and text may still drive avatar and subtitles.",
+          "properties": {
+            "audioAssetId": {"$ref": "#/$defs/identifier"}
+          },
+          "required": [
+            "audioAssetId"
+          ],
+          "not": {
+            "properties": {
+              "durationMs": {"type": "integer", "minimum": 100, "maximum": 3600000}
+            },
+            "required": [
+              "durationMs"
+            ]
+          }
+        },
+        {
+          "description": "VOICEVOX generates audio from a speaker and text.",
+          "properties": {
+            "speakerId": {"$ref": "#/$defs/identifier"},
+            "text": {"type": "string", "minLength": 1, "maxLength": 2000}
+          },
+          "required": [
+            "speakerId",
+            "text"
+          ],
+          "not": {
+            "anyOf": [
+              {
+                "properties": {
+                  "audioAssetId": {"$ref": "#/$defs/identifier"}
+                },
+                "required": [
+                  "audioAssetId"
+                ]
+              },
+              {
+                "properties": {
+                  "durationMs": {"type": "integer", "minimum": 100, "maximum": 3600000}
+                },
+                "required": [
+                  "durationMs"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "description": "A silent scene has an explicit duration and no speaker or audio asset.",
+          "properties": {
+            "durationMs": {"type": "integer", "minimum": 100, "maximum": 3600000}
+          },
+          "required": [
+            "durationMs"
+          ],
+          "not": {
+            "anyOf": [
+              {
+                "properties": {
+                  "audioAssetId": {"$ref": "#/$defs/identifier"}
+                },
+                "required": [
+                  "audioAssetId"
+                ]
+              },
+              {
+                "properties": {
+                  "speakerId": {"$ref": "#/$defs/identifier"}
+                },
+                "required": [
+                  "speakerId"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "scenes"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "backgroundAssetId": {
+          "$ref": "#/$defs/identifier"
+        },
+        "bgmAssetId": {
+          "$ref": "#/$defs/identifier"
+        },
+        "scenes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/scene"
+          },
+          "minItems": 1,
+          "maxItems": 1000
+        }
+      }
+    },
+    "audioMix": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bgmAssetId": {
+          "$ref": "#/$defs/identifier"
+        },
+        "bgmVolume": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "sfxVolume": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "thumbnail": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "textLines"
+      ],
+      "properties": {
+        "backgroundAssetId": {
+          "$ref": "#/$defs/identifier"
+        },
+        "textLines": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "minItems": 1,
+          "maxItems": 2
+        },
+        "speakerIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/identifier"
+          },
+          "uniqueItems": true,
+          "maxItems": 2
+        },
+        "layout": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "video",
+        "captions",
+        "chapters",
+        "thumbnail",
+        "storyboard"
+      ],
+      "properties": {
+        "video": {
+          "const": true,
+          "description": "v0.1 always renders the primary MP4."
+        },
+        "captions": {
+          "type": "boolean"
+        },
+        "chapters": {
+          "type": "boolean"
+        },
+        "thumbnail": {
+          "type": "boolean"
+        },
+        "storyboard": {
+          "const": true,
+          "description": "v0.1 always generates storyboard assets for the mandatory review gate."
+        }
+      }
+    },
+    "policies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allowUnknownRights",
+        "maxDurationMinutes"
+      ],
+      "properties": {
+        "allowUnknownRights": {
+          "type": "boolean"
+        },
+        "maxDurationMinutes": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 180
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "projectId": "example-video",
+  "goal": "視聴後に何を理解・判断・実行してほしいか",
+  "audience": "対象視聴者",
+  "targetDurationMinutes": 5,
+  "title": "動画タイトル",
+  "sections": [
+    {
+      "title": "導入",
+      "purpose": "課題と結論を短く示す"
+    }
+  ],
+  "speakerPreference": "VOICEVOXの候補を確認して決定",
+  "assets": [],
+  "themeNotes": "濃色背景、読みやすい日本語字幕",
+  "thumbnailMessage": "最大2行",
+  "openQuestions": [],
+  "lastProjectRevision": 0,
+  "lastJobId": null,
+  "lastLockHash": null
+}
