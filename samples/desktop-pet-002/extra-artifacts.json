@@ -1,0 +1,10 @@
+{
+  "extra_artifacts": [
+    {"path": "qa/us1-visual-qa.md", "type": "prior-qa-evidence", "authority": "evidence", "locator": "*"},
+    {"path": "qa/us2-visual-qa.md", "type": "prior-qa-evidence", "authority": "evidence", "locator": "*"},
+    {"path": "qa/us3-visual-qa.md", "type": "prior-qa-evidence", "authority": "evidence", "locator": "*"},
+    {"path": "qa/restructure-regression.md", "type": "prior-qa-evidence", "authority": "evidence", "locator": "*"},
+    {"path": "qa/performance.md", "type": "prior-qa-evidence", "authority": "evidence", "locator": "*"},
+    {"path": "qa/final-visual-qa.md", "type": "prior-qa-evidence", "authority": "evidence", "locator": "*"}
+  ]
+}

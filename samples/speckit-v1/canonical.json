@@ -1,0 +1,797 @@
+{
+  "change_impact": [],
+  "context": {
+    "key_entities": [],
+    "overview": "チーム管理者は、障害通知を受け取るメールアドレスを登録する。",
+    "title": "Feature Specification: チーム通知設定"
+  },
+  "functions": [
+    {
+      "actors": [],
+      "basis": "derived",
+      "business_rules": [
+        "チーム管理者は通知先メールアドレスを登録できなければならない。",
+        "システムはメールアドレス形式でない入力を保存してはならない。",
+        "システムは同一チーム内の通知先重複を拒否しなければならない。"
+      ],
+      "exceptions": [
+        "同じメールアドレスを同一チームへ二重登録した場合は重複として拒否する。"
+      ],
+      "id": "FNC-001",
+      "inputs": [],
+      "name": "通知先を登録する",
+      "outputs": [],
+      "postconditions": [],
+      "preconditions": [],
+      "priority": "P1",
+      "rationale": "8件の要件を、同じ利用者目的・業務上の振る舞いとしてまとめた仮の機能境界",
+      "source_refs": [
+        "spec.md#L8",
+        "spec.md#L16",
+        "spec.md#L17",
+        "spec.md#L21",
+        "spec.md#L25",
+        "spec.md#L26",
+        "spec.md#L27",
+        "spec.md#L31"
+      ],
+      "status": "current",
+      "summary": "通知先を登録する",
+      "trigger": "unspecified"
+    }
+  ],
+  "identity_registry": [
+    {
+      "aliases": [],
+      "id": "AC-001",
+      "kind": "requirement",
+      "lifecycle": "active",
+      "source_key": "acceptance-scenario:57d3f429fffacffab5530a82f32e59dd71c7f5ca3d1d45f50f64c09770736a8a"
+    },
+    {
+      "aliases": [],
+      "id": "AC-002",
+      "kind": "requirement",
+      "lifecycle": "active",
+      "source_key": "acceptance-scenario:c204866d69fab1a1e77b757c9ae77147ad25b655810166ab25f5f9eb4ab86556"
+    },
+    {
+      "aliases": [],
+      "id": "EC-001",
+      "kind": "requirement",
+      "lifecycle": "active",
+      "source_key": "edge-case:67e1d9ab6a971533e4e765216b4898047bd097ce281676e665133466c63c3c87"
+    },
+    {
+      "aliases": [],
+      "id": "FNC-001",
+      "kind": "function",
+      "lifecycle": "active",
+      "source_key": "story:US-001"
+    },
+    {
+      "aliases": [],
+      "id": "FNC-002",
+      "kind": "function",
+      "lifecycle": "retired",
+      "source_key": "requirement:EC-001"
+    },
+    {
+      "aliases": [],
+      "id": "FNC-003",
+      "kind": "function",
+      "lifecycle": "retired",
+      "source_key": "requirement:FR-001"
+    },
+    {
+      "aliases": [],
+      "id": "FNC-004",
+      "kind": "function",
+      "lifecycle": "retired",
+      "source_key": "requirement:FR-002"
+    },
+    {
+      "aliases": [],
+      "id": "FNC-005",
+      "kind": "function",
+      "lifecycle": "retired",
+      "source_key": "requirement:FR-003"
+    },
+    {
+      "aliases": [],
+      "id": "FNC-006",
+      "kind": "function",
+      "lifecycle": "retired",
+      "source_key": "requirement:SC-001"
+    },
+    {
+      "aliases": [],
+      "id": "FR-001",
+      "kind": "requirement",
+      "lifecycle": "active",
+      "source_key": "functional-requirement:14741bc0faea41cb2136318ebd2fa4835310da3fec6cc628f3ed481c2b7bdaef"
+    },
+    {
+      "aliases": [],
+      "id": "FR-002",
+      "kind": "requirement",
+      "lifecycle": "active",
+      "source_key": "functional-requirement:252989fbbb99df5ce2dea5595d7687e7632bcbd54f469cdd344946faaf3fbf58"
+    },
+    {
+      "aliases": [],
+      "id": "FR-003",
+      "kind": "requirement",
+      "lifecycle": "active",
+      "source_key": "functional-requirement:bf61ae7f972e64d158e69eb966f59af34a94f4f8965a7aae534632401d56a130"
+    },
+    {
+      "aliases": [],
+      "id": "OOS-001",
+      "kind": "requirement",
+      "lifecycle": "active",
+      "source_key": "out-of-scope:5d3471e7a9832146fc4417cfaf7de411a201977680ee2ca6fdca69ac3e51d647"
+    },
+    {
+      "aliases": [],
+      "id": "SC-001",
+      "kind": "requirement",
+      "lifecycle": "active",
+      "source_key": "success-criterion:11c928419cdb878fd184b7986c31f28a50dcc67910423f8bcefdaf412e30140a"
+    },
+    {
+      "aliases": [],
+      "id": "TST-001",
+      "kind": "test-case",
+      "lifecycle": "active",
+      "source_key": "requirement:positive:AC-001"
+    },
+    {
+      "aliases": [],
+      "id": "TST-002",
+      "kind": "test-case",
+      "lifecycle": "retired",
+      "source_key": "FNC-001:positive:AC-002"
+    },
+    {
+      "aliases": [],
+      "id": "TST-003",
+      "kind": "test-case",
+      "lifecycle": "active",
+      "source_key": "requirement:positive:US-001"
+    },
+    {
+      "aliases": [],
+      "id": "TST-004",
+      "kind": "test-case",
+      "lifecycle": "active",
+      "source_key": "requirement:boundary:EC-001"
+    },
+    {
+      "aliases": [],
+      "id": "TST-005",
+      "kind": "test-case",
+      "lifecycle": "active",
+      "source_key": "requirement:positive:FR-001"
+    },
+    {
+      "aliases": [],
+      "id": "TST-006",
+      "kind": "test-case",
+      "lifecycle": "active",
+      "source_key": "requirement:positive:FR-002"
+    },
+    {
+      "aliases": [],
+      "id": "TST-007",
+      "kind": "test-case",
+      "lifecycle": "retired",
+      "source_key": "FNC-005:positive:FR-003"
+    },
+    {
+      "aliases": [],
+      "id": "TST-008",
+      "kind": "test-case",
+      "lifecycle": "active",
+      "source_key": "requirement:nfr:SC-001"
+    },
+    {
+      "aliases": [],
+      "id": "TST-009",
+      "kind": "test-case",
+      "lifecycle": "active",
+      "source_key": "requirement:negative:AC-002"
+    },
+    {
+      "aliases": [],
+      "id": "TST-010",
+      "kind": "test-case",
+      "lifecycle": "active",
+      "source_key": "requirement:negative:FR-003"
+    },
+    {
+      "aliases": [],
+      "id": "US-001",
+      "kind": "requirement",
+      "lifecycle": "active",
+      "source_key": "user-story:eb112e3b59ec0db4fc9e05b52e146ea06c8a7623f58d35afe9d0a950b488eb2a"
+    }
+  ],
+  "links": [
+    {
+      "from_id": "FNC-001",
+      "to_id": "TST-001",
+      "type": "function-to-test"
+    },
+    {
+      "from_id": "FNC-001",
+      "to_id": "TST-003",
+      "type": "function-to-test"
+    },
+    {
+      "from_id": "FNC-001",
+      "to_id": "TST-004",
+      "type": "function-to-test"
+    },
+    {
+      "from_id": "FNC-001",
+      "to_id": "TST-005",
+      "type": "function-to-test"
+    },
+    {
+      "from_id": "FNC-001",
+      "to_id": "TST-006",
+      "type": "function-to-test"
+    },
+    {
+      "from_id": "FNC-001",
+      "to_id": "TST-008",
+      "type": "function-to-test"
+    },
+    {
+      "from_id": "FNC-001",
+      "to_id": "TST-009",
+      "type": "function-to-test"
+    },
+    {
+      "from_id": "FNC-001",
+      "to_id": "TST-010",
+      "type": "function-to-test"
+    },
+    {
+      "from_id": "AC-001",
+      "to_id": "FNC-001",
+      "type": "requirement-to-function"
+    },
+    {
+      "from_id": "AC-002",
+      "to_id": "FNC-001",
+      "type": "requirement-to-function"
+    },
+    {
+      "from_id": "EC-001",
+      "to_id": "FNC-001",
+      "type": "requirement-to-function"
+    },
+    {
+      "from_id": "FR-001",
+      "to_id": "FNC-001",
+      "type": "requirement-to-function"
+    },
+    {
+      "from_id": "FR-002",
+      "to_id": "FNC-001",
+      "type": "requirement-to-function"
+    },
+    {
+      "from_id": "FR-003",
+      "to_id": "FNC-001",
+      "type": "requirement-to-function"
+    },
+    {
+      "from_id": "SC-001",
+      "to_id": "FNC-001",
+      "type": "requirement-to-function"
+    },
+    {
+      "from_id": "US-001",
+      "to_id": "FNC-001",
+      "type": "requirement-to-function"
+    },
+    {
+      "from_id": "AC-001",
+      "to_id": "TST-001",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "AC-002",
+      "to_id": "TST-009",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "EC-001",
+      "to_id": "TST-004",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "FR-001",
+      "to_id": "TST-005",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "FR-002",
+      "to_id": "TST-006",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "FR-003",
+      "to_id": "TST-010",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "SC-001",
+      "to_id": "TST-008",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "US-001",
+      "to_id": "TST-003",
+      "type": "requirement-to-test"
+    }
+  ],
+  "mode": "spec-only",
+  "open_questions": [
+    {
+      "affected_ids": [
+        "EC-001",
+        "TST-004"
+      ],
+      "id": "Q-001",
+      "question": "EC-001の試験操作・事前条件・観測可能な期待結果を入力資料で具体化してください。",
+      "return_to": "speckit.clarify",
+      "source_refs": [
+        "spec.md#L21"
+      ],
+      "status": "open"
+    },
+    {
+      "affected_ids": [
+        "FR-001",
+        "TST-005"
+      ],
+      "id": "Q-002",
+      "question": "FR-001の試験操作・事前条件・観測可能な期待結果を入力資料で具体化してください。",
+      "return_to": "speckit.clarify",
+      "source_refs": [
+        "spec.md#L25"
+      ],
+      "status": "open"
+    },
+    {
+      "affected_ids": [
+        "FR-002",
+        "TST-006"
+      ],
+      "id": "Q-003",
+      "question": "FR-002の試験操作・事前条件・観測可能な期待結果を入力資料で具体化してください。",
+      "return_to": "speckit.clarify",
+      "source_refs": [
+        "spec.md#L26"
+      ],
+      "status": "open"
+    },
+    {
+      "affected_ids": [
+        "FR-003",
+        "TST-010"
+      ],
+      "id": "Q-004",
+      "question": "FR-003の試験操作・事前条件・観測可能な期待結果を入力資料で具体化してください。",
+      "return_to": "speckit.clarify",
+      "source_refs": [
+        "spec.md#L27"
+      ],
+      "status": "open"
+    },
+    {
+      "affected_ids": [
+        "SC-001",
+        "TST-008"
+      ],
+      "id": "Q-005",
+      "question": "SC-001の試験操作・事前条件・観測可能な期待結果を入力資料で具体化してください。",
+      "return_to": "speckit.clarify",
+      "source_refs": [
+        "spec.md#L31"
+      ],
+      "status": "open"
+    },
+    {
+      "affected_ids": [
+        "US-001",
+        "TST-003"
+      ],
+      "id": "Q-006",
+      "question": "US-001の試験操作・事前条件・観測可能な期待結果を入力資料で具体化してください。",
+      "return_to": "speckit.clarify",
+      "source_refs": [
+        "spec.md#L8"
+      ],
+      "status": "open"
+    },
+    {
+      "affected_ids": [],
+      "id": "Q-007",
+      "question": "入力資料と全要件・機能・テストの意味対応を独立レビューし、根拠と判断を記録してください。",
+      "return_to": "semantic-review",
+      "source_refs": [
+        "spec.md#L1"
+      ],
+      "status": "open"
+    }
+  ],
+  "profile": "draft",
+  "report": {
+    "axes": {
+      "cross_artifact_consistency": {
+        "errors": [],
+        "metrics": {
+          "errors": 0,
+          "warnings": 0
+        },
+        "status": "passed",
+        "warnings": []
+      },
+      "function_coverage": {
+        "errors": [],
+        "metrics": {
+          "errors": 0,
+          "warnings": 0
+        },
+        "status": "passed",
+        "warnings": []
+      },
+      "render_reproducibility": {
+        "errors": [],
+        "metrics": {
+          "errors": 0,
+          "warnings": 0
+        },
+        "status": "passed",
+        "warnings": []
+      },
+      "requirements_quality": {
+        "errors": [],
+        "metrics": {
+          "errors": 0,
+          "warnings": 1
+        },
+        "status": "passed",
+        "warnings": [
+          "open questions must be resolved before publish"
+        ]
+      },
+      "source_integrity": {
+        "errors": [],
+        "metrics": {
+          "errors": 0,
+          "warnings": 0
+        },
+        "status": "passed",
+        "warnings": []
+      },
+      "test_coverage": {
+        "errors": [],
+        "metrics": {
+          "errors": 0,
+          "warnings": 6
+        },
+        "status": "passed",
+        "warnings": [
+          "TST-003: concrete test operation/expectation is unresolved",
+          "TST-004: concrete test operation/expectation is unresolved",
+          "TST-005: concrete test operation/expectation is unresolved",
+          "TST-006: concrete test operation/expectation is unresolved",
+          "TST-008: concrete test operation/expectation is unresolved",
+          "TST-010: concrete test operation/expectation is unresolved"
+        ]
+      }
+    },
+    "blocking_errors": 0,
+    "profile": "draft",
+    "status": "draft-ready"
+  },
+  "requirements": [
+    {
+      "basis": "specified",
+      "id": "AC-001",
+      "kind": "acceptance-scenario",
+      "parent_id": "US-001",
+      "priority": "unspecified",
+      "source_refs": [
+        "spec.md#L16"
+      ],
+      "statement": "Given 通知先が未登録、When 有効なメールアドレスを登録する、Then 通知先一覧に登録値が表示される。",
+      "status": "current"
+    },
+    {
+      "basis": "specified",
+      "id": "AC-002",
+      "kind": "acceptance-scenario",
+      "parent_id": "US-001",
+      "priority": "unspecified",
+      "source_refs": [
+        "spec.md#L17"
+      ],
+      "statement": "Given 通知先が未登録、When invalid を登録する、Then 入力エラーとなり保存されない。",
+      "status": "current"
+    },
+    {
+      "basis": "specified",
+      "id": "EC-001",
+      "kind": "edge-case",
+      "parent_id": null,
+      "priority": "unspecified",
+      "source_refs": [
+        "spec.md#L21"
+      ],
+      "statement": "同じメールアドレスを同一チームへ二重登録した場合は重複として拒否する。",
+      "status": "current"
+    },
+    {
+      "basis": "specified",
+      "id": "FR-001",
+      "kind": "functional-requirement",
+      "parent_id": null,
+      "priority": "unspecified",
+      "source_refs": [
+        "spec.md#L25"
+      ],
+      "statement": "チーム管理者は通知先メールアドレスを登録できなければならない。",
+      "status": "current"
+    },
+    {
+      "basis": "specified",
+      "id": "FR-002",
+      "kind": "functional-requirement",
+      "parent_id": null,
+      "priority": "unspecified",
+      "source_refs": [
+        "spec.md#L26"
+      ],
+      "statement": "システムはメールアドレス形式でない入力を保存してはならない。",
+      "status": "current"
+    },
+    {
+      "basis": "specified",
+      "id": "FR-003",
+      "kind": "functional-requirement",
+      "parent_id": null,
+      "priority": "unspecified",
+      "source_refs": [
+        "spec.md#L27"
+      ],
+      "statement": "システムは同一チーム内の通知先重複を拒否しなければならない。",
+      "status": "current"
+    },
+    {
+      "basis": "specified",
+      "id": "OOS-001",
+      "kind": "out-of-scope",
+      "parent_id": null,
+      "priority": "unspecified",
+      "source_refs": [
+        "spec.md#L35"
+      ],
+      "statement": "SMSおよびチャットサービスへの通知。",
+      "status": "out-of-scope"
+    },
+    {
+      "basis": "specified",
+      "id": "SC-001",
+      "kind": "success-criterion",
+      "parent_id": null,
+      "priority": "unspecified",
+      "source_refs": [
+        "spec.md#L31"
+      ],
+      "statement": "初めて操作する管理者の90%以上が2分以内に通知先登録を完了できる。",
+      "status": "current"
+    },
+    {
+      "basis": "specified",
+      "body": "\nチーム管理者は、障害通知を受け取るメールアドレスを登録する。\n\n**Independent Test**: 通知先が未登録のチームにメールアドレスを登録し、一覧へ表示されることを単独で確認できる。\n\n**Acceptance Scenarios**:\n\n1. **Given** 通知先が未登録、**When** 有効なメールアドレスを登録する、**Then** 通知先一覧に登録値が表示される。\n2. **Given** 通知先が未登録、**When** `invalid` を登録する、**Then** 入力エラーとなり保存されない。\n",
+      "id": "US-001",
+      "independent_test": "通知先が未登録のチームにメールアドレスを登録し、一覧へ表示されることを単独で確認できる。",
+      "kind": "user-story",
+      "parent_id": null,
+      "priority": "P1",
+      "source_refs": [
+        "spec.md#L8"
+      ],
+      "statement": "通知先を登録する",
+      "status": "current",
+      "why": ""
+    }
+  ],
+  "schema_version": 1,
+  "sources": [
+    {
+      "authority": "normative",
+      "locator": "*",
+      "path": "spec.md",
+      "sha256": "229c7a17f751065a9934d90d87732e47ce7022056352a5c6bfba4e61db191e87",
+      "type": "spec"
+    }
+  ],
+  "speckit_compatibility": "1.0.x",
+  "test_cases": [
+    {
+      "automation_status": "unspecified",
+      "basis": "derived",
+      "expected_result": "通知先一覧に登録値が表示される。",
+      "id": "TST-001",
+      "level": "logical-acceptance",
+      "preconditions": [
+        "通知先が未登録"
+      ],
+      "priority": "unspecified",
+      "rationale": "AC-001の入力記述を検証対象として保持する",
+      "source_refs": [
+        "spec.md#L16"
+      ],
+      "status": "planned",
+      "steps": [
+        "有効なメールアドレスを登録する"
+      ],
+      "test_data": [],
+      "title": "通知先を登録する — AC-001",
+      "type": "positive"
+    },
+    {
+      "automation_status": "unspecified",
+      "basis": "derived",
+      "expected_result": "通知先を登録する",
+      "id": "TST-003",
+      "level": "logical-acceptance",
+      "preconditions": [],
+      "priority": "P1",
+      "rationale": "US-001の入力記述を検証対象として保持する",
+      "source_refs": [
+        "spec.md#L8"
+      ],
+      "status": "planned",
+      "steps": [
+        "unspecified"
+      ],
+      "test_data": [],
+      "title": "通知先を登録する — US-001",
+      "type": "positive"
+    },
+    {
+      "automation_status": "unspecified",
+      "basis": "derived",
+      "expected_result": "同じメールアドレスを同一チームへ二重登録した場合は重複として拒否する。",
+      "id": "TST-004",
+      "level": "logical-acceptance",
+      "preconditions": [],
+      "priority": "unspecified",
+      "rationale": "EC-001の入力記述を検証対象として保持する",
+      "source_refs": [
+        "spec.md#L21"
+      ],
+      "status": "planned",
+      "steps": [
+        "unspecified"
+      ],
+      "test_data": [],
+      "title": "通知先を登録する — EC-001",
+      "type": "boundary"
+    },
+    {
+      "automation_status": "unspecified",
+      "basis": "derived",
+      "expected_result": "チーム管理者は通知先メールアドレスを登録できなければならない。",
+      "id": "TST-005",
+      "level": "logical-acceptance",
+      "preconditions": [],
+      "priority": "unspecified",
+      "rationale": "FR-001の入力記述を検証対象として保持する",
+      "source_refs": [
+        "spec.md#L25"
+      ],
+      "status": "planned",
+      "steps": [
+        "unspecified"
+      ],
+      "test_data": [],
+      "title": "通知先を登録する — FR-001",
+      "type": "positive"
+    },
+    {
+      "automation_status": "unspecified",
+      "basis": "derived",
+      "expected_result": "システムはメールアドレス形式でない入力を保存してはならない。",
+      "id": "TST-006",
+      "level": "logical-acceptance",
+      "preconditions": [],
+      "priority": "unspecified",
+      "rationale": "FR-002の入力記述を検証対象として保持する",
+      "source_refs": [
+        "spec.md#L26"
+      ],
+      "status": "planned",
+      "steps": [
+        "unspecified"
+      ],
+      "test_data": [],
+      "title": "通知先を登録する — FR-002",
+      "type": "positive"
+    },
+    {
+      "automation_status": "unspecified",
+      "basis": "derived",
+      "expected_result": "初めて操作する管理者の90%以上が2分以内に通知先登録を完了できる。",
+      "id": "TST-008",
+      "level": "logical-acceptance",
+      "preconditions": [],
+      "priority": "unspecified",
+      "rationale": "SC-001の入力記述を検証対象として保持する",
+      "source_refs": [
+        "spec.md#L31"
+      ],
+      "status": "planned",
+      "steps": [
+        "unspecified"
+      ],
+      "test_data": [],
+      "title": "通知先を登録する — SC-001",
+      "type": "nfr"
+    },
+    {
+      "automation_status": "unspecified",
+      "basis": "derived",
+      "expected_result": "入力エラーとなり保存されない。",
+      "id": "TST-009",
+      "level": "logical-acceptance",
+      "preconditions": [
+        "通知先が未登録"
+      ],
+      "priority": "unspecified",
+      "rationale": "AC-002の入力記述を検証対象として保持する",
+      "source_refs": [
+        "spec.md#L17"
+      ],
+      "status": "planned",
+      "steps": [
+        "invalid を登録する"
+      ],
+      "test_data": [],
+      "title": "通知先を登録する — AC-002",
+      "type": "negative"
+    },
+    {
+      "automation_status": "unspecified",
+      "basis": "derived",
+      "expected_result": "システムは同一チーム内の通知先重複を拒否しなければならない。",
+      "id": "TST-010",
+      "level": "logical-acceptance",
+      "preconditions": [],
+      "priority": "unspecified",
+      "rationale": "FR-003の入力記述を検証対象として保持する",
+      "source_refs": [
+        "spec.md#L27"
+      ],
+      "status": "planned",
+      "steps": [
+        "unspecified"
+      ],
+      "test_data": [],
+      "title": "通知先を登録する — FR-003",
+      "type": "negative"
+    }
+  ],
+  "tested_versions": [],
+  "title": "Feature Specification: チーム通知設定",
+  "unclassified": []
+}

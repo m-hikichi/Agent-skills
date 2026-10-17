@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:speckit-requirements-functions-tests:canonical:v1",
+  "title": "Spec Kit requirements-functions-tests canonical model",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "speckit_compatibility",
+    "tested_versions",
+    "title",
+    "mode",
+    "profile",
+    "sources",
+    "identity_registry",
+    "context",
+    "requirements",
+    "functions",
+    "test_cases",
+    "links",
+    "unclassified",
+    "open_questions",
+    "change_impact",
+    "report"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "generation_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "review_record": {
+      "type": "object", "additionalProperties": false,
+      "required": ["algorithm", "reviewed_digest", "reviewer", "summary"],
+      "properties": {
+        "algorithm": {"const": "sha256-canonical-v1"},
+        "reviewed_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "reviewer": {"type": "string", "minLength": 1},
+        "summary": {"type": "string", "minLength": 1}
+      }
+    },
+    "speckit_compatibility": {"const": "1.0.x"},
+    "tested_versions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "title": {"type": "string", "minLength": 1},
+    "mode": {"enum": ["spec-only", "plan-enriched"]},
+    "profile": {"enum": ["draft", "publish"]},
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "path", "locator", "sha256", "authority"],
+        "properties": {
+          "type": {"type": "string", "minLength": 1},
+          "path": {"type": "string", "minLength": 1},
+          "locator": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "authority": {"enum": ["normative", "design", "evidence", "quality"]},
+          "explicit": {"type": "boolean"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "identity_registry": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "source_key", "lifecycle", "aliases"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "kind": {"enum": ["requirement", "function", "test-case"]},
+          "source_key": {"type": "string", "minLength": 1},
+          "lifecycle": {"enum": ["active", "retired"]},
+          "aliases": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+        },
+        "additionalProperties": false
+      }
+    },
+    "context": {"type": "object", "required": ["title", "overview", "key_entities"], "properties": {
+      "title": {"type": "string"}, "overview": {"type": "string"},
+      "key_entities": {"type": "array", "items": {"type": "object", "required": ["name", "source_ref"], "properties": {"name": {"type": "string"}, "source_ref": {"type": "string"}}}}
+    }},
+    "requirements": {"type": "array", "items": {"$ref": "#/$defs/requirement"}},
+    "functions": {"type": "array", "items": {"$ref": "#/$defs/function"}},
+    "test_cases": {"type": "array", "items": {"$ref": "#/$defs/testCase"}},
+    "links": {"type": "array", "items": {"$ref": "#/$defs/link"}},
+    "unclassified": {"type": "array", "items": {"type": "object"}},
+    "open_questions": {"type": "array", "items": {"type": "object", "required": ["id", "status", "question", "affected_ids", "source_refs", "return_to"], "properties": {
+      "id": {"type": "string", "minLength": 1}, "status": {"enum": ["open", "resolved"]},
+      "question": {"type": "string", "minLength": 1}, "affected_ids": {"type": "array", "items": {"type": "string"}},
+      "source_refs": {"type": "array", "items": {"type": "string"}}, "return_to": {"type": "string", "minLength": 1}
+    }}},
+    "change_impact": {"type": "array", "items": {"type": "object"}},
+    "report": {"type": "object", "required": ["status", "profile", "axes", "blocking_errors"], "properties": {
+      "status": {"enum": ["blocked", "publishable", "draft-ready"]}, "profile": {"enum": ["draft", "publish"]},
+      "blocking_errors": {"type": "integer", "minimum": 0},
+      "axes": {"type": "object", "required": ["source_integrity", "requirements_quality", "function_coverage", "test_coverage", "cross_artifact_consistency", "render_reproducibility"], "additionalProperties": {
+        "type": "object", "required": ["status", "errors", "warnings", "metrics"], "properties": {
+          "status": {"enum": ["passed", "failed"]}, "errors": {"type": "array", "items": {"type": "string"}},
+          "warnings": {"type": "array", "items": {"type": "string"}}, "metrics": {"type": "object"}
+        }
+      }}
+    }}
+  },
+  "$defs": {
+    "sourceBacked": {
+      "type": "object",
+      "required": ["id", "basis", "source_refs"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "basis": {"enum": ["specified", "derived", "confirmed"]},
+        "source_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true}
+      }
+    },
+    "requirement": {
+      "allOf": [
+        {"$ref": "#/$defs/sourceBacked"},
+        {
+          "type": "object",
+          "required": ["kind", "statement", "status", "priority", "parent_id"],
+          "properties": {
+            "kind": {"enum": ["user-story", "acceptance-scenario", "functional-requirement", "non-functional-requirement", "edge-case", "success-criterion", "assumption", "clarification", "out-of-scope", "other"]},
+            "statement": {"type": "string", "minLength": 1},
+            "status": {"enum": ["current", "future", "out-of-scope", "retired", "blocked"]},
+            "priority": {"type": "string"},
+            "parent_id": {"type": ["string", "null"]}
+          }
+        }
+      ]
+    },
+    "function": {
+      "allOf": [
+        {"$ref": "#/$defs/sourceBacked"},
+        {
+          "type": "object",
+          "required": ["name", "summary", "status", "priority", "trigger", "rationale"],
+          "properties": {
+            "name": {"type": "string", "minLength": 1},
+            "summary": {"type": "string", "minLength": 1},
+            "status": {"enum": ["current", "future", "retired"]},
+            "priority": {"type": "string"},
+            "trigger": {"type": "string"},
+            "rationale": {"type": "string", "minLength": 1}
+          }
+        }
+      ]
+    },
+    "testCase": {
+      "allOf": [
+        {"$ref": "#/$defs/sourceBacked"},
+        {
+          "type": "object",
+          "required": ["title", "type", "level", "status", "preconditions", "priority", "steps", "expected_result", "automation_status", "rationale"],
+          "properties": {
+            "title": {"type": "string", "minLength": 1},
+            "type": {"enum": ["positive", "alternative", "negative", "boundary", "nfr", "contract", "state", "normal"]},
+            "level": {"enum": ["logical-acceptance", "unit", "integration", "contract", "e2e", "performance", "security", "operational", "manual-review"]},
+            "status": {"const": "planned"},
+            "priority": {"type": "string"},
+            "preconditions": {"type": "array", "items": {"type": "string"}},
+            "test_data": {"type": "array", "items": {"type": "string"}},
+            "steps": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+            "expected_result": {"type": "string", "minLength": 1},
+            "automation_status": {"type": "string"},
+            "rationale": {"type": "string", "minLength": 1}
+          }
+        }
+      ]
+    },
+    "link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "from_id", "to_id"],
+      "properties": {
+        "type": {"enum": ["requirement-to-function", "function-to-test", "requirement-to-test"]},
+        "from_id": {"type": "string", "minLength": 1},
+        "to_id": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

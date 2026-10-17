@@ -1,0 +1,175 @@
+{
+  "executedAt": "2026-10-17T19:20:31.0542836+09:00",
+  "passed": true,
+  "records": [
+    {
+      "pet": "genba-neko",
+      "scale": "Small",
+      "nativeWindow": true,
+      "width": 144,
+      "height": 156,
+      "renderScaling": 1,
+      "sizeMatches": true,
+      "framesObserved": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "animated": true,
+      "stable": true,
+      "png": "genba-neko-Small.png",
+      "passed": true
+    },
+    {
+      "pet": "genba-neko",
+      "scale": "Medium",
+      "nativeWindow": true,
+      "width": 192,
+      "height": 208,
+      "renderScaling": 1,
+      "sizeMatches": true,
+      "framesObserved": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "animated": true,
+      "stable": true,
+      "png": "genba-neko-Medium.png",
+      "passed": true
+    },
+    {
+      "pet": "genba-neko",
+      "scale": "Large",
+      "nativeWindow": true,
+      "width": 240,
+      "height": 260,
+      "renderScaling": 1,
+      "sizeMatches": true,
+      "framesObserved": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "animated": true,
+      "stable": true,
+      "png": "genba-neko-Large.png",
+      "passed": true
+    },
+    {
+      "pet": "genba-neko",
+      "scale": "XLarge",
+      "nativeWindow": true,
+      "width": 288,
+      "height": 312,
+      "renderScaling": 1,
+      "sizeMatches": true,
+      "framesObserved": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "animated": true,
+      "stable": true,
+      "png": "genba-neko-XLarge.png",
+      "passed": true
+    },
+    {
+      "pet": "yoshi-cat",
+      "scale": "Small",
+      "nativeWindow": true,
+      "width": 144,
+      "height": 156,
+      "renderScaling": 1,
+      "sizeMatches": true,
+      "framesObserved": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "animated": true,
+      "stable": true,
+      "png": "yoshi-cat-Small.png",
+      "passed": true
+    },
+    {
+      "pet": "yoshi-cat",
+      "scale": "Medium",
+      "nativeWindow": true,
+      "width": 192,
+      "height": 208,
+      "renderScaling": 1,
+      "sizeMatches": true,
+      "framesObserved": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "animated": true,
+      "stable": true,
+      "png": "yoshi-cat-Medium.png",
+      "passed": true
+    },
+    {
+      "pet": "yoshi-cat",
+      "scale": "Large",
+      "nativeWindow": true,
+      "width": 240,
+      "height": 260,
+      "renderScaling": 1,
+      "sizeMatches": true,
+      "framesObserved": [
+        0,
+        2,
+        3,
+        4,
+        5
+      ],
+      "animated": true,
+      "stable": true,
+      "png": "yoshi-cat-Large.png",
+      "passed": true
+    },
+    {
+      "pet": "yoshi-cat",
+      "scale": "XLarge",
+      "nativeWindow": true,
+      "width": 288,
+      "height": 312,
+      "renderScaling": 1,
+      "sizeMatches": true,
+      "framesObserved": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "animated": true,
+      "stable": true,
+      "png": "yoshi-cat-XLarge.png",
+      "passed": true
+    }
+  ],
+  "scope": "Production PetWindow in native Avalonia loop; no App/tray/settings startup, no mouse injection, no OS DPI change, no 8-hour test",
+  "images": "Control renders, not full-desktop screenshots"
+}

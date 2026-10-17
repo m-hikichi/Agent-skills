@@ -1,0 +1,262 @@
+{
+  "draft": {
+    "exit_code": 0,
+    "report": {
+      "axes": {
+        "cross_artifact_consistency": {
+          "errors": [],
+          "metrics": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "status": "passed",
+          "warnings": []
+        },
+        "function_coverage": {
+          "errors": [],
+          "metrics": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "status": "passed",
+          "warnings": []
+        },
+        "render_reproducibility": {
+          "errors": [],
+          "metrics": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "status": "passed",
+          "warnings": []
+        },
+        "requirements_quality": {
+          "errors": [],
+          "metrics": {
+            "errors": 0,
+            "warnings": 48
+          },
+          "status": "passed",
+          "warnings": [
+            "unclassified section: 既存仕様との関係 (spec.md#L11)",
+            "unclassified section: plan.md (plan.md#L1)",
+            "unclassified section: research.md (research.md#L1)",
+            "unclassified section: data-model.md (data-model.md#L1)",
+            "unclassified section: quickstart.md (quickstart.md#L1)",
+            "unclassified section: contracts/app-settings.md (contracts/app-settings.md#L1)",
+            "unclassified section: contracts/coordinate-spaces.md (contracts/coordinate-spaces.md#L1)",
+            "unclassified section: contracts/tray-menu.md (contracts/tray-menu.md#L1)",
+            "unclassified section: prior-qa-evidence (qa/final-visual-qa.md#L1)",
+            "unclassified section: prior-qa-evidence (qa/performance.md#L1)",
+            "unclassified section: prior-qa-evidence (qa/restructure-regression.md#L1)",
+            "unclassified section: prior-qa-evidence (qa/us1-visual-qa.md#L1)",
+            "unclassified section: prior-qa-evidence (qa/us2-visual-qa.md#L1)",
+            "unclassified section: prior-qa-evidence (qa/us3-visual-qa.md#L1)",
+            "review attestation is missing",
+            "checklists/visual-qa.md#L30: unchecked quality item",
+            "checklists/visual-qa.md#L31: unchecked quality item",
+            "checklists/visual-qa.md#L38: unchecked quality item",
+            "checklists/visual-qa.md#L45: unchecked quality item",
+            "checklists/visual-qa.md#L46: unchecked quality item",
+            "checklists/visual-qa.md#L47: unchecked quality item",
+            "checklists/visual-qa.md#L48: unchecked quality item",
+            "checklists/visual-qa.md#L49: unchecked quality item",
+            "checklists/visual-qa.md#L50: unchecked quality item",
+            "checklists/visual-qa.md#L51: unchecked quality item",
+            "checklists/visual-qa.md#L52: unchecked quality item",
+            "checklists/visual-qa.md#L53: unchecked quality item",
+            "checklists/visual-qa.md#L54: unchecked quality item",
+            "checklists/visual-qa.md#L55: unchecked quality item",
+            "checklists/visual-qa.md#L61: unchecked quality item",
+            "checklists/visual-qa.md#L62: unchecked quality item",
+            "checklists/visual-qa.md#L63: unchecked quality item",
+            "checklists/visual-qa.md#L67: unchecked quality item",
+            "checklists/visual-qa.md#L68: unchecked quality item",
+            "checklists/visual-qa.md#L69: unchecked quality item",
+            "checklists/visual-qa.md#L70: unchecked quality item",
+            "checklists/visual-qa.md#L76: unchecked quality item",
+            "checklists/visual-qa.md#L78: unchecked quality item",
+            "checklists/visual-qa.md#L82: unchecked quality item",
+            "checklists/visual-qa.md#L83: unchecked quality item",
+            "checklists/visual-qa.md#L84: unchecked quality item",
+            "checklists/visual-qa.md#L88: unchecked quality item",
+            "checklists/visual-qa.md#L89: unchecked quality item",
+            "checklists/visual-qa.md#L90: unchecked quality item",
+            "checklists/visual-qa.md#L91: unchecked quality item",
+            "checklists/visual-qa.md#L92: unchecked quality item",
+            "checklists/visual-qa.md#L94: unchecked quality item",
+            "checklists/visual-qa.md#L95: unchecked quality item"
+          ]
+        },
+        "source_integrity": {
+          "errors": [],
+          "metrics": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "status": "passed",
+          "warnings": []
+        },
+        "test_coverage": {
+          "errors": [],
+          "metrics": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "status": "passed",
+          "warnings": []
+        }
+      },
+      "blocking_errors": 0,
+      "profile": "draft",
+      "status": "draft-ready"
+    }
+  },
+  "publish": {
+    "exit_code": 1,
+    "report": {
+      "axes": {
+        "cross_artifact_consistency": {
+          "errors": [],
+          "metrics": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "status": "passed",
+          "warnings": []
+        },
+        "function_coverage": {
+          "errors": [],
+          "metrics": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "status": "passed",
+          "warnings": []
+        },
+        "render_reproducibility": {
+          "errors": [],
+          "metrics": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "status": "passed",
+          "warnings": []
+        },
+        "requirements_quality": {
+          "errors": [
+            "review attestation is missing",
+            "checklists/visual-qa.md#L30: unchecked quality item",
+            "checklists/visual-qa.md#L31: unchecked quality item",
+            "checklists/visual-qa.md#L38: unchecked quality item",
+            "checklists/visual-qa.md#L45: unchecked quality item",
+            "checklists/visual-qa.md#L46: unchecked quality item",
+            "checklists/visual-qa.md#L47: unchecked quality item",
+            "checklists/visual-qa.md#L48: unchecked quality item",
+            "checklists/visual-qa.md#L49: unchecked quality item",
+            "checklists/visual-qa.md#L50: unchecked quality item",
+            "checklists/visual-qa.md#L51: unchecked quality item",
+            "checklists/visual-qa.md#L52: unchecked quality item",
+            "checklists/visual-qa.md#L53: unchecked quality item",
+            "checklists/visual-qa.md#L54: unchecked quality item",
+            "checklists/visual-qa.md#L55: unchecked quality item",
+            "checklists/visual-qa.md#L61: unchecked quality item",
+            "checklists/visual-qa.md#L62: unchecked quality item",
+            "checklists/visual-qa.md#L63: unchecked quality item",
+            "checklists/visual-qa.md#L67: unchecked quality item",
+            "checklists/visual-qa.md#L68: unchecked quality item",
+            "checklists/visual-qa.md#L69: unchecked quality item",
+            "checklists/visual-qa.md#L70: unchecked quality item",
+            "checklists/visual-qa.md#L76: unchecked quality item",
+            "checklists/visual-qa.md#L78: unchecked quality item",
+            "checklists/visual-qa.md#L82: unchecked quality item",
+            "checklists/visual-qa.md#L83: unchecked quality item",
+            "checklists/visual-qa.md#L84: unchecked quality item",
+            "checklists/visual-qa.md#L88: unchecked quality item",
+            "checklists/visual-qa.md#L89: unchecked quality item",
+            "checklists/visual-qa.md#L90: unchecked quality item",
+            "checklists/visual-qa.md#L91: unchecked quality item",
+            "checklists/visual-qa.md#L92: unchecked quality item",
+            "checklists/visual-qa.md#L94: unchecked quality item",
+            "checklists/visual-qa.md#L95: unchecked quality item"
+          ],
+          "metrics": {
+            "errors": 34,
+            "warnings": 47
+          },
+          "status": "failed",
+          "warnings": [
+            "unclassified section: 既存仕様との関係 (spec.md#L11)",
+            "unclassified section: plan.md (plan.md#L1)",
+            "unclassified section: research.md (research.md#L1)",
+            "unclassified section: data-model.md (data-model.md#L1)",
+            "unclassified section: quickstart.md (quickstart.md#L1)",
+            "unclassified section: contracts/app-settings.md (contracts/app-settings.md#L1)",
+            "unclassified section: contracts/coordinate-spaces.md (contracts/coordinate-spaces.md#L1)",
+            "unclassified section: contracts/tray-menu.md (contracts/tray-menu.md#L1)",
+            "unclassified section: prior-qa-evidence (qa/final-visual-qa.md#L1)",
+            "unclassified section: prior-qa-evidence (qa/performance.md#L1)",
+            "unclassified section: prior-qa-evidence (qa/restructure-regression.md#L1)",
+            "unclassified section: prior-qa-evidence (qa/us1-visual-qa.md#L1)",
+            "unclassified section: prior-qa-evidence (qa/us2-visual-qa.md#L1)",
+            "unclassified section: prior-qa-evidence (qa/us3-visual-qa.md#L1)",
+            "checklists/visual-qa.md#L30: unchecked quality item",
+            "checklists/visual-qa.md#L31: unchecked quality item",
+            "checklists/visual-qa.md#L38: unchecked quality item",
+            "checklists/visual-qa.md#L45: unchecked quality item",
+            "checklists/visual-qa.md#L46: unchecked quality item",
+            "checklists/visual-qa.md#L47: unchecked quality item",
+            "checklists/visual-qa.md#L48: unchecked quality item",
+            "checklists/visual-qa.md#L49: unchecked quality item",
+            "checklists/visual-qa.md#L50: unchecked quality item",
+            "checklists/visual-qa.md#L51: unchecked quality item",
+            "checklists/visual-qa.md#L52: unchecked quality item",
+            "checklists/visual-qa.md#L53: unchecked quality item",
+            "checklists/visual-qa.md#L54: unchecked quality item",
+            "checklists/visual-qa.md#L55: unchecked quality item",
+            "checklists/visual-qa.md#L61: unchecked quality item",
+            "checklists/visual-qa.md#L62: unchecked quality item",
+            "checklists/visual-qa.md#L63: unchecked quality item",
+            "checklists/visual-qa.md#L67: unchecked quality item",
+            "checklists/visual-qa.md#L68: unchecked quality item",
+            "checklists/visual-qa.md#L69: unchecked quality item",
+            "checklists/visual-qa.md#L70: unchecked quality item",
+            "checklists/visual-qa.md#L76: unchecked quality item",
+            "checklists/visual-qa.md#L78: unchecked quality item",
+            "checklists/visual-qa.md#L82: unchecked quality item",
+            "checklists/visual-qa.md#L83: unchecked quality item",
+            "checklists/visual-qa.md#L84: unchecked quality item",
+            "checklists/visual-qa.md#L88: unchecked quality item",
+            "checklists/visual-qa.md#L89: unchecked quality item",
+            "checklists/visual-qa.md#L90: unchecked quality item",
+            "checklists/visual-qa.md#L91: unchecked quality item",
+            "checklists/visual-qa.md#L92: unchecked quality item",
+            "checklists/visual-qa.md#L94: unchecked quality item",
+            "checklists/visual-qa.md#L95: unchecked quality item"
+          ]
+        },
+        "source_integrity": {
+          "errors": [],
+          "metrics": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "status": "passed",
+          "warnings": []
+        },
+        "test_coverage": {
+          "errors": [],
+          "metrics": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "status": "passed",
+          "warnings": []
+        }
+      },
+      "blocking_errors": 34,
+      "profile": "publish",
+      "status": "blocked"
+    }
+  }
+}

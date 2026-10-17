@@ -1,0 +1,9 @@
+{
+  "artifacts": [
+    {
+      "path": "observability-notes.md",
+      "type": "vendor.observability-notes",
+      "role": "supplemental"
+    }
+  ]
+}

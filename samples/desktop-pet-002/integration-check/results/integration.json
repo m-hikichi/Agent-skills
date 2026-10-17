@@ -1,0 +1,151 @@
+{
+  "executedAt": "2026-10-17T19:34:16.3809441+09:00",
+  "passed": true,
+  "checks": [
+    {
+      "name": "two installed pets discovered",
+      "passed": true
+    },
+    {
+      "name": "initial sheet loads",
+      "passed": true
+    },
+    {
+      "name": "genba-neko: switch retains position",
+      "passed": true
+    },
+    {
+      "name": "genba-neko/Small: saved pet size position",
+      "passed": true
+    },
+    {
+      "name": "genba-neko/Small: menu labels and single selection",
+      "passed": true
+    },
+    {
+      "name": "genba-neko/Small: pet selection",
+      "passed": true
+    },
+    {
+      "name": "genba-neko/Small: position restored into new window",
+      "passed": true
+    },
+    {
+      "name": "genba-neko/Medium: saved pet size position",
+      "passed": true
+    },
+    {
+      "name": "genba-neko/Medium: menu labels and single selection",
+      "passed": true
+    },
+    {
+      "name": "genba-neko/Medium: pet selection",
+      "passed": true
+    },
+    {
+      "name": "genba-neko/Medium: position restored into new window",
+      "passed": true
+    },
+    {
+      "name": "genba-neko/Large: saved pet size position",
+      "passed": true
+    },
+    {
+      "name": "genba-neko/Large: menu labels and single selection",
+      "passed": true
+    },
+    {
+      "name": "genba-neko/Large: pet selection",
+      "passed": true
+    },
+    {
+      "name": "genba-neko/Large: position restored into new window",
+      "passed": true
+    },
+    {
+      "name": "genba-neko/XLarge: saved pet size position",
+      "passed": true
+    },
+    {
+      "name": "genba-neko/XLarge: menu labels and single selection",
+      "passed": true
+    },
+    {
+      "name": "genba-neko/XLarge: pet selection",
+      "passed": true
+    },
+    {
+      "name": "genba-neko/XLarge: position restored into new window",
+      "passed": true
+    },
+    {
+      "name": "yoshi-cat: switch retains position",
+      "passed": true
+    },
+    {
+      "name": "yoshi-cat/Small: saved pet size position",
+      "passed": true
+    },
+    {
+      "name": "yoshi-cat/Small: menu labels and single selection",
+      "passed": true
+    },
+    {
+      "name": "yoshi-cat/Small: pet selection",
+      "passed": true
+    },
+    {
+      "name": "yoshi-cat/Small: position restored into new window",
+      "passed": true
+    },
+    {
+      "name": "yoshi-cat/Medium: saved pet size position",
+      "passed": true
+    },
+    {
+      "name": "yoshi-cat/Medium: menu labels and single selection",
+      "passed": true
+    },
+    {
+      "name": "yoshi-cat/Medium: pet selection",
+      "passed": true
+    },
+    {
+      "name": "yoshi-cat/Medium: position restored into new window",
+      "passed": true
+    },
+    {
+      "name": "yoshi-cat/Large: saved pet size position",
+      "passed": true
+    },
+    {
+      "name": "yoshi-cat/Large: menu labels and single selection",
+      "passed": true
+    },
+    {
+      "name": "yoshi-cat/Large: pet selection",
+      "passed": true
+    },
+    {
+      "name": "yoshi-cat/Large: position restored into new window",
+      "passed": true
+    },
+    {
+      "name": "yoshi-cat/XLarge: saved pet size position",
+      "passed": true
+    },
+    {
+      "name": "yoshi-cat/XLarge: menu labels and single selection",
+      "passed": true
+    },
+    {
+      "name": "yoshi-cat/XLarge: pet selection",
+      "passed": true
+    },
+    {
+      "name": "yoshi-cat/XLarge: position restored into new window",
+      "passed": true
+    }
+  ],
+  "scope": "Production App methods invoked by reflection, native PetWindow, isolated settings; no physical tray clicks, no process restart, no DPI changes, no 8-hour test"
+}

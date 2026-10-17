@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="8c970bcd-91a4-4a55-a519-f1a396a5a4a5" name="m_hikichi@HIKIMASA-G-TUNE 2026-10-12 10:27:03" runUser="HIKIMASA-G-TUNE\CodexSandboxOffline" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-12T10:27:03.8810335+09:00" queuing="2026-10-12T10:27:03.8810340+09:00" start="2026-10-12T10:27:02.5920417+09:00" finish="2026-10-12T10:27:03.8940624+09:00" />
+  <TestSettings name="default" id="259bee90-e1fb-4561-97de-973c3eeabde6">
+    <Deployment runDeploymentRoot="m_hikichi_HIKIMASA-G-TUNE_2026-10-12_10_27_03" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="40fbfd20-616f-4e49-ac30-6c4658fd3a8a" testId="bff7f1a7-06fa-e159-8f4f-766b5357b858" testName="DesktopPet.Tests.ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(field: &quot;positionY&quot;)" computerName="HIKIMASA-G-TUNE" duration="00:00:00.0043152" startTime="2026-10-12T10:27:03.7354232+09:00" endTime="2026-10-12T10:27:03.7354236+09:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="40fbfd20-616f-4e49-ac30-6c4658fd3a8a">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ&#xD;
+Expected: 400&#xD;
+Actual:   null</Message>
+          <StackTrace>   at DesktopPet.Tests.ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(String field) in C:\Users\m_hikichi\Documents\agent-skills\samples\desktop-pet-002\test-run\tests\DesktopPet.Tests\ClarifiedSettingsDecisionTests.cs:line 27&#xD;
+   at InvokeStub_ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(Object, Span`1)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a8511b47-b888-44f5-861e-72be41da28cd" testId="ac55354b-8518-8f07-b7e8-e7d80b62541a" testName="DesktopPet.Tests.ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(field: &quot;pet&quot;)" computerName="HIKIMASA-G-TUNE" duration="00:00:00.0065357" startTime="2026-10-12T10:27:03.7278354+09:00" endTime="2026-10-12T10:27:03.7278358+09:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a8511b47-b888-44f5-861e-72be41da28cd">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Strings differ&#xD;
+Expected: "genba-neko"&#xD;
+Actual:   null</Message>
+          <StackTrace>   at DesktopPet.Tests.ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(String field) in C:\Users\m_hikichi\Documents\agent-skills\samples\desktop-pet-002\test-run\tests\DesktopPet.Tests\ClarifiedSettingsDecisionTests.cs:line 25&#xD;
+   at InvokeStub_ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(Object, Span`1)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="fcdd9b6e-928b-4f02-9574-1becad5b171e" testId="51a680de-e03b-01c9-d39a-245505085585" testName="DesktopPet.Tests.ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(field: &quot;scale&quot;)" computerName="HIKIMASA-G-TUNE" duration="00:00:00.0728203" startTime="2026-10-12T10:27:03.7094588+09:00" endTime="2026-10-12T10:27:03.7095175+09:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fcdd9b6e-928b-4f02-9574-1becad5b171e" />
+    <UnitTestResult executionId="f3950fc0-3ff3-47ce-8cc9-6fb1e7a3672a" testId="636ae27a-2592-8d03-af1c-90dc1348329f" testName="DesktopPet.Tests.ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(field: &quot;positionX&quot;)" computerName="HIKIMASA-G-TUNE" duration="00:00:00.0070161" startTime="2026-10-12T10:27:03.7309871+09:00" endTime="2026-10-12T10:27:03.7309873+09:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f3950fc0-3ff3-47ce-8cc9-6fb1e7a3672a">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ&#xD;
+Expected: 900&#xD;
+Actual:   null</Message>
+          <StackTrace>   at DesktopPet.Tests.ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(String field) in C:\Users\m_hikichi\Documents\agent-skills\samples\desktop-pet-002\test-run\tests\DesktopPet.Tests\ClarifiedSettingsDecisionTests.cs:line 26&#xD;
+   at InvokeStub_ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(Object, Span`1)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="DesktopPet.Tests.ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(field: &quot;pet&quot;)" storage="c:\users\m_hikichi\documents\agent-skills\samples\desktop-pet-002\test-run\tests\desktoppet.tests\bin\release\net10.0\desktoppet.tests.dll" id="ac55354b-8518-8f07-b7e8-e7d80b62541a">
+      <Execution id="a8511b47-b888-44f5-861e-72be41da28cd" />
+      <TestMethod codeBase="C:\Users\m_hikichi\Documents\agent-skills\samples\desktop-pet-002\test-run\tests\DesktopPet.Tests\bin\Release\net10.0\DesktopPet.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="DesktopPet.Tests.ClarifiedSettingsDecisionTests" name="StringScale_PreservesOtherFields_AndUsesMedium" />
+    </UnitTest>
+    <UnitTest name="DesktopPet.Tests.ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(field: &quot;positionX&quot;)" storage="c:\users\m_hikichi\documents\agent-skills\samples\desktop-pet-002\test-run\tests\desktoppet.tests\bin\release\net10.0\desktoppet.tests.dll" id="636ae27a-2592-8d03-af1c-90dc1348329f">
+      <Execution id="f3950fc0-3ff3-47ce-8cc9-6fb1e7a3672a" />
+      <TestMethod codeBase="C:\Users\m_hikichi\Documents\agent-skills\samples\desktop-pet-002\test-run\tests\DesktopPet.Tests\bin\Release\net10.0\DesktopPet.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="DesktopPet.Tests.ClarifiedSettingsDecisionTests" name="StringScale_PreservesOtherFields_AndUsesMedium" />
+    </UnitTest>
+    <UnitTest name="DesktopPet.Tests.ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(field: &quot;scale&quot;)" storage="c:\users\m_hikichi\documents\agent-skills\samples\desktop-pet-002\test-run\tests\desktoppet.tests\bin\release\net10.0\desktoppet.tests.dll" id="51a680de-e03b-01c9-d39a-245505085585">
+      <Execution id="fcdd9b6e-928b-4f02-9574-1becad5b171e" />
+      <TestMethod codeBase="C:\Users\m_hikichi\Documents\agent-skills\samples\desktop-pet-002\test-run\tests\DesktopPet.Tests\bin\Release\net10.0\DesktopPet.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="DesktopPet.Tests.ClarifiedSettingsDecisionTests" name="StringScale_PreservesOtherFields_AndUsesMedium" />
+    </UnitTest>
+    <UnitTest name="DesktopPet.Tests.ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(field: &quot;positionY&quot;)" storage="c:\users\m_hikichi\documents\agent-skills\samples\desktop-pet-002\test-run\tests\desktoppet.tests\bin\release\net10.0\desktoppet.tests.dll" id="bff7f1a7-06fa-e159-8f4f-766b5357b858">
+      <Execution id="40fbfd20-616f-4e49-ac30-6c4658fd3a8a" />
+      <TestMethod codeBase="C:\Users\m_hikichi\Documents\agent-skills\samples\desktop-pet-002\test-run\tests\DesktopPet.Tests\bin\Release\net10.0\DesktopPet.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="DesktopPet.Tests.ClarifiedSettingsDecisionTests" name="StringScale_PreservesOtherFields_AndUsesMedium" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="bff7f1a7-06fa-e159-8f4f-766b5357b858" executionId="40fbfd20-616f-4e49-ac30-6c4658fd3a8a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ac55354b-8518-8f07-b7e8-e7d80b62541a" executionId="a8511b47-b888-44f5-861e-72be41da28cd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="51a680de-e03b-01c9-d39a-245505085585" executionId="fcdd9b6e-928b-4f02-9574-1becad5b171e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="636ae27a-2592-8d03-af1c-90dc1348329f" executionId="f3950fc0-3ff3-47ce-8cc9-6fb1e7a3672a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="一覧に存在しない結果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="読み込まれたすべての結果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="4" executed="4" passed="1" failed="3" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 10.0.12)&#xD;
+[xUnit.net 00:00:00.09]   Discovering: DesktopPet.Tests&#xD;
+[xUnit.net 00:00:00.20]   Discovered:  DesktopPet.Tests&#xD;
+[xUnit.net 00:00:00.21]   Starting:    DesktopPet.Tests&#xD;
+[xUnit.net 00:00:00.38]       Assert.Equal() Failure: Strings differ&#xD;
+[xUnit.net 00:00:00.38]       Expected: "genba-neko"&#xD;
+[xUnit.net 00:00:00.38]       Actual:   null&#xD;
+[xUnit.net 00:00:00.38]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.38]         C:\Users\m_hikichi\Documents\agent-skills\samples\desktop-pet-002\test-run\tests\DesktopPet.Tests\ClarifiedSettingsDecisionTests.cs(25,0): at DesktopPet.Tests.ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(String field)&#xD;
+[xUnit.net 00:00:00.38]            at InvokeStub_ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(Object, Span`1)&#xD;
+[xUnit.net 00:00:00.38]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.38]       Assert.Equal() Failure: Values differ&#xD;
+[xUnit.net 00:00:00.38]       Expected: 900&#xD;
+[xUnit.net 00:00:00.38]       Actual:   null&#xD;
+[xUnit.net 00:00:00.38]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.38]         C:\Users\m_hikichi\Documents\agent-skills\samples\desktop-pet-002\test-run\tests\DesktopPet.Tests\ClarifiedSettingsDecisionTests.cs(26,0): at DesktopPet.Tests.ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(String field)&#xD;
+[xUnit.net 00:00:00.38]            at InvokeStub_ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(Object, Span`1)&#xD;
+[xUnit.net 00:00:00.38]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.39]       Assert.Equal() Failure: Values differ&#xD;
+[xUnit.net 00:00:00.39]       Expected: 400&#xD;
+[xUnit.net 00:00:00.39]       Actual:   null&#xD;
+[xUnit.net 00:00:00.39]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.39]         C:\Users\m_hikichi\Documents\agent-skills\samples\desktop-pet-002\test-run\tests\DesktopPet.Tests\ClarifiedSettingsDecisionTests.cs(27,0): at DesktopPet.Tests.ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(String field)&#xD;
+[xUnit.net 00:00:00.39]            at InvokeStub_ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(Object, Span`1)&#xD;
+[xUnit.net 00:00:00.39]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.40]   Finished:    DesktopPet.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="HIKIMASA-G-TUNE" outcome="Error" timestamp="2026-10-12T10:27:03.7259417+09:00">
+        <Text>[xUnit.net 00:00:00.38]     DesktopPet.Tests.ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(field: "pet") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="HIKIMASA-G-TUNE" outcome="Error" timestamp="2026-10-12T10:27:03.7314496+09:00">
+        <Text>[xUnit.net 00:00:00.38]     DesktopPet.Tests.ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(field: "positionX") [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="HIKIMASA-G-TUNE" outcome="Error" timestamp="2026-10-12T10:27:03.7353134+09:00">
+        <Text>[xUnit.net 00:00:00.39]     DesktopPet.Tests.ClarifiedSettingsDecisionTests.StringScale_PreservesOtherFields_AndUsesMedium(field: "positionY") [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

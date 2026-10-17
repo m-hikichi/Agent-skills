@@ -23,7 +23,7 @@ Claude CodeのSkillsや、ほかの生成AIで再利用できるskillsを配布�
 │   └── claude-plugins-official/      # Anthropic 公式 Claude Plugins（submodule）
 ├── skills/
 │   ├── git-flow-commit/              # Git Flow ベースのコミット支援 Skill
-│   ├── speckit-spec-to-basic-design-html/ # Spec Kitの要求・要件から基本設計HTMLを生成する Skill
+│   ├── speckit-requirements-functions-tests/ # Spec Kitから要件・機能・テスト文書を生成する Skill
 │   └── anthropic-skills/             # Anthropic 公式 Skills（submodule）
 ├── hooks/
 │   └── notify-hook/                  # Claude Code 通知 Hook
@@ -75,7 +75,8 @@ git submodule update --init --recursive
 ### Skill (`skills/`)
 
 - [`git-flow-commit`](skills/git-flow-commit/SKILL.md): Git Flow に沿ったブランチ運用とコミット作成を支援する Skill。保護ブランチ警告、機密情報チェック、prefix 付き日本語コミットメッセージ作成を標準化する。
-- [`speckit-spec-to-basic-design-html`](skills/speckit-spec-to-basic-design-html/SKILL.md): Spec Kit の `spec.md` から要求・機能設計を、`plan.md`・データモデル・契約等が揃えば実装準備設計までを、Git管理可能な設計JSONと自己完結HTMLとして生成する Skill。
+- [`speckit-requirements-functions-tests`](skills/speckit-requirements-functions-tests/SKILL.md): Spec Kit v1.0.x の成果物から、REQ→FNC→TSTを追跡できる単一JSON正本、要件定義書・機能一覧・テスト一覧、自己完結の統合レビューHTMLを生成・検査する Skill。
+- [`Spec Kit v1.0 文書サンプル`](samples/speckit-v1/README.md): 入力`spec.md`と正本JSONを含む、初心者向け表示の再生成可能なサンプル一式。
 - [`anthropic-skills`](skills/anthropic-skills/README.md): Anthropic 公式の Skills 実装集。文書作成、デザイン、開発、業務ワークフローなどの Skill 例や、Agent Skills の仕様・テンプレートを参照するための submodule。
 
 ### Hook (`hooks/`)
