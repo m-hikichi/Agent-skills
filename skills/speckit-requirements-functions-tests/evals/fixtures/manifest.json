@@ -1,0 +1,38 @@
+{
+  "fixture_set": "speckit-v1-requirements-functions-tests",
+  "fixture_revision": 1,
+  "retrieved_on": "2026-08-30",
+  "tested_speckit_versions": [],
+  "reference_versions": ["1.0.0", "1.0.1"],
+  "sources": [
+    {
+      "version": "1.0.0",
+      "kind": "official-release",
+      "url": "https://github.com/github/spec-kit/releases/tag/v1.0.0"
+    },
+    {
+      "version": "1.0.0",
+      "kind": "official-template",
+      "url": "https://github.com/github/spec-kit/blob/v1.0.0/templates/spec-template.md"
+    },
+    {
+      "version": "1.0.1",
+      "kind": "official-release",
+      "url": "https://github.com/github/spec-kit/releases/tag/v1.0.1"
+    },
+    {
+      "version": "1.0.1",
+      "kind": "official-template",
+      "url": "https://github.com/github/spec-kit/blob/v1.0.1/templates/spec-template.md"
+    }
+  ],
+  "provenance_note": "All fixtures are synthetic Japanese examples adapted to the documented Spec Kit v1.0.x artifact roles and template structure; they are not copies of an official example application.",
+  "fixtures": [
+    {"path": "complete-feature", "covers": ["complete-feature", "plan-enriched", "contract", "state", "nfr"]},
+    {"path": "spec-only", "covers": ["spec-only", "logical-tests", "no-technology-invention"]},
+    {"path": "tasks-no-tests", "covers": ["tasks-not-test-results", "acceptance-derived-tests"]},
+    {"path": "japanese-custom-headings", "covers": ["heading-variation", "japanese", "structure-based-parsing"]},
+    {"path": "unresolved-quality", "covers": ["unresolved-clarification", "unchecked-checklist", "publish-block"]},
+    {"path": "unknown-extra", "covers": ["extension-manifest", "unknown-artifact", "unclassified-preservation"]}
+  ]
+}

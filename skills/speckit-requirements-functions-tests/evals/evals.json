@@ -1,0 +1,135 @@
+{
+  "skill_name": "speckit-requirements-functions-tests",
+  "evals": [
+    {
+      "id": 0,
+      "name": "complete-feature-builds-full-trace-chain",
+      "prompt": "添付したSpec Kit v1.0.xのfeatureディレクトリ一式から、publish品質の要件定義書・要件に紐づく機能一覧・機能に基づくテスト一覧・統合レビューHTML・canonical JSONを生成してください。spec以外の成果物にしかない契約、状態遷移、NFR検証も根拠付きで反映してください。",
+      "expected_output": "plan-enrichedとして全規範要素を抽出し、根拠のあるREQ→FNC→TSTを構築する。状態・OpenAPI・outbox・NFR検証を対応する機能とテストへ投影し、5成果物を決定的に生成する。",
+      "files": [
+        "fixtures/complete-feature/spec.md",
+        "fixtures/complete-feature/plan.md",
+        "fixtures/complete-feature/research.md",
+        "fixtures/complete-feature/data-model.md",
+        "fixtures/complete-feature/contracts/openapi.yaml",
+        "fixtures/complete-feature/quickstart.md",
+        "fixtures/complete-feature/tasks.md"
+      ],
+      "expectations": [
+        "canonical JSONのschema_versionは1で、speckit_compatibilityは1.0.xを示し、入力7成果物をsourcesへ記録する",
+        "FR-001、FR-002、FR-010、FR-011、FR-020、FR-021がcurrent requirementとして欠落なく存在する",
+        "全current requirementがlinksを介して1件以上のFNCへ到達し、全current FNCが1件以上のTSTへ到達する",
+        "全TSTはFNCとREQへ逆引きでき、孤立REQ、孤立FNC、孤立TSTが0件である",
+        "2件のUser Story、4件のAcceptance Scenario、2件のEdge Case、3件のSCがsource locator付きで追跡できる",
+        "accepted→shipping、accepted→cancelled、shipping→deliveredの許可遷移と、表にない遷移拒否が正常・異常テストに反映される",
+        "OpenAPIのPOST登録とPATCH状態更新は契約テストへ反映され、method、path、主要responseはcontract sourceに根拠を持つ",
+        "transactional outbox、最大3回、隔離、5分以内通知、同一event IDの手動再送が機能とテストで端から端まで追跡できる",
+        "SC-001とSC-003にはplanの測定方法を根拠にしたNFRテストがあり、SC-002にはquickstartの重複0件確認がある",
+        "tasksのチェック状態をテスト実施結果または合否として扱わない",
+        "要件定義書、機能一覧、テスト一覧の対応IDはlinksから投影され、canonical JSONと矛盾しない",
+        "同じcanonical JSONから3 MarkdownとHTMLを再生成した結果がバイト同一である"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "spec-only-produces-logical-tests-without-invention",
+      "prompt": "添付のspec.mdだけからdraft品質で要件定義書・機能一覧・テスト一覧・レビューHTML・canonical JSONを作ってください。技術構成やAPI契約は一般論で補わず、specだけで判定できる論理テストまでにしてください。",
+      "expected_output": "spec-onlyとしてFR、Acceptance、Edge Case、SCを抽出し、論理的なREQ→FNC→TSTを生成する。未提示の技術、物理契約、テストツールは確定しない。",
+      "files": ["fixtures/spec-only/spec.md"],
+      "expectations": [
+        "入力モードはspec-onlyで、spec.mdだけをsourceとして記録する",
+        "FR-001〜FR-003の3要件がcurrentで存在し、それぞれ1件以上のFNCとTSTへ到達する",
+        "有効値登録、無効形式拒否、重複拒否が別々に検証可能なTSTとして存在する",
+        "SC-001の90%かつ2分以内という閾値を保持し、測定手順が未提示ならopen questionまたはdraft警告にする",
+        "runtime、database、HTTP method/path、テストツールを確定値として生成しない",
+        "外部連携やSMS機能を生成せず、Out of Scopeを要件定義書へ保持する",
+        "draft生成は成功し、孤立REQ/FNC/TSTは0件である"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "tasks-without-tests-does-not-suppress-derived-test-list",
+      "prompt": "添付のspec.mdとtasks.mdから文書一式を生成してください。tasks.mdにはテストタスクがありませんが、要件と受入条件に基づくテスト一覧は省略しないでください。tasksの完了状態をテスト結果として扱わないでください。",
+      "expected_output": "tasks.mdを実装計画としてのみ参照し、specのFRと受入条件からFNCおよび未実施のTSTを生成する。",
+      "files": ["fixtures/tasks-no-tests/spec.md", "fixtures/tasks-no-tests/tasks.md"],
+      "expectations": [
+        "FR-001〜FR-003の全要件にFNCとTSTがリンクされる",
+        "未来日時の予約成功、過去日時の拒否、予約時刻到達後の公開を少なくとも3件の独立TSTで扱う",
+        "SC-001の60秒以内かつ99%以上をNFRテストの期待結果に保持する",
+        "tasks.mdにテストタスクがないことを理由にtest_casesを空にしない",
+        "T001〜T004のcheckboxをTSTのpassed、failed、実施済みへ変換しない",
+        "全TSTのautomation状態は未実装または未指定であり、実行結果を捏造しない"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "japanese-custom-headings-parse-by-role-and-structure",
+      "prompt": "見出しが日本語に変更された添付spec.mdを、Spec Kit v1.0系の同等成果物として解析し、文書一式を生成してください。英語の固定見出しと一致しないだけで規範要素を落とさないでください。",
+      "expected_output": "Markdown階層、ID、優先度、Given/When/Then相当の構造から日本語見出しの成果物を正規化し、完全なREQ→FNC→TSTを生成する。",
+      "files": ["fixtures/japanese-custom-headings/spec.md"],
+      "expectations": [
+        "FR-001〜FR-003、P1の利用場面、2件の受入条件、1件の例外、SC-001をすべて抽出する",
+        "FR-001〜FR-003が各1件以上のFNCおよびTSTへ到達し、孤立要素が0件である",
+        "返却成功、返却日時記録、再返却拒否、未来日時禁止がテスト一覧で検証可能である",
+        "出力文書の内容は日本語を保持し、文字化けしない",
+        "英語の既定見出しがないことだけを理由にunclassifiedへ送らない",
+        "対象外の修理受付を機能またはテストとして生成しない"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "unresolved-clarification-and-checklist-block-publish",
+      "prompt": "添付featureをpublish品質で文書化できるか検査し、可能なら生成してください。未解決clarificationや未チェックのrequirements checklistを一般的な金額で補完しないでください。",
+      "expected_output": "未決の金額境界と未完了checklistを根拠付きで報告し、draftレビューは可能でもpublishはnon-zeroで拒否する。",
+      "files": [
+        "fixtures/unresolved-quality/spec.md",
+        "fixtures/unresolved-quality/checklists/requirements.md"
+      ],
+      "expectations": [
+        "FR-001とFR-002を抽出するが、FR-002の金額境界と通貨を捏造しない",
+        "未解決clarificationをopen_questionsへsource locatorとaffected requirement付きで記録する",
+        "unchecked checklist 2件をテスト失敗ではなく要件品質上の未完了として記録する",
+        "requirements_qualityがfailedとなりpublish検査はnon-zeroで終了する",
+        "publish失敗時もdraft canonicalまたは診断にはFR-001/FR-002と確認可能なリンクを保持する",
+        "reportにsource_integrity、requirements_quality、function_coverage、test_coverage、cross_artifact_consistency、render_reproducibilityの6軸が個別表示される"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "manifested-unknown-extra-is-preserved-with-warning",
+      "prompt": "添付spec.mdを文書化し、extra-artifacts.jsonで明示登録した補助成果物も読み込んでください。未知のartifact typeを推測で既知型へ変換せず、内容と出典を失わないでください。",
+      "expected_output": "明示manifestにある未知種別をsourceへ取り込み、unclassifiedとして保持・警告する。spec由来のREQ→FNC→TSTは通常どおり生成する。",
+      "files": [
+        "fixtures/unknown-extra/spec.md",
+        "fixtures/unknown-extra/extra-artifacts.json",
+        "fixtures/unknown-extra/observability-notes.md"
+      ],
+      "expectations": [
+        "extra-artifacts.jsonで指定されたobservability-notes.mdだけを拡張成果物として読み込む",
+        "vendor.observability-notesを既知のplan、contract、quickstartへ偽装せずunclassifiedとして保持する",
+        "未知種別の警告にartifact pathとtypeが含まれる",
+        "FR-001がFNCと正常・境界TSTへリンクされ、孤立REQ/FNC/TSTが0件である",
+        "10分超過の判定と2分以内の通知期待を別概念として保持する",
+        "observability-notes.mdのjob IDと時刻記録はsource locator付き補足情報であり、specの新規要件として捏造しない"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "beginner-friendly-review-documents",
+      "prompt": "Spec Kitの成果物から、新人エンジニアが単独で読める要件定義書、機能一覧、テスト仕様書、レビューHTMLを作ってください。内部コードや英語enumではなく、完成度、不足、次に確認することが分かる表現にしてください。",
+      "expected_output": "3文書とHTMLが目的・現在の完成度・次の行動を日本語で示し、未完成の機能境界とテストを完成品に見せない。",
+      "files": ["fixtures/spec-only/spec.md"],
+      "expectations": [
+        "英語enum、内部return_to、生JSON、空配列を本文へ露出しない",
+        "各Markdownの冒頭で資料の目的、残件数、次にすることが分かる",
+        "機能境界が未レビューの場合は候補と表示する",
+        "要件ごとに機能を複製せず、同じ業務目的のFR・例外・達成基準を機能へ集約する",
+        "操作・事前条件・期待結果が不足するテストは要具体化と表示する",
+        "HTML上部に要件・機能・テスト・未決件数と次の確認への導線がある",
+        "HTMLの関連IDはホバーとキーボードフォーカスで内容を確認できる",
+        "品質warningを問題なしと表示せず確認推奨と表示する",
+        "トレーサビリティに要件の内容と接続状態を表示する"
+      ]
+    }
+  ]
+}
