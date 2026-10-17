@@ -1,6 +1,6 @@
 # marp-slide
 
-聞き手・目的・根拠から構成を設計し、写真、データchart、静的diagramを使ったMarp資料を制作するClaude Code pluginです。action-titleの論理検査、実内容入りデザイン案の統合確認、全ページ2倍PNG、machine QA、独立したcontent/visual reviewを経て仕上げます。
+聞き手・目的・根拠から構成を設計し、写真、データchart、静的diagramを使ったMarp資料を制作するClaude Code pluginです。action-titleの論理検査、実内容入りデザイン案の統合確認、全ページ2倍PNG、machine QA、独立したaudience/content/visual reviewを経て仕上げます。
 
 ## Setup
 
@@ -29,8 +29,8 @@ Claude Codeで呼び出します。
 4. 実内容入り3案とaction-title一覧の統合確認1回
 5. 提供素材、data chart、静的diagram、Web／生成画像の順でasset制作
 6. Marp compose、2倍PNG、contact sheet、machine QA
-7. 独立content reviewerとvisual reviewer
-8. 必須の修正・再レンダー後にrubric v3 finalize
+7. 初見audience reviewerの記録後、独立content reviewerとvisual reviewer
+8. 必須の修正・再レンダー後にrubric v4 finalize
 
 新規案件の作業領域はcross-platform CLIで作ります。
 
@@ -85,7 +85,7 @@ slides/
 └── assets/
 ```
 
-`review.json`はrubric v3で、source、request、theme、asset manifest、参照／登録された全ローカルassetを含むartifact fingerprintへ結び付きます。いずれかを変更すると古いpassは失効します。renderer条件はfingerprintとは別にrender manifestへ固定versionとして記録します。finalizeにはrender 2以降と、現iterationに対応する具体的な改善記録が必要です。
+`review.json`はrubric v4で、source、request、theme、asset manifest、参照／登録された全ローカルassetを含むartifact fingerprintへ結び付きます。いずれかを変更すると古いpassは失効します。renderer条件はfingerprintとは別にrender manifestへ固定versionとして記録します。finalizeにはrender 2以降と、現iterationに対応する具体的な改善記録が必要です。
 
 `run-state.json`は`active / needs_user / blocked / complete`を取り、確認待ちや外部阻害でも`completed: false`を維持します。`complete`は`finalize`だけが設定し、完了後のstateは変更できません。
 
@@ -113,3 +113,9 @@ themeは `base + profile + deck tokens` から単一の `slides/theme.css` へco
 ## Evaluation
 
 `skills/main/evals/` に、CSV付き経営提案、長い日本語見出しのread-ahead、SRE研修、研究不確実性、ブランド素材の5 fixtureがあります。v0.8 snapshotとのblind A/Bで、5件中4件以上の総合選好と、根拠忠実性・export成功率の非後退を受入条件にします。再現可能なworkspace作成、匿名化、受入集計、gold deck regressionのコマンドは[`skills/main/evals/README.md`](skills/main/evals/README.md)に集約しています。
+
+## v1.1の品質契約
+
+文献と原則・適用条件・良否例を対応させた[制作指針](skills/main/references/evidence-based-design.md)と[可読性基準](skills/main/references/readability.md)を追加。初見のaudience reviewer → content reviewerの照合と、独立visual reviewerの三系統で確認します。用途別文字サイズ、SVGの掲載時サイズ、コントラスト未測定箇所の明示と手動解決を検証します。
+
+deck-plan schemaはv2、review rubricはv4です。既存planへ用語・説明時間・前提・理解確認の問いを追加し、旧レビューは再レンダー後に取り直してください。`.slide-work/audience-review.json`も納品証跡へ残します。renderer変更を適用するにはSetupのDockerイメージを再ビルドします。gold baselineは修正後の24枚を実画像で確認して更新済みです。以後も実画像を審査してから更新し、未審査のhashを承認済みとして登録しません。

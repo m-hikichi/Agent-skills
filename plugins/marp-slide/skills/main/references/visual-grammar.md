@@ -66,3 +66,5 @@ visual briefには、対象、関係、注目点、読み取る結論、不確�
 - 本文を縮める前に、要約、分割、notes、appendixを使う
 - 写真上の文字はcontrast overlayか空き領域を使う
 - altは「図」「グラフ」でなく、重要な傾向または役割を書く
+
+詳しい根拠・例外・良否例は[evidence-based-design.md](evidence-based-design.md)、日本語・役割別文字サイズ・時間は[readability.md](readability.md)を参照する。

@@ -152,8 +152,8 @@ for (const deck of selectedDecks) {
   const first = await renderDeck(workspace, renderInput);
   const prior = first.manifest;
   prior.improvements = [{
-    iteration: 2,
-    description: 'render 1の全ページPNGとcontact sheetを確認し、最終候補を同一条件で再検証',
+    iteration: prior.render_iteration + 1,
+    description: 'スモークテスト専用の再レンダー検証。目視レビュー・実際の改善・完成承認の証跡として使用不可。',
     slides: [1],
   }];
   await writeFile(path.join(work, 'render-manifest.json'), `${JSON.stringify(prior, null, 2)}\n`);
@@ -162,7 +162,7 @@ for (const deck of selectedDecks) {
   const failures = [];
   if (second.manifest.slide_count !== deck.expected_slide_count) failures.push('slide count');
   if (second.manifest.page_images.length !== deck.expected_slide_count) failures.push('PNG count');
-  if (second.manifest.render_iteration !== 2) failures.push('render iteration');
+  if (second.manifest.render_iteration !== first.manifest.render_iteration + 1) failures.push('render iteration');
   if (second.manifest.improvements.length < 1) failures.push('improvement history');
   if (!second.manifest.contact_sheet) failures.push('contact sheet');
   if (!second.manifest.formats.includes('notes')) failures.push('notes format');

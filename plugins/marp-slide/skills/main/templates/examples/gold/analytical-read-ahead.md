@@ -3,6 +3,7 @@ marp: true
 theme: editorial
 size: 16:9
 paginate: true
+class: read-ahead
 lang: ja-JP
 title: 2026年第2四半期 解約分析
 description: 方法、主要発見、限界、次の検証を自立して読めるanalytical read-aheadの完成例
@@ -10,39 +11,38 @@ author: agent-skills
 footer: 'Demo data · see assets/SOURCES.md'
 ---
 
-<!-- _class: cover split contain-visual -->
+<!-- _class: read-ahead cover -->
 <!-- _paginate: false -->
 
 # 解約差は価格より、初週設定の完了有無と強く関連していた
 
 ## 2026年第2四半期 解約分析
 
-![契約後7日間の設定行動から90日継続へ至る顧客journeyを層状に表した分析概念図](assets/analytical-journey.svg)
 
 ---
 
-<!-- _class: diagram dense compact-visual -->
+<!-- _class: read-ahead diagram dense compact-visual -->
 
 # 1,240社を契約月で揃え、初週設定と90日継続の関連を比較した
 
-![契約・利用ログ・サポート履歴・退会回答を顧客IDで結合し、契約月別cohortで比較する分析手順](assets/analytical-method.svg)
+![契約・利用ログ・サポート履歴・退会回答を顧客IDで結合し、契約月別の顧客群で比較する分析手順](assets/analytical-method.svg)
 
-対象：2026年1〜3月の新規契約1,240社（試用除外） ／ 設定event欠損31社は主分析から分離
+対象：2026年1〜3月の新規契約1,240社（試用除外） ／ 設定操作記録の欠損31社は主分析から分離
 出典：デモ顧客データ辞書 v2026-06、抽出日 2026-07-02
 
 ---
 
-<!-- _class: chart compact-visual -->
+<!-- _class: read-ahead chart compact-visual -->
 
-# 初週設定完了群は、全cohortで90日継続率が22〜27pt高い
+# 初週設定完了群は、すべての契約月別顧客群で90日継続率が22〜27pt高い
 
-![1月から3月の各cohortで初週設定完了群の90日継続率が未完了群より22から27ポイント高い比較グラフ](assets/analytical-cohort-chart.svg)
+![1月から3月の各顧客群で初週設定完了群の90日継続率が未完了群より22から27ポイント高い比較グラフ](assets/analytical-cohort-chart.svg)
 
 注：観察データの関連であり、設定完了の因果効果を直接示さない。95% Wilson区間を表示。
 
 ---
 
-<!-- _class: chart compact-visual -->
+<!-- _class: read-ahead chart compact-visual -->
 
 # 価格を退会理由に挙げた企業でも、低利用群では設定未完了が集中した
 
@@ -57,29 +57,29 @@ footer: 'Demo data · see assets/SOURCES.md'
 | 層 | この分析から言えること | まだ言えないこと |
 |---|---|---|
 | 事実 | 初週設定完了群の継続率が高い | 設定完了が継続を生む |
-| 解釈 | 初期導入の停滞が早期離脱のsignal | 価格が無関係である |
+| 解釈 | 初期導入の停滞が早期離脱の兆候 | 価格が無関係である |
 | 仮説 | 7日以内の支援で設定完了が増える | 施策の費用対効果 |
 
 > 判断境界：支持するのは初週支援の**検証優先度**まで。施策効果と投資対効果は未検証。
 
 ---
 
-<!-- _class: dense -->
+<!-- _class: read-ahead dense -->
 
-# 結論の一般化には、選択bias・計測誤差・90日追跡の限界がある
+# 結論の一般化には、選択の偏り・計測誤差・90日追跡の限界がある
 
 | 限界 | 影響 | 次の対処 |
 |---|---|---|
 | 自走できる顧客ほど設定を完了 | 効果を過大評価する可能性 | 無作為化した支援実験 |
-| event欠損31社 | 完了率の誤分類 | server logとの突合 |
+| 操作記録の欠損31社 | 完了率の誤分類 | サーバーログとの突合 |
 | 90日追跡のみ | 長期継続を説明できない | 180日指標を継続観測 |
-| 価格回答は自己申告 | 理由の単純化 | 面談sampleで補完 |
+| 価格回答は自己申告 | 理由の単純化 | 面談対象で補完 |
 
-> 解釈上の上限：3つの限界が残るため、現時点では関連の再現性を示せても因果効果は断定できない。
+> 解釈上の上限：4つの限界が残るため、現時点では関連の再現性を示せても因果効果は断定できない。
 
 ---
 
-<!-- _class: diagram compact-visual -->
+<!-- _class: read-ahead diagram compact-visual -->
 
 # 次四半期は、初週支援の無作為化実験で因果効果を切り分ける
 
@@ -89,7 +89,7 @@ footer: 'Demo data · see assets/SOURCES.md'
 
 ---
 
-<!-- _class: closing -->
+<!-- _class: read-ahead closing -->
 
 # 現時点の結論は「値引き」ではなく「初週支援を検証する価値がある」までである
 

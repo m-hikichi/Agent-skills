@@ -83,3 +83,19 @@ table { width: 100%; border-collapse: collapse; background: var(--surface); font
 th { background: #e5edf8; text-align: left; }
 th, td { padding: 12px 15px; border: 1px solid var(--line); }
 blockquote { padding: 18px 24px; border-left: 6px solid var(--accent); background: #fff7e8; }
+
+/* Delivery roles: logical 1280x720 CSS px, not export PNG pixels. */
+section.live, section.hybrid { --deck-body-size: 25px; --deck-label-size: 20px; --deck-note-size: 16px; }
+section.read-ahead { --deck-body-size: 21px; --deck-label-size: 18px; --deck-note-size: 14px; }
+section.enhanced { --deck-body-size: 26px; --deck-label-size: 22px; --deck-note-size: 18px; }
+section.live, section.hybrid, section.read-ahead { font-size: var(--deck-body-size); }
+section.live h2, section.hybrid h2, section.live h3, section.hybrid h3 { font-size: 32px; }
+section.read-ahead h3 { font-size: 28px; }
+section.enhanced h2, section.enhanced h3 { font-size: 34px; }
+section.live table, section.hybrid table, section.read-ahead table,
+section.live pre, section.hybrid pre, section.read-ahead pre { font-size: var(--deck-label-size); }
+section footer, section::after, section .source, section .note { font-size: var(--deck-note-size, 16px); }
+section { line-break: strict; overflow-wrap: break-word; }
+
+section table { display: table; }
+section.closing footer, section.closing::after { color: inherit; }

@@ -58,7 +58,7 @@ export function parseArguments(argv) {
 }
 
 function usage() {
-  return `marp-slide lifecycle CLI (rubric v3)
+  return `marp-slide lifecycle CLI (rubric v4)
 
 Usage:
   node scripts/marp-slide.mjs init [--status active|needs_user|blocked] [--force]

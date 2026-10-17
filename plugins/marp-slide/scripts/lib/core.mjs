@@ -13,7 +13,7 @@ import {
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const RUBRIC_VERSION = 3;
+export const RUBRIC_VERSION = 4;
 export const RENDER_SCHEMA_VERSION = 1;
 export const STATE_SCHEMA_VERSION = 1;
 export const REQUIRED_MARP_CLI_VERSION = '4.4.0';
@@ -889,6 +889,10 @@ export async function lintDeck(options = {}) {
       if (!approval.options.includes(approval.recommended)) failures.push('integrated approval recommended option must exist in options');
       if (!approval.options.includes(approval.selected)) failures.push('integrated approval selected option must exist in options');
       if (typeof approval.approved_at !== 'string') failures.push('integrated approval must record approved_at before rendering');
+      const pacingRequest = await loadRequest(await resolveWorkspacePath(root, paths.request, { label: 'request', mustExist: true, kind: 'file' }));
+      const estimatedSeconds = deckPlan.slides.filter(slide => !slide.appendix).reduce((sum, slide) => sum + slide.estimated_seconds, deckPlan.interaction_seconds);
+      if (pacingRequest.duration_minutes && estimatedSeconds > pacingRequest.duration_minutes * 60) failures.push(`planned duration ${estimatedSeconds}s exceeds available ${pacingRequest.duration_minutes * 60}s`);
+      if (!pacingRequest.duration_minutes) warnings.push(`duration not specified; estimated main delivery time is ${estimatedSeconds}s`);
       if (deckPlan.slides.length !== slideCount) failures.push(`deck plan has ${deckPlan.slides.length} slides but Markdown has ${slideCount}`);
       for (let index = 0; index < deckPlan.slides.length; index += 1) {
         const slide = deckPlan.slides[index];
@@ -1166,24 +1170,53 @@ export async function validateReview(context, render, { requirePass = false } = 
   if (review.visual_review.contact_sheet !== expectedContact) errors.push('visual review contact_sheet must match render manifest');
 
   if (review.status === 'pass') {
+    const request = await loadRequest(context.request);
+    if (!snapshotsEqual(review.audience_review.page_images, expectedPages)) errors.push('audience review must cover all current page images');
+    if (review.audience_review.observations.length !== expectedPages.length || review.audience_review.observations.some((o, i) => o.slide !== i + 1)) errors.push('audience observations must cover every slide in order');
+    if (request.delivery_mode !== 'read-ahead' && review.audience_review.observations.some(o => o.first_impression === 'not_applicable')) errors.push('live/hybrid audience review requires first impressions');
+    // Bind combined judgments to independent artifacts, not an invented summary.
+    for (const name of ['audience', 'content', 'visual']) {
+      try {
+        const independentPath = path.posix.join(path.posix.dirname(paths.review), `${name}-review.json`);
+        const file = await resolveWorkspacePath(root, independentPath, { mustExist: true, kind: 'file', label: `${name} review` });
+        const independent = await loadJson(file, `${name} review`);
+        if (independent.artifact_fingerprint !== fingerprint || independent.review_attempt !== review.review_attempt || independent.render_iteration !== review.render_iteration) errors.push(`${name} independent review is stale`);
+        for (const key of Object.keys(review[`${name}_review`])) {
+          if (!snapshotsEqual(independent[key], review[`${name}_review`][key])) errors.push(`${name} independent review differs at ${key}`);
+        }
+      } catch (error) { errors.push(error.message); }
+    }
+    try {
+      const qaPath = path.posix.join(path.posix.dirname(paths.renderManifest), 'machine-qa.json');
+      const qa = await loadJson(await resolveWorkspacePath(root, qaPath, { mustExist: true, kind: 'file', label: 'machine QA' }), 'machine QA');
+      if (qa.schema_version !== 2 || qa.artifact_fingerprint !== fingerprint || qa.status !== 'pass') errors.push('raw machine QA must be current schema v2 and pass');
+      const mapping = { asset_integrity: 'missing_assets', overflow: 'overflow_and_clipping', clipping: 'overflow_and_clipping', slide_count: 'page_count', minimum_text_size: 'minimum_text_size', contrast: 'contrast', alt_text: 'informative_image_alt', manifest_integrity: 'manifest_integrity' };
+      for (const [key, raw] of Object.entries(mapping)) if (qa.checks?.[raw]?.status !== review.machine_qa.checks[key].status) errors.push(`machine QA status mismatch: ${key}`);
+      if (!Array.isArray(qa.manual_checks)) errors.push('machine QA must enumerate unmeasured manual checks');
+      const pending = qa.manual_checks ?? [];
+      const resolutions = review.visual_review.manual_resolutions;
+      const ids = pending.map(c => c.id).sort();
+      if (new Set(ids).size !== ids.length || !snapshotsEqual(ids, resolutions.map(c => c.id).sort())) errors.push('manual resolutions must cover exactly all raw QA manual check IDs');
+      if (resolutions.some(c => c.status !== 'pass' || !c.evidence.trim())) errors.push('every manual check requires a concrete visual pass');
+    } catch (error) { errors.push(error.message); }
     if (review.render_iteration < 2) errors.push('a pass review requires render_iteration >= 2');
     if (!render.manifest.contact_sheet) errors.push('a pass review requires a rendered contact sheet');
-    for (const [name, component] of Object.entries({ machine_qa: review.machine_qa, content_review: review.content_review, visual_review: review.visual_review })) {
+    for (const [name, component] of Object.entries({ machine_qa: review.machine_qa, content_review: review.content_review, visual_review: review.visual_review, audience_review: review.audience_review })) {
       if (component.status !== 'pass') errors.push(`${name}.status must be pass`);
     }
-    if (allChecks(review).some((check) => check.status !== 'pass')) errors.push('every rubric v3 check and hard gate must pass');
-    if (allScores(review).some((score) => score.score < 4)) errors.push('all four rubric v3 scores must be at least 4');
+    if (allChecks(review).some((check) => check.status !== 'pass')) errors.push('every rubric v4 check and hard gate must pass');
+    if (allScores(review).some((score) => score.score < 4)) errors.push('all four rubric v4 scores must be at least 4');
     if (review.issues.some((issue) => ['critical', 'major'].includes(issue.severity))) errors.push('pass review contains a critical or major issue');
     if (review.visual_review.page_findings.some((finding) => ['critical', 'major'].includes(finding.severity))) errors.push('pass review contains a critical or major visual finding');
     if (review.missing_required.length || review.questions_for_user.length) errors.push('pass review cannot contain missing requirements or user questions');
   } else if (review.status === 'needs_user') {
     if (review.missing_required.length === 0 && review.questions_for_user.length === 0) errors.push('needs_user review must identify missing information or a user question');
   } else if (review.status === 'blocked') {
-    const componentBlocked = [review.machine_qa, review.content_review, review.visual_review].some((component) => component.status === 'blocked');
+    const componentBlocked = [review.machine_qa, review.content_review, review.visual_review, review.audience_review].some((component) => component.status === 'blocked');
     if (!componentBlocked) errors.push('blocked review must mark at least one component blocked');
     if (review.issues.length === 0 && review.questions_for_user.length === 0) errors.push('blocked review must explain the blocking condition');
   } else if (review.status === 'fail') {
-    const hasFailedComponent = [review.machine_qa, review.content_review, review.visual_review].some((component) => component.status === 'fail');
+    const hasFailedComponent = [review.machine_qa, review.content_review, review.visual_review, review.audience_review].some((component) => component.status === 'fail');
     const hasFailedCheck = allChecks(review).some((check) => check.status === 'fail');
     const hasLowScore = allScores(review).some((score) => score.score > 0 && score.score < 4);
     const hasMaterialIssue = review.issues.some((issue) => ['critical', 'major'].includes(issue.severity));

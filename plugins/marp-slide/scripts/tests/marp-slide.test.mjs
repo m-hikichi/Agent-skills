@@ -124,7 +124,9 @@ section { color: #111; background: #fff; }
 
 function deckPlan() {
   return {
-    schema_version: 1,
+    schema_version: 2,
+    terminology: [],
+    interaction_seconds: 60,
     deck_thesis: '監視統合で復旧時間を短縮する',
     success_criteria: ['意思決定者が施策を判断できる'],
     visual_direction: {
@@ -150,6 +152,7 @@ function deckPlan() {
         number: 1,
         role: 'evidence',
         action_title: '障害の半分は同じ経路で発生する',
+        estimated_seconds: 60, prerequisite_terms: [], comprehension_question: '何を判断するか', appendix: false,
         narrative_goal: '集中箇所を示す',
         evidence_ids: ['E-001'],
         visual_kind: 'chart',
@@ -164,6 +167,7 @@ function deckPlan() {
         number: 2,
         role: 'closing',
         action_title: '監視統合で復旧時間を短縮できる',
+        estimated_seconds: 60, prerequisite_terms: [], comprehension_question: '何を判断するか', appendix: false,
         narrative_goal: '次の行動を示す',
         evidence_ids: [],
         visual_kind: 'closing',
@@ -280,7 +284,7 @@ async function writePassReview(root, overrides = {}) {
   const context = await buildFingerprint({ root });
   const render = JSON.parse(await readFile(path.join(root, '.slide-work', 'render-manifest.json'), 'utf8'));
   const review = {
-    rubric_version: 3,
+    rubric_version: 4,
     status: 'pass',
     reviewed_at: new Date().toISOString(),
     artifact_fingerprint: context.fingerprint,
@@ -310,6 +314,8 @@ async function writePassReview(root, overrides = {}) {
         must_include_coverage: check(),
         evidence_integrity: check(),
         story_coherence: check(),
+        audience_comprehension: check(),
+        language_and_pacing: check(),
       },
       scores: { story_audience_fit: score(), evidence_content_quality: score() },
     },
@@ -321,9 +327,18 @@ async function writePassReview(root, overrides = {}) {
       hard_gates: { rendered_readability: check(), visual_semantics: check(), accessibility: check() },
       scores: { visual_hierarchy_semantics: score(), cohesion_polish: score() },
       page_findings: [],
+      manual_resolutions: [],
+    },
+    audience_review: {
+      status: 'pass', method: 'fresh-context-image-review', page_images: render.page_images.map(page => page.path),
+      deck_takeaway: '監視統合を判断する', next_step: '施策を承認',
+      observations: render.page_images.map(page => ({slide: page.slide, takeaway: '施策の判断', evidence_seen: '比較図', unclear: [], first_impression: 'clear'})),
     },
     ...overrides,
   };
+  const rawKeys = ['missing_assets','overflow_and_clipping','page_count','minimum_text_size','contrast','informative_image_alt','manifest_integrity'];
+  await writeJson(path.join(root, '.slide-work/machine-qa.json'), {schema_version: 2, artifact_fingerprint: context.fingerprint, status: 'pass', manual_checks: [], checks: Object.fromEntries(rawKeys.map(key => [key, {status: 'pass'}]))});
+  for (const name of ['audience','content','visual']) await writeJson(path.join(root, `.slide-work/${name}-review.json`), {...review[`${name}_review`], artifact_fingerprint: context.fingerprint, review_attempt: review.review_attempt, render_iteration: review.render_iteration});
   await writeJson(path.join(root, '.slide-work', 'review.json'), review);
   return review;
 }
@@ -331,6 +346,43 @@ async function writePassReview(root, overrides = {}) {
 async function cleanup(root) {
   await rm(root, { recursive: true, force: true });
 }
+
+test('pacing rejects over-budget main slides but excludes appendix', async () => {
+  const {root} = await createWorkspace({requestOverrides: {duration_minutes: 2}});
+  try {
+    assert.match((await lintDeck({root})).failures.join('\n'), /planned duration/);
+    const file = path.join(root, '.slide-work/deck-plan.json');
+    const plan = JSON.parse(await readFile(file, 'utf8'));
+    plan.slides[1].appendix = true;
+    await writeJson(file, plan);
+    assert.equal((await lintDeck({root})).ok, true);
+  } finally { await cleanup(root); }
+});
+
+test('completion rejects omitted manual checks, forged raw QA and stale independent review', async () => {
+  const {root} = await createWorkspace();
+  try {
+    await writePassReview(root);
+    const qaFile = path.join(root, '.slide-work/machine-qa.json');
+    const qa = JSON.parse(await readFile(qaFile, 'utf8'));
+    qa.manual_checks = [{id: 'manual-1', slide: 1, selector: 'p', kind: 'contrast', reason: 'gradient'}];
+    await writeJson(qaFile, qa);
+    await assert.rejects(() => validateCurrentReview({root}), /manual resolutions/);
+    await writePassReview(root);
+    const changed = JSON.parse(await readFile(qaFile, 'utf8'));
+    changed.checks.contrast.status = 'fail';
+    await writeJson(qaFile, changed);
+    await assert.rejects(() => validateCurrentReview({root}), /status mismatch/);
+    await writePassReview(root);
+    const audienceFile = path.join(root, '.slide-work/audience-review.json');
+    const audience = JSON.parse(await readFile(audienceFile, 'utf8'));
+    audience.artifact_fingerprint = '0'.repeat(64);
+    await writeJson(audienceFile, audience);
+    await assert.rejects(() => validateCurrentReview({root}), /independent review is stale/);
+    await writePassReview(root);
+    await assert.doesNotReject(() => validateCurrentReview({root}));
+  } finally { await cleanup(root); }
+});
 
 test('CRLF and LF decks produce the same slide count and ignore separators inside fences', async () => {
   const fixture = JSON.parse(await readFile(path.join(FIXTURES, 'crlf-deck.fixture.json'), 'utf8'));
@@ -457,11 +509,11 @@ test('path traversal, SVG active content, and invalid PNG files are rejected', a
   }
 });
 
-test('prepare-review emits rubric v3 fingerprint and increments only valid v3 attempts', async () => {
+test('prepare-review emits rubric v4 fingerprint and increments only valid v4 attempts', async () => {
   const { root } = await createWorkspace();
   try {
     const first = await prepareReview({ root });
-    assert.equal(first.rubric_version, 3);
+    assert.equal(first.rubric_version, 4);
     assert.equal(first.review_attempt, 1);
     await writePassReview(root);
     const second = await prepareReview({ root });
@@ -476,7 +528,7 @@ test('prepare-review emits rubric v3 fingerprint and increments only valid v3 at
   }
 });
 
-test('strict rubric v3 rejects unknown keys, fake page evidence, low scores, and major findings', async () => {
+test('strict rubric v4 rejects unknown keys, fake page evidence, low scores, and major findings', async () => {
   const { root } = await createWorkspace();
   try {
     const review = await writePassReview(root);
@@ -632,8 +684,8 @@ test('state machine scopes gate, allows needs_user/blocked, and stale complete b
       () => gateRun({ root }),
       (error) => error instanceof LifecycleError && error.exitCode === 2 && /no longer valid/.test(error.message),
     );
-    assert.equal(review.rubric_version, 3);
-    assert.equal(blockedReview.rubric_version, 3);
+    assert.equal(review.rubric_version, 4);
+    assert.equal(blockedReview.rubric_version, 4);
   } finally {
     await cleanup(root);
   }

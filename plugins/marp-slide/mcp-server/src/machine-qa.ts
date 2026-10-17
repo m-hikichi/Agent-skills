@@ -19,7 +19,8 @@ import {
 import type { RenderManifest } from "./rendering.js";
 
 type CheckStatus = "pass" | "fail" | "not_run";
-const MINIMUM_TEXT_SIZE_PX = 12;
+import { readabilityPolicy, type ReadabilityPolicy, type ManualCheck } from "./readability.js";
+import { assertSafeStaticSvg } from "./security.js";
 
 export interface GeometryViolation {
   slide: number;
@@ -32,6 +33,8 @@ export interface TextSizeViolation {
   slide: number;
   selector: string;
   font_size_px: number;
+  threshold_px: number;
+  role: string;
   text: string;
 }
 
@@ -43,7 +46,8 @@ export interface ContrastViolation {
   text: string;
 }
 
-interface DomMeasurements {
+export interface DomMeasurements {
+  manual_checks: ManualCheck[];
   slide_count: number;
   geometry: GeometryViolation[];
   text_sizes: TextSizeViolation[];
@@ -52,7 +56,9 @@ interface DomMeasurements {
 }
 
 export interface MachineQaReport {
-  schema_version: 1;
+  schema_version: 2;
+  policy: ReadabilityPolicy;
+  manual_checks: ManualCheck[];
   generated_at: string;
   source: { path: string; sha256: string };
   artifact_fingerprint: string;
@@ -265,7 +271,8 @@ function validateManifest(
   return errors;
 }
 
-async function inspectRenderedHtml(htmlPath: string): Promise<DomMeasurements> {
+export async function inspectRenderedHtml(htmlPath: string, policy: ReadabilityPolicy, svgSources: Record<string, string> = {}, sourceDirectory = dirname(htmlPath)): Promise<DomMeasurements> {
+  for (const source of Object.values(svgSources)) assertSafeStaticSvg(source);
   const browser = await puppeteer.launch({
     executablePath: process.env.CHROME_PATH || "/usr/bin/chromium",
     headless: true,
@@ -281,11 +288,25 @@ async function inspectRenderedHtml(htmlPath: string): Promise<DomMeasurements> {
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 1 });
     await page.goto(pathToFileURL(htmlPath).href, { waitUntil: "load", timeout: 30_000 });
+    // Marp preserves Markdown-relative asset URLs even when QA HTML is written
+    // under .slide-work. Resolve them against the source, as the PNG renderer does.
+    await page.evaluate(async (baseUrl) => {
+      const base = document.createElement("base"); base.href = baseUrl;
+      document.head.prepend(base);
+      await Promise.all(Array.from(document.images).map(async image => {
+        image.src = new URL(image.getAttribute("src") || "", baseUrl).href;
+        try { await image.decode(); } catch { throw new Error(`QA image failed to load: ${image.getAttribute("src")}`); }
+      }));
+    }, pathToFileURL(resolve(sourceDirectory) + "/").href);
     await page.evaluate(async () => {
       await document.fonts.ready;
     });
     await new Promise((resolvePromise) => setTimeout(resolvePromise, 250));
-    return await page.evaluate((minimumTextSizePx) => {
+    return await page.evaluate(({ policy, svgSources }) => {
+      const manualChecks: ManualCheck[] = [];
+      const manual = (slide: number, selector: string, kind: ManualCheck["kind"], reason: string) => {
+        manualChecks.push({ id: `manual-${manualChecks.length + 1}`, slide, selector, kind, reason });
+      };
       const sections = Array.from(document.querySelectorAll<HTMLElement>("section"));
       const measurements: Array<{
         slide: number;
@@ -326,10 +347,12 @@ async function inspectRenderedHtml(htmlPath: string): Promise<DomMeasurements> {
         let current: Element | null = element;
         while (current) {
           const style = getComputedStyle(current);
+          if (Number(style.opacity) < 1 || style.filter !== "none" || style.mixBlendMode !== "normal") return null;
           if (style.backgroundImage && style.backgroundImage !== "none") return null;
           const color = rgb(style.backgroundColor);
           const alpha = Number(style.backgroundColor.match(/rgba\([^)]*,\s*([\d.]+)\s*\)$/)?.[1] ?? 1);
-          if (color && alpha > 0.01) return color;
+          if (color && alpha > 0.01 && alpha < 1) return null;
+          if (color && alpha >= 1) return color;
           if (current === section) break;
           current = current.parentElement;
         }
@@ -371,25 +394,101 @@ async function inspectRenderedHtml(htmlPath: string): Promise<DomMeasurements> {
           });
         }
 
-        const textElements = Array.from(section.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6,p,li,td,th,pre,code,blockquote,figcaption,footer"));
+        const textElements = Array.from(section.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6,p,li,td,th,pre,code,blockquote,figcaption,footer,span,strong,em,a,small"));
+        // Scale back to slide coordinates; image_scale never changes the policy.
+        const sectionScale = sectionRect.width / section.offsetWidth || 1;
+        for (const [index, img] of Array.from(section.querySelectorAll<HTMLImageElement>("img")).entries()) {
+          const selector = `img[${index + 1}]`;
+          const source = svgSources[img.currentSrc || img.src];
+          if (!source) {
+            manual(slide, selector, "image_text", "Raster or unsupported image: inspect embedded text at delivery size.");
+            continue;
+          }
+          manual(slide, selector, "contrast", "SVG fill/background compositing and label overlap require visual review.");
+          const doc = new DOMParser().parseFromString(source, "image/svg+xml");
+          if (doc.querySelector("parsererror,foreignObject,use,textPath,image")) {
+            manual(slide, selector, "image_text", "SVG contains unsupported nested/referenced text; inspect at delivery size.");
+            continue;
+          }
+          const svg = document.importNode(doc.documentElement, true) as unknown as SVGSVGElement;
+          const host = document.createElement("div");
+          host.style.cssText = "position:fixed;left:-100000px;top:0;opacity:0;pointer-events:none";
+          const shadow = host.attachShadow({ mode: "open" });
+          shadow.append(svg); document.body.append(host);
+          try {
+            const view = svg.viewBox.baseVal;
+            const width = img.naturalWidth || view.width;
+            const height = img.naturalHeight || view.height;
+            if (!(width > 0 && height > 0)) {
+              manual(slide, selector, "image_text", "SVG intrinsic dimensions are unknown.");
+              continue;
+            }
+            svg.setAttribute("width", String(width)); svg.setAttribute("height", String(height));
+            const style = getComputedStyle(img);
+            const rect = img.getBoundingClientRect();
+            const boxWidth = rect.width / sectionScale - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) - parseFloat(style.borderLeftWidth) - parseFloat(style.borderRightWidth);
+            const boxHeight = rect.height / sectionScale - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom) - parseFloat(style.borderTopWidth) - parseFloat(style.borderBottomWidth);
+            const sx = boxWidth / width, sy = boxHeight / height;
+            const fit = style.objectFit;
+            const uniform = fit === "cover" ? Math.max(sx, sy) : fit === "none" ? 1 : fit === "scale-down" ? Math.min(1, sx, sy) : Math.min(sx, sy);
+            const scale = fit === "fill" ? Math.min(sx, sy) : uniform;
+            if (fit === "cover") manual(slide, selector, "geometry", "Cover cropping can hide SVG labels or evidence.");
+            const texts = Array.from(svg.querySelectorAll<SVGTextElement>("text,tspan")).filter(el => Array.from(el.childNodes).some(n => n.nodeType === Node.TEXT_NODE && n.textContent?.trim()));
+            if (!texts.length) manual(slide, selector, "image_text", "SVG has no measurable text; check outlined labels or confirm it is non-textual.");
+            for (const text of texts) {
+              const ts = getComputedStyle(text);
+              if (ts.display === "none" || ts.visibility === "hidden") continue;
+              const matrix = text.getScreenCTM();
+              if (!matrix) { manual(slide, selector, "image_text", "SVG text transform cannot be measured."); continue; }
+              const size = parseFloat(ts.fontSize) * Math.min(Math.hypot(matrix.a, matrix.b), Math.hypot(matrix.c, matrix.d)) * scale;
+              minimumTextSize = minimumTextSize === null ? size : Math.min(minimumTextSize, size);
+              if (size < policy.thresholds.label) textSizes.push({ slide, selector: `${selector} text`, role: "label", threshold_px: policy.thresholds.label, font_size_px: Number(size.toFixed(2)), text: (text.textContent || "").slice(0,100) });
+            }
+          } finally { host.remove(); }
+        }
         for (const element of textElements) {
           const text = (element.innerText || "").trim().replace(/\s+/g, " ");
           const style = getComputedStyle(element);
           if (!text || style.display === "none" || style.visibility === "hidden") continue;
-          const size = Number.parseFloat(style.fontSize);
+          const role = element.closest("h1,h2,h3,h4,h5,h6") ? "heading" : element.closest("footer,figcaption,small,.source,.note") ? "note" : element.closest("table,pre,code") ? "label" : "body";
+          const minimumTextSizePx = policy.thresholds[role];
+          // offsetHeight is integer-rounded: using its ratio would incorrectly
+          // fail an untransformed 32px heading with a fractional line height.
+          let renderedScale = 1;
+          let ancestor: Element | null = element;
+          while (ancestor && ancestor !== section) {
+            const transform = getComputedStyle(ancestor).transform;
+            if (transform !== "none") {
+              const matrix = new DOMMatrixReadOnly(transform);
+              renderedScale *= Math.min(Math.hypot(matrix.a, matrix.b), Math.hypot(matrix.c, matrix.d));
+            }
+            ancestor = ancestor.parentElement;
+          }
+          const size = Number.parseFloat(style.fontSize) * renderedScale;
           minimumTextSize = minimumTextSize === null ? size : Math.min(minimumTextSize, size);
           if (size < minimumTextSizePx) {
             textSizes.push({
               slide,
               selector: selectorFor(element),
               font_size_px: Number(size.toFixed(2)),
+              threshold_px: minimumTextSizePx,
+              role,
               text: text.slice(0, 100),
             });
           }
           const foreground = rgb(style.color);
-          if (!foreground) continue;
+          if (!foreground) {
+            manual(slide, selectorFor(element), "contrast", "Unsupported foreground color space requires visual review.");
+            continue;
+          }
           const background = backgroundFor(element, section);
-          if (!background) continue;
+          if (!background || Number(style.opacity) < 1 || style.color.startsWith("rgba") || element.querySelector("img,svg") || Array.from(section.querySelectorAll("img,svg")).some(image => {
+            const a = element.getBoundingClientRect(), b = image.getBoundingClientRect();
+            return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+          })) {
+            manual(slide, selectorFor(element), "contrast", "Image/gradient/transparency/overlap prevents reliable solid-background measurement.");
+            continue;
+          }
           const lightA = luminance(foreground);
           const lightB = luminance(background);
           const ratio = (Math.max(lightA, lightB) + 0.05) / (Math.min(lightA, lightB) + 0.05);
@@ -430,6 +529,7 @@ async function inspectRenderedHtml(htmlPath: string): Promise<DomMeasurements> {
         return result;
       });
       return {
+        manual_checks: manualChecks,
         slide_count: sections.length,
         geometry,
         text_sizes: textSizes,
@@ -437,7 +537,7 @@ async function inspectRenderedHtml(htmlPath: string): Promise<DomMeasurements> {
         minimum_text_size_px:
           minimumTextSize === null ? null : Number(minimumTextSize.toFixed(2)),
       };
-    }, MINIMUM_TEXT_SIZE_PX);
+    }, { policy, svgSources });
   } finally {
     await browser.close();
   }
@@ -452,6 +552,15 @@ export async function writeMachineQa(options: {
   manifest: RenderManifest;
 }): Promise<MachineQaReport> {
   const markdown = readFileSync(options.sourcePath, "utf8");
+  const policy = readabilityPolicy(readFileSync(resolve(options.workspace, options.manifest.request.path), "utf8"));
+  const svgSources: Record<string, string> = {};
+  for (const asset of options.manifest.assets) {
+    if (!asset.path.toLowerCase().endsWith(".svg")) continue;
+    const absolute = resolve(options.workspace, asset.path);
+    const content = readFileSync(absolute, "utf8");
+    try { assertSafeStaticSvg(content); svgSources[pathToFileURL(absolute).href] = content; }
+    catch { /* Unsupported SVG remains an explicit manual image check. */ }
+  }
   const missingAlt = findMissingInformativeImageAlt(
     markdown,
     decorativeTargets(
@@ -471,7 +580,7 @@ export async function writeMachineQa(options: {
   let dom: DomMeasurements | null = null;
   let domError: string | undefined;
   try {
-    dom = await inspectRenderedHtml(options.htmlPath);
+    dom = await inspectRenderedHtml(options.htmlPath, policy, svgSources, dirname(options.sourcePath));
   } catch (error) {
     domError = error instanceof Error ? error.message : String(error);
   }
@@ -496,7 +605,9 @@ export async function writeMachineQa(options: {
       : "pass"
     : "not_run";
   const report: MachineQaReport = {
-    schema_version: 1,
+    schema_version: 2,
+    policy,
+    manual_checks: dom?.manual_checks ?? [],
     generated_at: new Date().toISOString(),
     source: options.manifest.source,
     artifact_fingerprint: options.manifest.artifact_fingerprint,
@@ -519,7 +630,7 @@ export async function writeMachineQa(options: {
       },
       minimum_text_size: {
         status: textStatus,
-        threshold_px: MINIMUM_TEXT_SIZE_PX,
+        threshold_px: Math.min(...Object.values(policy.thresholds)),
         minimum_px: dom?.minimum_text_size_px ?? null,
         violations: dom?.text_sizes ?? [],
         ...(domError ? { error: domError } : {}),

@@ -82,7 +82,7 @@ outputs/
     └── revision history
 ```
 
-v1は全ページ2x PNG、contact sheet、QA、rubric v3、render iteration 2以上、具体的な改善履歴、統合fingerprintを`evidence/`に保存します。v0.8は生成可能な同等証跡を残し、欠けているv1固有artifactを後から捏造しません。
+v1は全ページ2x PNG、contact sheet、QA、rubric v4、render iteration 2以上、具体的な改善履歴、統合fingerprintを`evidence/`に保存します。v0.8は生成可能な同等証跡を残し、欠けているv1固有artifactを後から捏造しません。
 
 独立graderは[`grading-guide.md`](grading-guide.md)に従い、各runの`formal-results.json`をfixtureと実ファイルから埋めます。`passed`はboolean、`evidence`は検査した値・ページ・ファイルを特定できる文にします。`grading.json`は`skill-creator`の厳密な`text / passed / evidence`形式、`timing.json`はexecutor完了通知のtoken数と所要時間を使います。
 
@@ -184,4 +184,6 @@ plugins/marp-slide/skills/main/evals/scripts/run-eval.ps1 gold-compare `
 - anonymization seedは対応表にhashだけを残し、生seedをreview packageへ保存しません。テストで再現が必要な場合だけ`blind --seed <secret>`を使います。
 - `_private/`、snapshot、生成deckは評価workspaceの成果物でありpluginへcommitしません。commit対象はfixture、policy、catalog、harness、承認済みgold baseline manifestだけです。
 - subjective design qualityはMarkdownやlintではなく、contact sheetとfull-resolution pagesで判定します。
+- v1.1では初見読者の理解記録、用途別文字サイズ、SVG掲載時ラベル、手動検査IDの解決、日本語・所要時間の整合も確認します。初見担当にplanや期待解答を渡さず、content reviewerが後から照合します。
+- `render-gold-smoke.mjs`の2回レンダーと履歴は再実行の機械検証専用です。目視レビューや実際の改善を代行せず、完成承認に流用しません。
 - model、token、所要時間、renderer environmentはrunごとに記録し、片側だけ再実行した結果を同一pairとして扱いません。

@@ -3,6 +3,7 @@ marp: true
 theme: executive-clean
 size: 16:9
 paginate: true
+class: hybrid
 lang: ja-JP
 title: 問い合わせ支援PoC 投資判断
 description: 実績データから限定PoCの承認を求めるexecutive decision deckの完成例
@@ -10,14 +11,13 @@ author: agent-skills
 footer: 'Demo data · see assets/SOURCES.md'
 ---
 
-<!-- _class: cover split contain-visual -->
+<!-- _class: hybrid cover -->
 <!-- _paginate: false -->
 
 # 300万円の限定PoCで、探索時間を減らせるか検証する
 
 ## 問い合わせ支援 — 投資判断
 
-![複数のナレッジを検索し、根拠付き回答候補を担当者へ提示する問い合わせ支援の概念図](assets/executive-support-workspace.svg)
 
 <!--
 本日の判断は全面導入ではありません。90日で効果と運用負荷を測る限定PoCの可否です。
@@ -42,7 +42,7 @@ footer: 'Demo data · see assets/SOURCES.md'
 
 ---
 
-<!-- _class: chart -->
+<!-- _class: hybrid chart -->
 
 # 上位3分類が問い合わせの72%を占め、限定PoCでも十分な母数がある
 
@@ -54,18 +54,15 @@ footer: 'Demo data · see assets/SOURCES.md'
 
 ---
 
-<!-- _class: split -->
+<!-- _class: hybrid diagram -->
 
-# 回答34分のうち27分は、5情報源を横断する探索時間である
-
-- 観測：探索 27分、回答作成 7分
-- 解釈：生成そのものより、根拠候補の検索が改善余地
-- PoC：引用元を残す検索支援に限定
+# 回答34分のうち27分は、根拠を探す時間
 
 ![現状は5つの情報源を順番に探し、PoCでは横断検索から根拠候補を提示するbefore-after図](assets/executive-search-flow.svg)
 
 <!--
 時間は20件の業務観察の中央値です。速度だけでなく引用の妥当性も測ります。
+観測は探索27分、回答作成7分。生成そのものより根拠候補の検索に改善余地があると解釈し、PoCは引用元を残す検索支援に限定します。
 -->
 
 ---
@@ -86,7 +83,7 @@ footer: 'Demo data · see assets/SOURCES.md'
 
 ---
 
-<!-- _class: chart -->
+<!-- _class: hybrid chart -->
 
 # 本導入は「50%短縮」だけでなく、品質と週次運用負荷を同時に満たして決める
 
@@ -98,7 +95,7 @@ footer: 'Demo data · see assets/SOURCES.md'
 
 ---
 
-<!-- _class: diagram -->
+<!-- _class: hybrid diagram -->
 
 # 90日を「基準測定→限定運用→判定」の3区間に分け、途中で品質停止線を置く
 
@@ -110,7 +107,7 @@ footer: 'Demo data · see assets/SOURCES.md'
 
 ---
 
-<!-- _class: closing -->
+<!-- _class: hybrid closing -->
 
 # 限定PoCなら、300万円で効果と運用リスクの両方を判断できる
 

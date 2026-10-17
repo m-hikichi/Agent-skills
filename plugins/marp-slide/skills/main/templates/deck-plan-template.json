@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "deck_thesis": "",
   "success_criteria": [],
   "visual_direction": {
@@ -33,7 +33,13 @@
       "density": "live",
       "citation": [],
       "alt": "",
-      "speaker_notes": ""
+      "speaker_notes": "",
+      "estimated_seconds": 30,
+      "prerequisite_terms": [],
+      "comprehension_question": "",
+      "appendix": false
     }
-  ]
+  ],
+  "terminology": [],
+  "interaction_seconds": 0
 }

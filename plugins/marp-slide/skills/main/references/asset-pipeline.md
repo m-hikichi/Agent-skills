@@ -73,3 +73,5 @@ marp_render_diagram({
 ## Manifest minimum
 
 各assetに `id`, `path`, `pages`, `type`, `source {kind, path, url}`, `license`, `alt`, `decorative`, `crop`, `generator`, `sha256` を持たせる。1つのassetを複数ページで使う場合は`pages`へ全ページ番号を入れる。
+
+図表ラベルは最終掲載寸法で用途別基準を満たすよう作る。直接ラベルを優先し、不要な枠・目盛線・小数桁を整理する。複雑な説明は同じ位置・色を保った全体→部分→統合の静的ページへ分ける。詳しい適用条件は[evidence-based-design.md](evidence-based-design.md)を参照する。

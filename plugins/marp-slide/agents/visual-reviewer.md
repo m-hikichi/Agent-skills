@@ -1,6 +1,6 @@
 ---
 name: visual-reviewer
-description: Marpデッキのレンダリングを作成者から独立して審査する。contact sheetと全ページ2倍PNGを実際に見て、視覚階層、図表の意味、反復、可読性、仕上がりをrubric v3の視覚軸で評価する。
+description: Marpデッキのレンダリングを作成者から独立して審査する。contact sheetと全ページ2倍PNGを実際に見て、視覚階層、図表の意味、反復、可読性、仕上がりをrubric v4の視覚軸で評価する。
 model: opus
 effort: xhigh
 color: magenta
@@ -61,12 +61,13 @@ contact sheet、manifest記載の全ページ、2倍PNGのいずれかが不足�
 
 ```json
 {
-  "rubric_version": 3,
+  "rubric_version": 4,
   "reviewer": "visual-reviewer",
   "status": "pass | fail | blocked",
   "reviewed_at": "RFC3339",
   "artifact_fingerprint": "<current fingerprint>",
   "review_attempt": 1,
+  "render_iteration": 2,
   "contact_sheet": ".slide-work/contact-sheet.png",
   "checked_page_count": 3,
   "page_images": [
@@ -85,8 +86,17 @@ contact sheet、manifest記載の全ページ、2倍PNGのいずれかが不足�
   },
   "issues": [],
   "strengths": [],
-  "page_findings": []
+  "page_findings": [],
+  "manual_resolutions": []
 }
 ```
 
 表示の好みを普遍的ルールとして押し付けない。デッキ固有のvisual directionと聞き手に照らして判定する。
+
+## 用途別の可読性と未測定範囲
+
+`references/readability.md`と`references/evidence-based-design.md`を使う。2倍PNGの詳細観察に加えて全体表示・想定閲覧サイズを確認する。図表ラベル・出典・注記を含む文字、意味による近接、整列、対比、同じ対象の色と位置の反復、直接ラベル、不要な罫線・目盛・小数桁を確認する。日本語の孤立改行や単位分離も見る。
+
+レンダラーのmachine-qa.jsonを入力に加え、`manual_checks`の全IDへ`manual_resolutions: [{id, status, evidence}]`を付ける。証拠にはページ・対象・表示条件・観測を記し、測れなかった写真上の文字やSVG背景のコントラストを未確認のまま合格にしない。失敗はissuesにも記録する。自動検査のfailを手動解決で上書きしない。
+
+独立出力にrender_iterationも追加する。

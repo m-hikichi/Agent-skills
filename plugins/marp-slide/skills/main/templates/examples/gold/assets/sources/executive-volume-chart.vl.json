@@ -6,12 +6,29 @@
     "subtitle": "2026年4〜6月｜全4,380件｜上位3分類が72%｜source: demo fixture"
   },
   "layer": [
-    { "mark": { "type": "bar", "cornerRadiusEnd": 4 } },
     {
-      "mark": { "type": "text", "align": "left", "baseline": "middle", "dx": 7, "fontSize": 15 },
+      "mark": {
+        "type": "bar",
+        "cornerRadiusEnd": 4
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "middle",
+        "dx": 7,
+        "fontSize": 27
+      },
       "encoding": {
-        "text": { "field": "monthly_cases", "type": "quantitative", "format": "," },
-        "color": { "value": "#142033" }
+        "text": {
+          "field": "monthly_cases",
+          "type": "quantitative",
+          "format": ","
+        },
+        "color": {
+          "value": "#142033"
+        }
       }
     }
   ],
@@ -26,7 +43,9 @@
       "field": "monthly_cases",
       "type": "quantitative",
       "title": "月平均件数（件）",
-      "scale": { "zero": true }
+      "scale": {
+        "zero": true
+      }
     },
     "color": {
       "condition": {
@@ -36,16 +55,38 @@
       "value": "#aeb9c7"
     },
     "tooltip": [
-      { "field": "category", "type": "nominal" },
-      { "field": "monthly_cases", "type": "quantitative", "title": "月平均件数", "format": "," },
-      { "field": "period", "type": "nominal", "title": "期間" }
+      {
+        "field": "category",
+        "type": "nominal"
+      },
+      {
+        "field": "monthly_cases",
+        "type": "quantitative",
+        "title": "月平均件数",
+        "format": ","
+      },
+      {
+        "field": "period",
+        "type": "nominal",
+        "title": "期間"
+      }
     ]
   },
   "config": {
     "background": "#ffffff",
     "font": "Noto Sans CJK JP",
-    "axis": { "labelFontSize": 16, "titleFontSize": 16, "gridColor": "#dce3eb" },
-    "title": { "fontSize": 20, "subtitleFontSize": 14, "anchor": "start" },
-    "view": { "stroke": null }
+    "axis": {
+      "labelFontSize": 27,
+      "titleFontSize": 27,
+      "gridColor": "#dce3eb"
+    },
+    "title": {
+      "fontSize": 27,
+      "subtitleFontSize": 27,
+      "anchor": "start"
+    },
+    "view": {
+      "stroke": null
+    }
   }
 }

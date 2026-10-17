@@ -19,9 +19,9 @@
 
 機械QAの正本はレンダラーが出力する `.slide-work/machine-qa.json`。手作業でpassへ変更しない。geometry検査が`not_run`なら統合reviewもpassにしない。機械QAは意味や美しさを判定しないため、passしても人のレビューを省略しない。
 
-統合時はraw reportを次のrubric v3 keyへ機械的に写す。`status`は元checkと同じ値にし、`evidence`には件数と該当slide/pathを残す。`overflow_and_clipping`は同じ測定結果をkind別に分け、片方だけ問題がなくてもraw check全体を一律passへ書き換えない。
+統合時はraw reportを次のrubric v4 keyへ機械的に写す。`status`は元checkと同じ値にし、`evidence`には件数と該当slide/pathを残す。`overflow_and_clipping`は同じ測定結果をkind別に分け、片方だけ問題がなくてもraw check全体を一律passへ書き換えない。
 
-| rubric v3 | `.slide-work/machine-qa.json` |
+| rubric v4 | `.slide-work/machine-qa.json` |
 |---|---|
 | `asset_integrity` | `missing_assets` |
 | `overflow` | `overflow_and_clipping.violations[kind=overflow]` |
@@ -65,8 +65,14 @@ content reviewerは原稿、request、storyboard、deck plan、根拠資料を�
 - major: 目的達成を明確に損ね、公開前に修正が必要
 - minor: 使用は妨げないが、具体的な改善価値がある
 
-rubric v3 passには全hard gate pass、全score 4以上、critical/majorなしが必要。`needs_user`は要求不足、`blocked`はrenderやアクセス不能だけに使う。
+rubric v4 passには全hard gate pass、全score 4以上、critical/majorなしが必要。`needs_user`は要求不足、`blocked`はrenderやアクセス不能だけに使う。
 
 ## Fingerprint discipline
 
 reviewはsource Markdownだけでなく、request、theme、asset manifest、参照／登録された全ローカルassetを含むfingerprintに結び付ける。renderer条件はrender manifestへversionとfont hashとして記録し、環境が変わったらvisual regressionを行う。pass後にfingerprint対象を1つでも変更したら古いreviewを無効化し、再レンダー・再レビューする。
+
+## Rubric v4追加契約
+
+初見レビューを制作意図なしで先に固定し、content reviewerが`audience_comprehension`と`language_and_pacing`を判定する。visual reviewerは生のmachine QAにある`manual_checks`を全件`manual_resolutions`へ記録する。機械statusは測定できた範囲の結果であり、manual_checksが空でないときは完全検査を意味しない。未測定をraw checkのpassへ書き換えない。
+
+最終検証は生QAと統合チェックの一致、手動解決IDの完全性、独立した3レビューのfingerprint/attempt/iterationと統合結果の一致を確認する。古いrubric v3のpassは使えない。

@@ -1,6 +1,6 @@
 ---
 name: content-reviewer
-description: Marpデッキの内容を作成者から独立して審査する。聞き手と目的、action-titleの論理、根拠、事実と仮説、資料タイプ、発表者ノートをrubric v3の内容軸で評価する。
+description: Marpデッキの内容を作成者から独立して審査する。聞き手と目的、action-titleの論理、根拠、事実と仮説、資料タイプ、発表者ノートをrubric v4の内容軸で評価する。
 model: opus
 effort: xhigh
 color: red
@@ -62,19 +62,22 @@ critical/majorがある、hard gateがfail、またはscoreが3以下なら`fail
 
 ```json
 {
-  "rubric_version": 3,
+  "rubric_version": 4,
   "reviewer": "content-reviewer",
   "status": "pass | fail | needs_user | blocked",
   "reviewed_at": "RFC3339",
   "artifact_fingerprint": "<current fingerprint>",
   "review_attempt": 1,
+  "render_iteration": 2,
   "missing_required": [],
   "questions_for_user": [],
   "hard_gates": {
     "audience_goal_fit": {"status": "pass", "evidence": ""},
     "must_include_coverage": {"status": "pass", "evidence": ""},
     "evidence_integrity": {"status": "pass", "evidence": ""},
-    "story_coherence": {"status": "pass", "evidence": ""}
+    "story_coherence": {"status": "pass", "evidence": ""},
+    "audience_comprehension": {"status": "pass", "evidence": ""},
+    "language_and_pacing": {"status": "pass", "evidence": ""}
   },
   "scores": {
     "story_audience_fit": {"score": 4, "reason": ""},
@@ -88,3 +91,11 @@ critical/majorがある、hard gateがfail、またはscoreが3以下なら`fail
 `blocked` は必要ファイルへアクセスできない場合だけ使う。`needs_user` は要求不足だけに使う。visualの好みやexport可否を内容評価へ混ぜない。
 
 `needs_user` の場合、main agentはcombined reviewのトップレベルを`needs_user`にし、`content_review.status`は`not_run`とする。要求不足を解消するまでpass/failを推測しない。
+
+## 読者の理解・言語・時間の確認
+
+初見記録が確定してから`audience-review.json`を読む。各ページの`takeaway`と`evidence_seen`をplanの意図・`comprehension_question`へ照合し、結論の誤読・条件の脱落・未説明の前提は`audience_comprehension`でfailにする。単なる言い換えの違いは減点しない。初見記録を編集して一致させない。
+
+`references/readability.md`に従い、用語表、初出説明、英語混在、見出しの簡潔さ、数え上げの整合、notesの読み上げ重複、前提→例→演習の順序を確認する。本編のestimated_seconds＋interaction_secondsと指定時間の整合も`language_and_pacing`で評価する。時間未指定なら推定であると証拠に記す。
+
+上記2項目をcontent_review.hard_gatesへ必ず含める。独立出力にrender_iterationも追加する。

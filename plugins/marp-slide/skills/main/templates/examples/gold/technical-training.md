@@ -3,6 +3,7 @@ marp: true
 theme: technical
 size: 16:9
 paginate: true
+class: hybrid
 lang: ja-JP
 title: 障害対応 最初の15分
 description: 観測、仮説、最小検証を演習で身につけるtechnical training deckの完成例
@@ -10,14 +11,13 @@ author: agent-skills
 footer: 'Training fixture · see assets/SOURCES.md'
 ---
 
-<!-- _class: cover split contain-visual -->
+<!-- _class: hybrid cover -->
 <!-- _paginate: false -->
 
 # 最初の15分を「観測→仮説→最小検証」で再現可能にする
 
 ## 新人SRE向け incident response
 
-![監視画面、変更履歴、依存サービスを並べて障害を切り分けるSREワークスペースの概念図](assets/technical-incident-workspace.svg)
 
 <!--
 今日は原因を当てる訓練ではなく、次の確認を選ぶ訓練です。
@@ -39,7 +39,7 @@ footer: 'Training fixture · see assets/SOURCES.md'
 
 ---
 
-<!-- _class: diagram -->
+<!-- _class: hybrid diagram -->
 
 # 初動は、復旧作業の前に影響範囲と時間軸を固定する
 
@@ -51,7 +51,7 @@ footer: 'Training fixture · see assets/SOURCES.md'
 
 ---
 
-<!-- _class: screenshot -->
+<!-- _class: hybrid screenshot -->
 
 # エラー行だけでなく、直前の変更と依存先を時系列で比べる
 
@@ -65,9 +65,9 @@ footer: 'Training fixture · see assets/SOURCES.md'
 
 ---
 
-<!-- _class: chart -->
+<!-- _class: hybrid chart compact-visual -->
 
-# p95悪化はcheckoutだけで、全体的な計算資源不足とは整合しない
+# p95悪化はcheckoutだけに集中している
 
 ![deploy前後のp95 latencyでcheckoutが220msから4200msへ上昇し、searchとprofileはほぼ不変のslope chart](assets/technical-latency-chart.svg)
 
@@ -75,11 +75,12 @@ footer: 'Training fixture · see assets/SOURCES.md'
 
 <!--
 対数尺度なので、線の傾きだけで差を読まず、必ず併記した実値を確認します。
+searchとprofileはほぼ不変なので、全体的な計算資源不足という仮説とは整合しません。まずcheckout固有の変更と依存先を確認します。
 -->
 
 ---
 
-<!-- _class: diagram -->
+<!-- _class: hybrid diagram -->
 
 # 最小検証は、payment呼び出しを旧版と比較して仮説を1つ落とす
 
@@ -91,7 +92,7 @@ footer: 'Training fixture · see assets/SOURCES.md'
 
 ---
 
-<!-- _class: exercise -->
+<!-- _class: hybrid exercise -->
 
 # 演習：次に確認する1項目を選ぶ
 
@@ -110,7 +111,7 @@ footer: 'Training fixture · see assets/SOURCES.md'
 
 ---
 
-<!-- _class: closing -->
+<!-- _class: hybrid closing -->
 
 # 持ち帰る順序は、観測 → 仮説 → 最小検証
 

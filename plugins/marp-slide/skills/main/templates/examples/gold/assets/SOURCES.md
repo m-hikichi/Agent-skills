@@ -27,3 +27,9 @@ The values shown in charts and diagrams are fictional fixture data. They demonst
 | `technical-decision-tree.svg` | `sources/technical-decision-tree.mmd` |
 
 Use `marp_render_chart` or `marp_render_diagram` to rebuild the matching SVG. Keep both source and static output; the slide never runs Vega or Mermaid in the browser.
+
+The checked-in SVGs include hand-tuned presentation typography and label placement;
+rebuilding preserves the data/relationships but is not a byte-identical layout.
+After regeneration, run delivery-size QA and visual review again. In v1.1, labels
+were enlarged for their actual slide placement. The latency chart keeps data
+points fixed and offsets nearby labels with leader lines to prevent overlap.

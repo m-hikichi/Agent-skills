@@ -7,7 +7,9 @@ import test from "node:test";
 import { createServer } from "./index.js";
 import { renderChart } from "./chart.js";
 import { buildMermaidArgs, renderDiagram, validateCssColor } from "./diagram.js";
-import { classifyGeometryMeasurements } from "./machine-qa.js";
+import { classifyGeometryMeasurements, inspectRenderedHtml } from "./machine-qa.js";
+import { readabilityPolicy } from "./readability.js";
+import { pathToFileURL } from "node:url";
 import { assertDistinctPaths, resolveWorkspacePath } from "./paths.js";
 import {
   buildMarpArgs,
@@ -26,6 +28,42 @@ import {
   hasHeadingDividerFrontmatter,
   hasMarpFrontmatter,
 } from "./security.js";
+
+test("readability policy distinguishes delivery roles and enhanced accessibility", () => {
+  const live = readabilityPolicy('delivery_mode: live\naccessibility_target: standard\n');
+  const read = readabilityPolicy(JSON.stringify({delivery_mode: 'read-ahead', accessibility_target: 'standard'}));
+  const enhanced = readabilityPolicy('delivery_mode: "hybrid" # talk\naccessibility_target: enhanced\n');
+  assert.ok(live.thresholds.body > read.thresholds.body);
+  assert.equal(enhanced.thresholds.body, live.thresholds.body + 2);
+  assert.ok(live.thresholds.note < live.thresholds.body);
+  assert.throws(() => readabilityPolicy('delivery_mode: unknown'), /valid delivery_mode/);
+});
+
+test("browser QA measures placed SVG labels and records unmeasurable contrast", async () => {
+  const root = mkdtempSync(join(tmpdir(), 'marp-readability-'));
+  try {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200"><text x="10" y="50" font-size="30">Axis label</text></svg>';
+    const svgPath = join(root, 'chart.svg'); writeFileSync(svgPath, svg);
+    mkdirSync(join(root, '.slide-work'));
+    const html = join(root, '.slide-work', 'deck.html');
+    writeFileSync(html, `<style>section{width:1280px;height:720px;color:#111;background:white}h1{font-size:32px;line-height:1.3}p{font-size:22px}footer{font-size:16px}.gradient{background:linear-gradient(white,gray)}.scaled{font-size:40px;transform:scale(.5)}img{width:200px;height:100px;object-fit:contain}</style><section><h1>Result</h1><p>Body at 22px</p><p class="gradient">Inspect contrast</p><p class="scaled">Scaled body</p><footer>Source</footer><img src="chart.svg"></section>`);
+    const sources = {[pathToFileURL(svgPath).href]: svg};
+    const live = await inspectRenderedHtml(html, readabilityPolicy('delivery_mode: live\naccessibility_target: standard'), sources, root);
+    assert.ok(live.text_sizes.some(v => v.role === 'body' && v.font_size_px === 22));
+    assert.ok(live.text_sizes.some(v => v.role === 'label' && Math.abs(v.font_size_px - 15) < 0.1));
+    assert.ok(!live.text_sizes.some(v => v.role === 'note'));
+    assert.ok(!live.text_sizes.some(v => v.role === 'heading'));
+    assert.ok(live.text_sizes.some(v => v.text === 'Scaled body' && v.font_size_px === 20));
+    assert.ok(live.manual_checks.some(v => v.kind === 'contrast' && v.selector.includes('gradient')));
+    assert.ok(live.manual_checks.some(v => v.kind === 'contrast' && v.selector === 'img[1]'));
+    const read = await inspectRenderedHtml(html, readabilityPolicy('delivery_mode: read-ahead\naccessibility_target: standard'), sources, root);
+    assert.ok(!read.text_sizes.some(v => v.role === 'body'));
+    assert.ok(read.text_sizes.some(v => v.role === 'label'));
+    // Modes use the same measured logical sizes with different acceptance limits.
+    assert.equal(read.minimum_text_size_px, live.minimum_text_size_px);
+    await assert.rejects(() => inspectRenderedHtml(html, readabilityPolicy('delivery_mode: live\naccessibility_target: standard'), sources), /image failed to load/);
+  } finally { rmSync(root, {recursive: true, force: true}); }
+});
 
 test("MCP server registers all renderer tools without side effects", () => {
   const workspace = mkdtempSync(join(tmpdir(), "marp-server-test-"));
