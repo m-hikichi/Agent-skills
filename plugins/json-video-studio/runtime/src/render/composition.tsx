@@ -4,13 +4,12 @@ import {
   AbsoluteFill,
   Img,
   Sequence,
-  interpolate,
   staticFile,
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
 import {BUNDLED_FONT_FAMILY, type ProjectLock, type RenderInput, type ResolvedScene, type Speaker, type VideoProject} from '../shared/video-types.js';
-import {clampVolume, createSubtitleLayoutStyles, effectiveDurationInFrames, effectiveScenes} from './layout.js';
+import {clampVolume, createSubtitleLayoutStyles, effectiveDurationInFrames, effectiveScenes, sceneOpacity, storyboardCellLayout} from './layout.js';
 import {VisualTemplate} from './templates.js';
 
 // Remotion requires an index signature for composition props. The shared contract
@@ -49,21 +48,21 @@ const SceneLayer = ({scene, project, assetUrls, staticPreview = false}: {scene: 
   const subtitleFontSize = project.theme.subtitleStyle?.fontSize ?? 48;
   const subtitleMaxLines = project.theme.subtitleStyle?.maxLines ?? 2;
   const subtitleLayout = createSubtitleLayoutStyles(subtitleFontSize, subtitleMaxLines);
-  const fade = staticPreview ? 1 : interpolate(frame, [0, 8, Math.max(9, scene.durationInFrames - 8), scene.durationInFrames], [0, 1, 1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  const fade = staticPreview ? 1 : sceneOpacity(frame, scene.durationInFrames);
 
   return (
-    <AbsoluteFill style={{opacity: fade, color: project.theme.foregroundColor}}>
+    <AbsoluteFill style={{opacity: scene.visual.type === 'flow' ? 1 : fade, color: project.theme.foregroundColor}}>
       <AbsoluteFill style={{display: 'grid', placeItems: 'center', padding: '70px 140px 190px'}}>
         <VisualTemplate visual={scene.visual} project={project} assetUrls={assetUrls} staticPreview={staticPreview} />
       </AbsoluteFill>
       {avatarSrc ? (
         <Img
           src={avatarSrc}
-          style={{position: 'absolute', right: 42, bottom: 154, width: 290, height: 390, objectFit: 'contain', transform: `translateY(${!staticPreview && isSpeaking ? Math.sin(frame / 3) * 3 : 0}px)`}}
+          style={{position: 'absolute', opacity: scene.visual.type === 'flow' ? fade : 1, right: 42, bottom: 154, width: 290, height: 390, objectFit: 'contain', transform: `translateY(${!staticPreview && isSpeaking ? Math.sin(frame / 3) * 3 : 0}px)`}}
         />
       ) : null}
       {scene.subtitleText && (staticPreview || frame < speakingFrames) ? (
-        <div style={{position: 'absolute', left: 190, right: 190, bottom: 44, borderRadius: 18, textAlign: 'center', fontSize: subtitleFontSize, fontWeight: 800, color: project.theme.subtitleStyle?.color ?? '#fff', background: project.theme.subtitleStyle?.backgroundColor ?? 'rgba(0,0,0,.78)', textShadow: '0 3px 8px rgba(0,0,0,.8)', ...subtitleLayout.box}}>
+        <div style={{position: 'absolute', opacity: scene.visual.type === 'flow' ? fade : 1, left: 190, right: 190, bottom: 44, borderRadius: 18, textAlign: 'center', fontSize: subtitleFontSize, fontWeight: 800, color: project.theme.subtitleStyle?.color ?? '#fff', background: project.theme.subtitleStyle?.backgroundColor ?? 'rgba(0,0,0,.78)', textShadow: '0 3px 8px rgba(0,0,0,.8)', ...subtitleLayout.box}}>
           <div style={subtitleLayout.text}>{scene.subtitleText}</div>
         </div>
       ) : null}
@@ -144,16 +143,19 @@ export const ThumbnailComposition = ({project, assetUrls}: RemotionRenderInput) 
 };
 
 export const StoryboardComposition = ({project, lock, assetUrls}: RemotionRenderInput) => {
+  const {width, height} = useVideoConfig();
+  const cell = storyboardCellLayout(width, height);
   const resolvedAssetUrls = materializeAssetUrls(assetUrls);
   const scenes = effectiveScenes(project, lock).slice(0, 12);
   return (
-    <AbsoluteFill style={{background: '#e8edf5', padding: 28, fontFamily: BUNDLED_FONT_FAMILY, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gridTemplateRows: 'repeat(4, 1fr)', gap: 18}}>
+    <AbsoluteFill style={{background: '#e8edf5', padding: 28, boxSizing: 'border-box', fontFamily: BUNDLED_FONT_FAMILY, display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gridTemplateRows: 'repeat(4, minmax(0, 1fr))', gap: 18}}>
       {scenes.map((scene, index) => (
         <div key={scene.id} style={{position: 'relative', overflow: 'hidden', borderRadius: 14, boxShadow: '0 5px 18px rgba(15,23,42,.18)'}}>
-          <div style={{width: 1920, height: 1080, transform: 'scale(.316)', transformOrigin: 'top left', background: project.theme.backgroundColor, color: project.theme.foregroundColor, position: 'absolute'}}>
+          <div style={{width: 1920, height: 1080, left: cell.left, top: cell.top, transform: `scale(${cell.scale})`, transformOrigin: 'top left', background: project.theme.backgroundColor, color: project.theme.foregroundColor, position: 'absolute', overflow: 'hidden'}}>
+            {backgroundForScene(project, scene, resolvedAssetUrls) ? <Img src={backgroundForScene(project, scene, resolvedAssetUrls)!} style={{position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.27}} /> : null}
             <SceneLayer scene={{...scene, startFrame: 0}} project={project} assetUrls={resolvedAssetUrls} staticPreview />
           </div>
-          <div style={{position: 'absolute', left: 10, top: 10, borderRadius: 8, background: 'rgba(0,0,0,.76)', color: '#fff', padding: '5px 9px', fontSize: 16}}>{index + 1}. {scene.id}</div>
+          <div style={{position: 'absolute', left: 10, top: 3, borderRadius: 8, background: 'rgba(0,0,0,.76)', color: '#fff', padding: '3px 9px', fontSize: 16}}>{index + 1}. {scene.id}</div>
         </div>
       ))}
     </AbsoluteFill>

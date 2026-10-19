@@ -16,6 +16,8 @@ description: 日本語の企画、台詞、ローカル素材からvideo-project
 3. render jobが`succeeded`である。
 4. `output_inspect`が同梱`project.lock.json`のSchema・自己ハッシュ・project digest・`totalFrames / fps`と、解像度1920×1080、30fps、H.264/AAC、yuv420p、音声・尺・必須成果物を確認している。
 5. `project.lock.json`、`credits.txt`、`render-report.json`が成果物manifestに含まれている。
+6. VOICEVOX音声がある場合、current lockの`narration-review.json`で全音声の合成原稿・生成かな・WAV hashを確認している。波形一致・音量・同期だけを読みのレビューの代わりにしない。
+7. 完成MP4の各sceneと動作中・境界のフレームを別agentが確認している。静止画レビューだけでアニメーション品質を合格にしない。聴感確認の有無は分けて報告する。
 
 ## 共通ルール
 
@@ -51,6 +53,8 @@ description: 日本語の企画、台詞、ローカル素材からvideo-project
    - VOICEVOX: `speakerId`と`text`。`audioAssetId`と`durationMs`を書かない
    - 無音: `durationMs`。`speakerId`と`audioAssetId`を書かない
 4. 発話は字幕2行に収まる短さへ分割する。1 sceneに複数の論点を詰めない。
+   - 略語・製品名・人名・数字・単位の読みを先に棚卸しする。画面表示は`text`/`subtitle`に残し、共通語は`pronunciations: [{term: "JSON", reading: "ジェーソン"}]`、文脈依存の発話はsceneの`speechText`で指定する。`speechText`は辞書より優先される完全な発話原稿なので、必要な読みをすべて含める。
+   - 単に全文字を順番にfadeさせて動的解説としない。処理の流れは`flow`の共通stepsを保ち、発話単位で`activeStep`を進めて、入力・移動・到着・結果を対応させる。比較・変化を説明する動きには、その動きで理解できる内容をrequestへ記録する。
 5. 更新時は`project_update`へ読み取り時のrevisionを渡す。競合したら再読込し、利用者の変更を保持して再適用する。
 
 ## S3. Validate
@@ -69,9 +73,11 @@ description: 日本語の企画、台詞、ローカル素材からvideo-project
    - `failed`: 構造化エラーの`jsonPointer`と`hint`を使って修正し、Validateから再開
    - `interrupted`: 同じproject digestなら再実行。digestが変わっていればValidateから再開
 4. 生成した音声のSHA-256、時間、VOICEVOX versionがlockへ入っていることを確認する。
+5. 各`lock.assets[].voice.synthesisText`と`kana`を確認し、略語・固有名詞・数値の意図した読みと照合する。`kana`がない旧音声は再resolveする。警告された未指定略語を放置しない。
 
 ## S5. Review
 
+0. 音声がある場合、`agents/narration-reviewer.md`に従う別agentへproject、lock、音声WAVを渡し、`.json-video-work/<project-id>/narration-review.json`を作成する。JSONを英字読みするなどの誤りは、辞書/`speechText`を修正→再resolve→再確認する。`engine-kana`の検査と実際の聴感検査を区別し、聴いていなければ`listeningPerformed: false`とする。読み確認なしでpassを作らない。
 1. `storyboard_start`を実行し、contact sheetと各scene画像を生成する。
 2. Claude CodeのAgentツールで`subagent_type: video-reviewer`を指定する。次を渡す。
    - `video-project.json`
@@ -98,6 +104,8 @@ description: 日本語の企画、台詞、ローカル素材からvideo-project
 1. `output_inspect`でMP4と成果物manifestを検査する。
 2. `captions.srt`の最終cueが動画尺を超えないこと、`chapters.txt`がsection順であること、サムネイルが1280×720であることを確認する。
 3. `credits.txt`の既知素材・VOICEVOX表記と`render-report.json`のlock hashを確認する。
+   - 完成MP4の全sceneの中間画像と、移動の開始・途中・到着・scene境界を抽出し、別agentへ再レビューを依頼する。強調対象と台詞の一致、前後での状態のつながり、表示時間を確認する。
+   - 完成MP4音声がレビューしたWAVに対応することを確認する。音声を聴ける環境では完成MP4を聴き、略語の読み・抑揚・音切れを検査する。聴けない場合、かな照合と波形検査までであることを報告し、「音声品質すべて確認済み」としない。
 4. 利用者へ出力ディレクトリ、動画尺、警告、クレジット上の注意だけを簡潔に報告する。
 
 MCPの入出力と再開規則は`references/workflow.md`、JSONの選び方は`references/visual-guidelines.md`を参照する。

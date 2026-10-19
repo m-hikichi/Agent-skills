@@ -15,6 +15,22 @@ export interface LayoutWarning {
 
 export type PreviewScene = ResolvedScene;
 
+/** Keep the usual eight-frame fades, without invalid interpolation ranges on short scenes. */
+export const sceneOpacity = (frame: number, durationInFrames: number): number => {
+  if (durationInFrames <= 2) return 1;
+  const fadeFrames = Math.min(8, Math.floor((durationInFrames - 1) / 2));
+  return Math.max(0, Math.min(1, frame / fadeFrames, (durationInFrames - frame) / fadeFrames));
+};
+
+/** Fit the full 16:9 image below a separate label in each of the twelve cells. */
+export const storyboardCellLayout = (width: number, height: number) => {
+  const cellWidth = (width - 56 - 36) / 3;
+  const cellHeight = (height - 56 - 54) / 4;
+  const labelHeight = 30;
+  const scale = Math.min(cellWidth / 1920, (cellHeight - labelHeight) / 1080);
+  return {cellWidth, cellHeight, labelHeight, scale, left: (cellWidth - 1920 * scale) / 2, top: labelHeight + (cellHeight - labelHeight - 1080 * scale) / 2};
+};
+
 export interface SubtitleLayoutStyles {
   box: CSSProperties;
   text: CSSProperties;

@@ -21,6 +21,10 @@ export type Scene = {
   speakerId?: Identifier;
   text?: string;
   subtitle?: string;
+  /**
+   * Explicit synthesis text; overrides the project pronunciation dictionary without changing displayed text or subtitles.
+   */
+  speechText?: string;
   emotion?: Identifier;
   audioAssetId?: Identifier;
   sfxAssetId?: Identifier;
@@ -29,7 +33,15 @@ export type Scene = {
   visual: SceneVisual;
 } & Scene1;
 export type SceneVisual =
-  TitleVisual | BulletsVisual | SplitVisual | MediaVisual | CodeVisual | QuoteVisual | MetricVisual | OutroVisual;
+  | TitleVisual
+  | BulletsVisual
+  | SplitVisual
+  | MediaVisual
+  | CodeVisual
+  | QuoteVisual
+  | MetricVisual
+  | OutroVisual
+  | FlowVisual;
 export type MetricVisual = {
   type: 'metric';
   variant: 'number' | 'bar' | 'line';
@@ -98,6 +110,13 @@ export interface JSONVideoStudioProject {
    */
   sections: Section[];
   audio?: AudioMix;
+  /**
+   * @maxItems 200
+   */
+  pronunciations?: {
+    term: string;
+    reading: string;
+  }[];
   thumbnail: Thumbnail;
   outputs: Outputs;
   policies: Policies;
@@ -213,6 +232,19 @@ export interface OutroVisual {
   type: 'outro';
   title: string;
   subtitle?: string;
+}
+export interface FlowVisual {
+  type: 'flow';
+  title?: string;
+  /**
+   * @minItems 2
+   * @maxItems 4
+   */
+  steps: {
+    title: string;
+    detail?: string;
+  }[];
+  activeStep: number;
 }
 export interface AudioMix {
   bgmAssetId?: Identifier;

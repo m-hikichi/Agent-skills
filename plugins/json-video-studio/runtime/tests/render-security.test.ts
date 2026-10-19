@@ -199,6 +199,13 @@ describe('render asset isolation', () => {
     expect(representativeStoryboardFrame({startFrame: 179, durationInFrames: 60}, 180)).toBe(179);
   });
 
+  it('captures bullets after the last entrance animation, bounded to the scene', () => {
+    const visual = {type: 'bullets' as const, items: ['one', 'two', 'three', 'four']};
+    expect(representativeStoryboardFrame({startFrame: 30, durationInFrames: 100, visual}, 180)).toBe(55);
+    expect(representativeStoryboardFrame({startFrame: 30, durationInFrames: 3, visual}, 180)).toBe(32);
+    expect(representativeStoryboardFrame({startFrame: 30, durationInFrames: 1, visual}, 180)).toBe(30);
+  });
+
   it('does not publish an output directory when cancellation wins before commit', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'json-video-cancel-commit-'));
     temporaryDirectories.push(root);

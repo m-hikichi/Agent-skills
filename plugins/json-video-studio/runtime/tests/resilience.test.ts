@@ -211,6 +211,8 @@ describe('VOICEVOX retry and cache resilience', () => {
       durationMs: 875,
       engineVersion: initial.engineVersion,
       cacheKey: initial.cacheKey,
+      synthesisText: 'cache me',
+      kana: 'キャッシュミー',
     }));
 
     await expect(client.plan('cache me', speaker)).resolves.toMatchObject({
@@ -225,6 +227,8 @@ describe('VOICEVOX retry and cache resilience', () => {
       cacheKey: initial.cacheKey,
       durationMs: 875,
       path: audioPath,
+      synthesisText: 'cache me',
+      kana: 'キャッシュミー',
       speakerName: 'Authoritative Engine speaker',
       styleName: 'Normal',
     });

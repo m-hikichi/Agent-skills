@@ -245,7 +245,9 @@
         "pitchScale": {"type": "number", "minimum": -0.15, "maximum": 0.15},
         "intonationScale": {"type": "number", "minimum": 0, "maximum": 2},
         "cacheKey": {"$ref": "#/$defs/sha256"},
-        "textSha256": {"$ref": "#/$defs/sha256"}
+        "textSha256": {"$ref": "#/$defs/sha256"},
+        "synthesisText": {"type": "string", "minLength": 1, "maxLength": 400000},
+        "kana": {"type": "string", "maxLength": 1000000}
       }
     },
     "resolvedScene": {
@@ -278,6 +280,7 @@
           "minLength": 1,
           "maxLength": 240
         },
+        "speechText": {"type": "string", "minLength": 1, "maxLength": 2000},
         "emotion": {
           "$ref": "#/$defs/identifier"
         },

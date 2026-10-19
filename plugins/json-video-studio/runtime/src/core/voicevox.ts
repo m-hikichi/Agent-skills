@@ -14,11 +14,13 @@ interface VoiceCacheMetadata {
   durationMs: number;
   engineVersion: string;
   cacheKey: string;
+  synthesisText: string;
+  kana: string | null;
 }
 
 function validateCacheMetadata(
   value: unknown,
-  expected: {engineVersion: string; cacheKey: string},
+  expected: {engineVersion: string; cacheKey: string; text: string},
 ): VoiceCacheMetadata {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new AppError('VOICE_CACHE_METADATA_INVALID', 'VOICEVOX cache metadata is not an object.', {category: 'policy'});
@@ -38,6 +40,8 @@ function validateCacheMetadata(
     || metadata.engineVersion !== expected.engineVersion
     || metadata.cacheKey !== expected.cacheKey
     || !/^[a-f0-9]{64}$/u.test(expected.cacheKey)
+    || metadata.synthesisText !== expected.text
+    || !(metadata.kana === null || typeof metadata.kana === 'string')
   ) {
     throw new AppError('VOICE_CACHE_METADATA_INVALID', 'VOICEVOX cache metadata does not match its cache key and Engine version.', {
       category: 'policy',
@@ -49,10 +53,14 @@ function validateCacheMetadata(
     durationMs: metadata.durationMs,
     engineVersion: expected.engineVersion,
     cacheKey: expected.cacheKey,
+    synthesisText: expected.text,
+    kana: metadata.kana as string | null,
   };
 }
 
 export interface SynthesizedVoice extends ResolvedVoicevoxIdentity {
+  synthesisText?: string;
+  kana?: string;
   path: string;
   relativePath: string;
   sha256: string;
@@ -149,7 +157,7 @@ export class VoicevoxClient {
       metadataPath = await resolveInside(this.workspaceRoot, `${cacheRelative}/${cacheKey}.json`);
     }
     try {
-      const metadata = validateCacheMetadata(await readJson<unknown>(metadataPath), {engineVersion, cacheKey});
+      const metadata = validateCacheMetadata(await readJson<unknown>(metadataPath), {engineVersion, cacheKey, text});
       const file = await stat(audioPath);
       if (file.size === metadata.sizeBytes && await digestFile(audioPath) === metadata.sha256) {
         return {
@@ -165,6 +173,8 @@ export class VoicevoxClient {
           path: audioPath,
           relativePath: relativePortable(this.workspaceRoot, audioPath),
           cacheHit: true,
+          synthesisText: metadata.synthesisText,
+          ...(metadata.kana === null ? {} : {kana: metadata.kana}),
         };
       }
     } catch {
@@ -205,9 +215,12 @@ export class VoicevoxClient {
       cacheKey,
       speakerName,
       styleName,
+      synthesisText: text,
+      kana: typeof query.kana === 'string' ? query.kana : null,
     };
     await atomicWriteJson(metadataPath, metadata, {overwrite: true});
-    return {...metadata, path: audioPath, relativePath: relativePortable(this.workspaceRoot, audioPath), cacheHit: false};
+    const {kana, ...voiceMetadata} = metadata;
+    return {...voiceMetadata, ...(kana === null ? {} : {kana}), path: audioPath, relativePath: relativePortable(this.workspaceRoot, audioPath), cacheHit: false};
   }
 
   async plan(text: string, speaker: Speaker, signal?: AbortSignal): Promise<VoiceSynthesisPlan> {
@@ -229,7 +242,7 @@ export class VoicevoxClient {
     const audioPath = resolve(this.cacheRoot, `${cacheKey}.wav`);
     const metadataPath = resolve(this.cacheRoot, `${cacheKey}.json`);
     try {
-      const metadata = validateCacheMetadata(await readJson<unknown>(metadataPath), {engineVersion, cacheKey});
+      const metadata = validateCacheMetadata(await readJson<unknown>(metadataPath), {engineVersion, cacheKey, text});
       const file = await stat(audioPath);
       if (file.size === metadata.sizeBytes && await digestFile(audioPath) === metadata.sha256) {
         return {engineVersion, cacheKey, ...identity, cacheHit: true, durationMs: metadata.durationMs};

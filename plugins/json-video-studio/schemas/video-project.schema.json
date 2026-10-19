@@ -55,6 +55,16 @@
     "audio": {
       "$ref": "#/$defs/audioMix"
     },
+    "pronunciations": {
+      "type": "array", "maxItems": 200,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["term", "reading"],
+        "properties": {
+          "term": {"type": "string", "minLength": 1, "maxLength": 100, "pattern": "\\S"},
+          "reading": {"type": "string", "minLength": 1, "maxLength": 200, "pattern": "\\S"}
+        }
+      }
+    },
     "thumbnail": {
       "$ref": "#/$defs/thumbnail"
     },
@@ -654,6 +664,24 @@
         }
       }
     },
+    "flowVisual": {
+      "type": "object", "additionalProperties": false, "required": ["type", "steps", "activeStep"],
+      "properties": {
+        "type": {"const": "flow"},
+        "title": {"type": "string", "minLength": 1, "maxLength": 60},
+        "steps": {
+          "type": "array", "minItems": 2, "maxItems": 4,
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["title"],
+            "properties": {
+              "title": {"type": "string", "minLength": 1, "maxLength": 20},
+              "detail": {"type": "string", "minLength": 1, "maxLength": 45}
+            }
+          }
+        },
+        "activeStep": {"type": "integer", "minimum": 0, "maximum": 3}
+      }
+    },
     "sceneVisual": {
       "oneOf": [
         {
@@ -679,6 +707,9 @@
         },
         {
           "$ref": "#/$defs/outroVisual"
+        },
+        {
+          "$ref": "#/$defs/flowVisual"
         }
       ]
     },
@@ -705,6 +736,10 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 240
+        },
+        "speechText": {
+          "description": "Explicit synthesis text; overrides the project pronunciation dictionary without changing displayed text or subtitles.",
+          "type": "string", "minLength": 1, "maxLength": 2000, "pattern": "\\S"
         },
         "emotion": {
           "$ref": "#/$defs/identifier"

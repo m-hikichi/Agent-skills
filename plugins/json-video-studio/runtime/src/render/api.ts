@@ -8,6 +8,7 @@ import {bundle} from '@remotion/bundler';
 import {makeCancelSignal, renderMedia, renderStill, selectComposition} from '@remotion/renderer';
 import type {ProjectLock, RenderArtifacts, VideoProject} from '../shared/video-types.js';
 import {hasCompletePassingReviewGates, hasNoReviewErrors} from '../shared/review.js';
+import {hasPassingNarrationReview} from '../shared/narration-review.js';
 import {resolveSafeAssetPath, stageRenderAssets} from './assets.js';
 import type {RemotionRenderInput} from './composition.js';
 import {collectLayoutWarnings} from './layout.js';
@@ -136,6 +137,20 @@ export const assertPassingReview = async (
   }
 };
 
+export const assertPassingNarrationReview = async (projectRoot: string, projectId: string, lock: ProjectLock): Promise<void> => {
+  if (!lock.assets.some(asset => asset.voice)) return;
+  let review: unknown;
+  try {
+    const filename = await resolveSafeAssetPath(projectRoot, `.json-video-work/${projectId}/narration-review.json`);
+    review = JSON.parse(await readFile(filename, 'utf8'));
+  } catch (error) {
+    throw new AppError('NARRATION_REVIEW_REQUIRED', '音声の読み確認が必要です。合成入力とVOICEVOX kanaを確認し、current lockのnarration-review.jsonを保存してください', {category: 'schema', cause: error});
+  }
+  if (!hasPassingNarrationReview(review, projectId, lock)) {
+    throw new AppError('NARRATION_REVIEW_NOT_PASSED', '音声読み確認が未完了、古いlock、または確認した音声・かなが一致しません。かな未記録の旧lockは再resolveしてください', {category: 'schema'});
+  }
+};
+
 const assertRenderedMedia = (inspection: MediaInspection, expectedDurationSeconds: number, expectedFps = 30): void => {
   const failures: string[] = [];
   if (inspection.video?.codec !== 'h264') failures.push(`video codec=${inspection.video?.codec ?? 'missing'}`);
@@ -208,11 +223,17 @@ export const assertCurrentProjectLock = (project: VideoProject, lock: ProjectLoc
 };
 
 export const representativeStoryboardFrame = (
-  scene: Pick<ProjectLock['scenes'][number], 'startFrame' | 'durationInFrames'>,
+  scene: Pick<ProjectLock['scenes'][number], 'startFrame' | 'durationInFrames'> & Partial<Pick<ProjectLock['scenes'][number], 'visual'>>,
   compositionDurationInFrames: number,
 ): number => Math.min(
   Math.max(0, compositionDurationInFrames - 1),
-  scene.startFrame + Math.min(12, Math.max(0, Math.floor(scene.durationInFrames / 2))),
+  scene.startFrame + Math.min(
+    Math.max(0, scene.durationInFrames - 1),
+    scene.visual?.type === 'bullets'
+      ? Math.max(12, (scene.visual.items.length - 1) * 5 + 10)
+      : scene.visual?.type === 'flow' ? 40
+      : Math.min(12, Math.max(0, Math.floor(scene.durationInFrames / 2))),
+  ),
 );
 
 const readJson = async <T>(filename: string): Promise<T> => JSON.parse(await readFile(filename, 'utf8')) as T;
@@ -473,6 +494,7 @@ export const renderProject = async (options: RenderProjectOptions): Promise<Rend
     throw new AppError('LOCK_STALE', 'project.lock.jsonが古いため、resolveをやり直してください', {category: 'schema'});
   }
   await assertPassingReview(projectRoot, project.meta.id, lock.lockHash);
+  await assertPassingNarrationReview(projectRoot, project.meta.id, lock);
   const runtimeMismatches = assertRuntimeMatchesLock(await collectRuntimeVersions(), lock.runtime);
   if (runtimeMismatches.length) {
     throw new AppError('RUNTIME_LOCK_MISMATCH', `render環境がlockと一致しません: ${runtimeMismatches.join('; ')}`, {category: 'dependency'});

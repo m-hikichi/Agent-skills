@@ -7,6 +7,8 @@ import {
   effectiveDurationInFrames,
   estimateTextLines,
   metricPolylinePoints,
+  sceneOpacity,
+  storyboardCellLayout,
 } from '../src/render/layout.js';
 
 const project = (): VideoProject => ({
@@ -30,6 +32,28 @@ const project = (): VideoProject => ({
 });
 
 describe('render timeline layout', () => {
+  it.each([1, 2, 3, 8, 9, 16, 17, 100])('keeps %i-frame scenes visible with bounded fades', (duration) => {
+    const opacity = Array.from({length: duration}, (_, frame) => sceneOpacity(frame, duration));
+    expect(opacity.every((value) => Number.isFinite(value) && value >= 0 && value <= 1)).toBe(true);
+    expect(Math.max(...opacity)).toBe(1);
+    if (duration >= 17) {
+      expect(opacity[0]).toBe(0);
+      expect(opacity[8]).toBe(1);
+      expect(opacity[duration - 1]).toBe(0.125);
+    }
+  });
+
+  it('fits the entire storyboard image and subtitle area below its label', () => {
+    const cell = storyboardCellLayout(1920, 1080);
+    expect(cell.left).toBeGreaterThanOrEqual(0);
+    // Floating-point scaling can place the edge a fraction of a pixel below zero.
+    const epsilon = 1e-9;
+    expect(cell.top + epsilon).toBeGreaterThanOrEqual(cell.labelHeight);
+    expect(cell.left + 1920 * cell.scale).toBeLessThanOrEqual(cell.cellWidth);
+    expect(cell.top + 1080 * cell.scale).toBeLessThanOrEqual(cell.cellHeight + epsilon);
+    expect(cell.cellHeight * 4 + 54 + 56).toBe(1080);
+  });
+
   it('builds cumulative frames including holdAfterMs', () => {
     const scenes = buildPreviewScenes(project());
     expect(scenes).toHaveLength(2);

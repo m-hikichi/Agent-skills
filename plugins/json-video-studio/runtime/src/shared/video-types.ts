@@ -43,6 +43,8 @@ export interface LockedVoicevoxVoice extends ResolvedVoicevoxIdentity {
   intonationScale: number;
   cacheKey: string;
   textSha256: string;
+  synthesisText?: string;
+  kana?: string;
 }
 
 export interface LockedAsset {

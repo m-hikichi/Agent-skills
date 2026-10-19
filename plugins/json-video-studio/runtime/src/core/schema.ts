@@ -163,6 +163,12 @@ function semanticValidation(project: VideoProject): void {
     }
   });
 
+  const pronunciationTerms = new Set<string>();
+  project.pronunciations?.forEach(({term}, index) => {
+    if (pronunciationTerms.has(term)) throw new AppError('DUPLICATE_PRONUNCIATION', `Duplicate pronunciation term: ${term}`, {category: 'schema', jsonPointer: `/pronunciations/${index}/term`});
+    pronunciationTerms.add(term);
+  });
+
   project.speakers.forEach((speaker, index) => {
     requireAsset(speaker.avatar?.defaultAssetId, `/speakers/${index}/avatar/defaultAssetId`, ['image', 'avatar']);
     requireAsset(speaker.avatar?.mouthOpenAssetId, `/speakers/${index}/avatar/mouthOpenAssetId`, ['image', 'avatar']);
@@ -194,6 +200,9 @@ function semanticValidation(project: VideoProject): void {
       requireAsset(scene.audioAssetId, `${base}/audioAssetId`, 'audio');
       requireAsset(scene.sfxAssetId, `${base}/sfxAssetId`, 'audio');
       if (scene.visual.type === 'media') requireAsset(scene.visual.assetId, `${base}/visual/assetId`, ['image', 'avatar', 'video']);
+      if (scene.visual.type === 'flow' && scene.visual.activeStep >= scene.visual.steps.length) {
+        throw new AppError('FLOW_ACTIVE_STEP_INVALID', `Flow activeStep must select an existing step in scene ${scene.id}.`, {category: 'schema', jsonPointer: `${base}/visual/activeStep`});
+      }
       if (scene.visual.type === 'metric' && scene.visual.variant !== 'number' && scene.visual.labels && scene.visual.values && scene.visual.labels.length !== scene.visual.values.length) {
         throw new AppError('METRIC_LENGTH_MISMATCH', `Metric labels and values must have the same length in scene ${scene.id}.`, {
           category: 'schema', jsonPointer: `${base}/visual/labels`,

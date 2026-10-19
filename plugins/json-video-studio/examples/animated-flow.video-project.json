@@ -1,0 +1,237 @@
+{
+  "schemaVersion": "1.0.0",
+  "meta": {
+    "id": "json-motion-demo",
+    "title": "JSONから動画へ：読みと動きで伝える",
+    "description": "略語の読みを指定し、処理工程をデータの移動で説明するサンプル。",
+    "language": "ja-JP"
+  },
+  "canvas": {
+    "preset": "youtube-1080p",
+    "fps": 30
+  },
+  "theme": {
+    "backgroundColor": "#0F172A",
+    "foregroundColor": "#F8FAFC",
+    "accentColor": "#22D3EE",
+    "fontFamily": "Noto Sans CJK JP",
+    "spacing": "comfortable",
+    "subtitleStyle": {
+      "fontSize": 52,
+      "maxLines": 2,
+      "backgroundColor": "#020617DD",
+      "color": "#FFFFFF"
+    }
+  },
+  "assets": [],
+  "speakers": [
+    {
+      "id": "narrator",
+      "displayName": "四国めたん",
+      "voice": {
+        "provider": "voicevox",
+        "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+        "styleId": 2,
+        "speedScale": 1.05,
+        "volumeScale": 1
+      }
+    }
+  ],
+  "sections": [
+    {
+      "scenes": [
+        {
+          "text": "JSONから動画へ。今回は、正しい読み方と、動きで伝える処理の流れを見ていきます。",
+          "visual": {
+            "subtitle": "読みと動きで、伝わり方を変える",
+            "type": "title",
+            "title": "JSONから動画へ"
+          },
+          "subtitle": "読みを指定し、処理の流れを動きで伝える",
+          "id": "intro",
+          "speakerId": "narrator",
+          "holdAfterMs": 400
+        },
+        {
+          "text": "画面にはJSONと表示します。読み上げるときは、ジェーソン。表示と発音を分けて指定できます。",
+          "visual": {
+            "right": "ジェーソン",
+            "type": "split",
+            "left": "JSON",
+            "leftTitle": "画面で見せる表記",
+            "rightTitle": "音声で伝える読み"
+          },
+          "subtitle": "画面は「JSON」、音声は「ジェーソン」",
+          "id": "reading",
+          "speakerId": "narrator",
+          "holdAfterMs": 400
+        },
+        {
+          "text": "まず、JSONに台詞と画面の内容を書きます。これが動画の設計図です。",
+          "visual": {
+            "steps": [
+              {
+                "detail": "台詞と画面を指定",
+                "title": "JSON原稿"
+              },
+              {
+                "detail": "音声の尺に同期",
+                "title": "音声と字幕"
+              },
+              {
+                "detail": "文字・図・読みを点検",
+                "title": "絵コンテ確認"
+              },
+              {
+                "detail": "音声付き動画へ",
+                "title": "動画の書き出し"
+              }
+            ],
+            "type": "flow",
+            "title": "原稿が動画になるまで",
+            "activeStep": 0
+          },
+          "subtitle": "JSON原稿に、台詞と画面の内容を書く",
+          "id": "flow-0",
+          "speakerId": "narrator",
+          "holdAfterMs": 500
+        },
+        {
+          "text": "次に、台詞から音声をつくります。音声の長さに合わせて、字幕と画面の表示時間を決めます。",
+          "visual": {
+            "steps": [
+              {
+                "detail": "台詞と画面を指定",
+                "title": "JSON原稿"
+              },
+              {
+                "detail": "音声の尺に同期",
+                "title": "音声と字幕"
+              },
+              {
+                "detail": "文字・図・読みを点検",
+                "title": "絵コンテ確認"
+              },
+              {
+                "detail": "音声付き動画へ",
+                "title": "動画の書き出し"
+              }
+            ],
+            "type": "flow",
+            "title": "原稿が動画になるまで",
+            "activeStep": 1
+          },
+          "subtitle": "音声の長さに、字幕と画面を合わせる",
+          "id": "flow-1",
+          "speakerId": "narrator",
+          "holdAfterMs": 500
+        },
+        {
+          "text": "続いて、絵コンテを確認します。読み方と見やすさを点検し、伝わりにくい部分を直します。",
+          "visual": {
+            "steps": [
+              {
+                "detail": "台詞と画面を指定",
+                "title": "JSON原稿"
+              },
+              {
+                "detail": "音声の尺に同期",
+                "title": "音声と字幕"
+              },
+              {
+                "detail": "文字・図・読みを点検",
+                "title": "絵コンテ確認"
+              },
+              {
+                "detail": "音声付き動画へ",
+                "title": "動画の書き出し"
+              }
+            ],
+            "type": "flow",
+            "title": "原稿が動画になるまで",
+            "activeStep": 2
+          },
+          "subtitle": "読み方と見やすさを確認して修正",
+          "id": "flow-2",
+          "speakerId": "narrator",
+          "holdAfterMs": 500
+        },
+        {
+          "text": "確認できたら、動画を書き出します。設計した流れが、音声と映像のついた一本の動画になります。",
+          "visual": {
+            "steps": [
+              {
+                "detail": "台詞と画面を指定",
+                "title": "JSON原稿"
+              },
+              {
+                "detail": "音声の尺に同期",
+                "title": "音声と字幕"
+              },
+              {
+                "detail": "文字・図・読みを点検",
+                "title": "絵コンテ確認"
+              },
+              {
+                "detail": "音声付き動画へ",
+                "title": "動画の書き出し"
+              }
+            ],
+            "type": "flow",
+            "title": "原稿が動画になるまで",
+            "activeStep": 3
+          },
+          "subtitle": "確認した内容を、音声付き動画にする",
+          "id": "flow-3",
+          "speakerId": "narrator",
+          "holdAfterMs": 500
+        },
+        {
+          "text": "読み方を確かめ、動きで関係を伝える。JSONから、説明が伝わる動画へ。",
+          "visual": {
+            "subtitle": "JSONから、説明が伝わる動画へ",
+            "type": "outro",
+            "title": "読みを確かめ、動きで伝える"
+          },
+          "subtitle": "読みを確かめ、動きで関係を伝える",
+          "id": "outro",
+          "speakerId": "narrator",
+          "holdAfterMs": 650
+        }
+      ],
+      "title": "JSONから動画へ",
+      "id": "explanation"
+    }
+  ],
+  "audio": {
+    "bgmVolume": 0.12,
+    "sfxVolume": 0.5
+  },
+  "thumbnail": {
+    "textLines": [
+      "JSONから動画へ",
+      "読みと動きで伝える"
+    ],
+    "speakerIds": [
+      "narrator"
+    ],
+    "layout": "center"
+  },
+  "outputs": {
+    "video": true,
+    "captions": true,
+    "chapters": true,
+    "thumbnail": true,
+    "storyboard": true
+  },
+  "policies": {
+    "allowUnknownRights": false,
+    "maxDurationMinutes": 5
+  },
+  "pronunciations": [
+    {
+      "term": "JSON",
+      "reading": "ジェーソン"
+    }
+  ]
+}

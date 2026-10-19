@@ -2,6 +2,7 @@ import React from 'react';
 import {Img, OffthreadVideo, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import type {SceneVisual, VideoAsset, VideoProject} from '../shared/video-types.js';
 import {metricPolylinePoints} from './layout.js';
+import {flowProgress} from './flow.js';
 
 export interface TemplateProps {
   visual: SceneVisual;
@@ -172,6 +173,56 @@ const OutroTemplate = ({visual, project, staticPreview}: TemplateProps) => {
   );
 };
 
+const FlowTemplate = ({visual, project, staticPreview}: TemplateProps) => {
+  const frame = useCurrentFrame();
+  const {fps} = useVideoConfig();
+  if (visual.type !== 'flow') return null;
+  const {progress, arrival} = flowProgress(frame, fps, staticPreview);
+  const width = 1560;
+  const nodeWidth = 300;
+  const stride = (width - nodeWidth) / (visual.steps.length - 1);
+  const center = (index: number) => nodeWidth / 2 + index * stride;
+  const active = visual.activeStep;
+  const accent = project.theme.accentColor;
+  const tokenX = active === 0 ? center(0) : center(active - 1) + stride * progress;
+  const tokenY = active === 0 ? 78 + 72 * progress : 150;
+  const status = (index: number) => index < active ? '完了' : index === active ? (progress < 1 ? '受け取り中' : '処理中') : '待機';
+  return (
+    <div style={{width, height: 700, position: 'relative'}}>
+      {visual.title ? <h1 style={{fontSize: 44, lineHeight: 1.2, margin: 0, textAlign: 'center'}}>{visual.title}</h1> : null}
+      <svg width={width} height={220} style={{position: 'absolute', top: 0, left: 0, overflow: 'visible'}}>
+        {visual.steps.slice(1).map((_, index) => {
+          const start = center(index);
+          const end = center(index + 1);
+          const filled = index + 1 < active ? 1 : index + 1 === active ? progress : 0;
+          return <g key={index}>
+            <path d={`M ${start} 150 H ${end}`} fill="none" stroke="#64748B" strokeWidth={5} />
+            <path d={`M ${end - 14} 140 L ${end} 150 L ${end - 14} 160`} fill="none" stroke="#94A3B8" strokeWidth={4} />
+            {filled > 0 ? <path d={`M ${start} 150 H ${start + (end - start) * filled}`} fill="none" stroke={accent} strokeWidth={7} strokeLinecap="round" /> : null}
+          </g>;
+        })}
+        {visual.steps.map((_, index) => <path key={index} d={`M ${center(index)} 150 V 210`} stroke={index <= active ? accent : '#64748B'} strokeWidth={4} fill="none" />)}
+      </svg>
+      <div style={{position: 'absolute', left: tokenX - 58, top: tokenY - 24, width: 116, height: 48, borderRadius: 12, background: '#F8FAFC', color: '#0F172A', border: `3px solid ${accent}`, display: 'grid', placeItems: 'center', fontSize: 24, fontWeight: 900, opacity: active === 0 ? Math.min(1, progress * 5) : 1, boxShadow: `0 0 ${12 + arrival * 18}px ${accent}`}}>データ</div>
+      {visual.steps.map((step, index) => {
+        const isActive = index === active;
+        const complete = index < active;
+        return <div key={index} style={{...panel, position: 'absolute', top: 210, left: index * stride, width: nodeWidth, height: 400, padding: '24px 24px', boxSizing: 'border-box', border: `3px solid ${isActive || complete ? accent : '#64748B'}`, background: isActive ? '#162B40' : '#0A0F1D', boxShadow: isActive ? `0 0 ${12 + arrival * 22}px ${accent}55` : 'none'}}>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18}}>
+            <span style={{fontSize: 28, fontWeight: 900, color: isActive || complete ? accent : '#CBD5E1'}}>{complete ? '✓' : String(index + 1).padStart(2, '0')}</span>
+            <span style={{fontSize: 23, color: '#E2E8F0'}}>{status(index)}</span>
+          </div>
+          <h2 style={{fontSize: 30, lineHeight: 1.3, margin: '0 0 14px', color: '#F8FAFC', overflowWrap: 'anywhere'}}>{step.title}</h2>
+          {step.detail ? <div style={{fontSize: 23, lineHeight: 1.4, color: '#CBD5E1', overflowWrap: 'anywhere'}}>{step.detail}</div> : null}
+        </div>;
+      })}
+      <div style={{position: 'absolute', top: 640, width: '100%', textAlign: 'center', fontSize: 30, color: '#E2E8F0'}}>
+        {active === 0 ? '入力データを受け取る' : `${visual.steps[active - 1]!.title} → ${visual.steps[active]!.title}`}
+      </div>
+    </div>
+  );
+};
+
 export const VisualTemplate = (props: TemplateProps) => {
   switch (props.visual.type) {
     case 'title': return <TitleTemplate {...props} />;
@@ -182,5 +233,6 @@ export const VisualTemplate = (props: TemplateProps) => {
     case 'quote': return <QuoteTemplate {...props} />;
     case 'metric': return <MetricTemplate {...props} />;
     case 'outro': return <OutroTemplate {...props} />;
+    case 'flow': return <FlowTemplate {...props} />;
   }
 };

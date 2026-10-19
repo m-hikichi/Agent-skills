@@ -3,7 +3,7 @@ import {tmpdir} from 'node:os';
 import {resolve} from 'node:path';
 import {afterEach, describe, expect, it} from 'vitest';
 import type {ProjectLock, Speaker, VideoProject} from '../src/shared/video-types.js';
-import {digestFile} from '../src/core/fs-safe.js';
+import {digestFile, digestJson} from '../src/core/fs-safe.js';
 import {resolveProject, type VoiceProvider} from '../src/core/resolver.js';
 
 const pluginRoot = resolve(import.meta.dirname, '..', '..');
@@ -56,17 +56,22 @@ describe('timeline resolver', () => {
     const project = await fixture('dialogue.video-project.json');
     project.sections = [{...project.sections[0]!, scenes: [project.sections[0]!.scenes[0]!]}];
     project.speakers[0]!.displayName = '利用者が編集した別名';
+    project.pronunciations = [{term: 'JSON', reading: 'ジェーソン'}];
+    const spokenText = project.sections[0]!.scenes[0]!.text!.replace('JSON', 'ジェーソン');
     const source = resolve(workspace, 'mock.wav');
     await writeFile(source, Buffer.from('RIFF-mocked-voice-data'));
     const sha256 = await digestFile(source);
     const provider: VoiceProvider = {
       version: async () => 'test-engine',
       plan: async () => ({engineVersion: 'test-engine', cacheKey: 'c'.repeat(64), cacheHit: true, durationMs: 1001, speakerName: '四国めたん', styleName: 'ノーマル'}),
-      synthesize: async (_text: string, _speaker: Speaker) => ({
+      synthesize: async (text: string, _speaker: Speaker) => {
+        expect(text).toBe(spokenText);
+        return {
         path: source, relativePath: 'mock.wav', sha256, sizeBytes: 22, durationMs: 1001,
         engineVersion: 'test-engine', cacheKey: 'c'.repeat(64), cacheHit: true,
         speakerName: '四国めたん', styleName: 'ノーマル',
-      }),
+        synthesisText: text, kana: 'ジェーソン',
+      };},
     };
     await writeFile(resolve(workspace, 'video-project.json'), JSON.stringify(project));
     const result = await resolveProject({projectPath: 'video-project.json', workspaceRoot: workspace, schemaPath, runtimeVersions: runtime, voiceProvider: provider, cacheRoot: resolve(workspace, 'shared-cache')});
@@ -78,9 +83,11 @@ describe('timeline resolver', () => {
       voice: {
         provider: 'voicevox', engineVersion: 'test-engine', speakerUuid: '7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff',
         speakerName: '四国めたん', styleId: 2, styleName: 'ノーマル', cacheKey: 'c'.repeat(64),
+        synthesisText: spokenText, kana: 'ジェーソン', textSha256: digestJson(spokenText),
       },
     });
     expect(await readFile(result.captionsPath, 'utf8')).toContain('00:00:00,000 --> 00:00:01,033');
+    expect(await readFile(result.captionsPath, 'utf8')).toContain('JSON');
     expect(result.lock.credits).toContain('VOICEVOX:四国めたん');
     expect(result.lock.credits).not.toContain('VOICEVOX:利用者が編集した別名');
     expect(await readFile(result.creditsPath, 'utf8')).toBe('VOICEVOX:四国めたん\n');
@@ -156,10 +163,14 @@ describe('timeline resolver', () => {
     const workspace = await root();
     const project = await fixture('dialogue.video-project.json');
     project.sections = [{...project.sections[0]!, scenes: [project.sections[0]!.scenes[0]!]}];
+    project.sections[0]!.scenes[0]!.speechText = 'ジェーソンから動画へ';
     await writeFile(resolve(workspace, 'video-project.json'), JSON.stringify(project));
     const provider: VoiceProvider = {
       version: async () => 'test-engine',
-      plan: async () => ({engineVersion: 'test-engine', cacheKey: 'd'.repeat(64), cacheHit: true, durationMs: 1200, speakerName: '四国めたん', styleName: 'ノーマル'}),
+      plan: async (text) => {
+        expect(text).toBe('ジェーソンから動画へ');
+        return {engineVersion: 'test-engine', cacheKey: 'd'.repeat(64), cacheHit: true, durationMs: 1200, speakerName: '四国めたん', styleName: 'ノーマル'};
+      },
       synthesize: async () => { throw new Error('dry-run must not synthesize'); },
     };
     const result = await resolveProject({projectPath: 'video-project.json', workspaceRoot: workspace, schemaPath, dryRun: true, voiceProvider: provider});

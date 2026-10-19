@@ -8,7 +8,8 @@ JSON Video Studio `0.1.0`は、構造化JSONからVOICEVOX音声、字幕、stor
 
 - 1920×1080、30fpsの日本語動画
 - ユーザー提供音声、またはVOICEVOXによるscene単位の音声生成
-- 8種類の固定visual：title、bullets、split、media、code、quote、metric、outro
+- 固定visual：title、bullets、split、media、code、quote、metric、outroと、工程間のデータ移動を描くflow
+- 表示文と読み上げ文の分離（speechText）、語の読み指定（pronunciations）、VOICEVOX生成かなの記録と本番前の読み確認ゲート
 - 音声時間に同期した字幕、section chapter、表情、任意の2フレーム口パク
 - storyboard/contact sheetの別agentレビュー
 - lockごとのStoryboard履歴と、scene単位の左右比較UI
@@ -143,6 +144,8 @@ SKIP_BUILD=1 SKIP_VOICEVOX=1 SKIP_PERSONAL_INSTALL=1 sh ./scripts/setup.sh
 独自レイアウトを既存の8テンプレート制約内で設計するときだけ、`/json-video-studio:template-authoring`を使います。セットアップ用Skillはありません。
 
 最小入力は[`examples/minimal.video-project.json`](examples/minimal.video-project.json)、全8テンプレート例は[`examples/all-templates.video-project.json`](examples/all-templates.video-project.json)、VOICEVOX例は[`examples/dialogue.video-project.json`](examples/dialogue.video-project.json)です。
+
+読み方を指定して動きで工程を説明する例は[`examples/animated-flow.video-project.json`](examples/animated-flow.video-project.json)です。画面にはJSON、音声にはジェーソンを使い、同じ図のactiveStepを発話ごとに進めます。VOICEVOXを使う本番renderには、絵コンテのreview.jsonに加え、current lockの全音声について合成原稿・生成かな・WAV hashを照合したnarration-review.jsonが必要です。旧lockにかながない場合は再resolveしてください。手順は[読みレビュー担当](agents/narration-reviewer.md)を参照してください。かな照合と聴感評価は区別して記録します。
 
 全8テンプレート例はSchema検証用です。`media`の`assets/all-templates-media.png`はplaceholderなので、resolve前に実在するローカル画像へ差し替え、`rights`もその素材に合わせて更新してください。詳しい生成順序は[動画生成フロー](docs/quickstart.md)を参照してください。
 

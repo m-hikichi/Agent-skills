@@ -9,7 +9,7 @@
 - codeは表示可能な行だけを入れる。全ファイルを貼らない。
 - `assetId`は`assets[]`に存在し、期待するtypeと一致させる。
 
-## 8種類の使い分け
+## visualの使い分け
 
 | type | 用途 | 必須項目 | 避けること |
 |---|---|---|---|
@@ -21,9 +21,12 @@
 | `quote` | 短い引用・要点 | `quote` | 出典の捏造 |
 | `metric` | 数値、棒、折れ線 | `variant`, `label` | 根拠のない数値 |
 | `outro` | まとめ、次の行動 | `title` | 新しい論点 |
+| `flow` | 入力から結果までの工程を動きで説明 | `steps`, `activeStep` | 無関係な移動、全工程を一度に説明 |
 
 `metric:number`は`value`だけを使う。`metric:bar|line`は`values`を使い、`labels`を指定する場合は同じ要素数にする。
 
+`flow`は2〜4工程。隣接sceneで同じ`steps`を維持し、`activeStep`を0→1→2のように進める。音声は現在の工程の入力・処理・結果を説明する。1秒のデータ移動後に到着先を強調するので、短すぎるsceneを避ける。移動の途中、到着後、scene境界を完成MP4から確認する。登場fadeだけを「動きによる説明」と数えない。
+
 ## テンプレート追加境界
 
-v0.1ではvisual typeの追加や任意React componentをJSONから読み込めない。新しい見た目が必要なら、既存8種類のテキスト・色・asset・variantで表現する。表現できない場合は要望を記録し、runtimeのSchema・型・renderer・golden testを同時に更新する別の開発作業として扱う。
+JSONから任意React componentを読み込めない。既存8種類と`flow`のテキスト・色・asset・variantで表現する。さらにtypeが必要な場合は、runtimeのSchema・型・renderer・テストを同時に更新する開発作業として扱う。

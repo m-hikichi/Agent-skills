@@ -31,6 +31,7 @@ const visualFor = (type: SceneVisual['type']): SceneVisual => {
     case 'quote': return {type, quote: '引用文'};
     case 'metric': return {type, variant: 'number', label: '指標', value: '100'};
     case 'outro': return {type, title: 'ご視聴ありがとうございました'};
+    case 'flow': return {type, title: '処理の流れ', steps: [{title: '入力'}, {title: '出力'}], activeStep: 0};
   }
 };
 
@@ -99,7 +100,7 @@ const VisualEditor = ({visual, project, onChange}: {visual: SceneVisual; project
   return <div className="visual-editor">
     <Field label="ビジュアル">
       <select value={visual.type} onChange={(event) => onChange(visualFor(event.target.value as SceneVisual['type']))}>
-        {['title', 'bullets', 'split', 'media', 'code', 'quote', 'metric', 'outro'].map((type) => <option key={type}>{type}</option>)}
+        {['title', 'bullets', 'split', 'media', 'code', 'quote', 'metric', 'outro', 'flow'].map((type) => <option key={type}>{type}</option>)}
       </select>
     </Field>
     {visual.type === 'title' || visual.type === 'outro' ? <>
@@ -129,6 +130,16 @@ const VisualEditor = ({visual, project, onChange}: {visual: SceneVisual; project
     {visual.type === 'metric' ? <>
       <div className="two-columns"><Field label="種類"><select value={visual.variant} onChange={(e) => patch({variant: e.target.value})}><option>number</option><option>bar</option><option>line</option></select></Field><Field label="ラベル"><TextInput value={visual.label} onChange={(e) => patch({label: e.target.value})} /></Field></div>
       {visual.variant === 'number' ? <Field label="値"><TextInput value={visual.value ?? ''} onChange={(e) => patch({value: e.target.value})} /></Field> : <Field label="値（カンマ区切り）"><TextInput value={(visual.values ?? []).join(',')} onChange={(e) => patch({values: e.target.value.split(',').map(Number).filter(Number.isFinite)})} /></Field>}
+    </> : null}
+    {visual.type === 'flow' ? <>
+      <Field label="見出し"><TextInput value={visual.title ?? ''} maxLength={60} onChange={(e) => patch({title: e.target.value || undefined})} /></Field>
+      <Field label="説明中の工程"><select value={visual.activeStep} onChange={(e) => patch({activeStep: Number(e.target.value)})}>{visual.steps.map((step, index) => <option key={index} value={index}>{index + 1}. {step.title}</option>)}</select></Field>
+      {visual.steps.map((step, index) => <div key={index} className="two-columns">
+        <Field label={`工程${index + 1}`}><TextInput value={step.title} maxLength={20} onChange={(e) => patch({steps: visual.steps.map((item, i) => i === index ? {...item, title: e.target.value} : item)})} /></Field>
+        <Field label="説明"><TextInput value={step.detail ?? ''} maxLength={45} onChange={(e) => patch({steps: visual.steps.map((item, i) => i === index ? {...item, detail: e.target.value || undefined} : item)})} /></Field>
+      </div>)}
+      <button disabled={visual.steps.length >= 4} onClick={() => patch({steps: [...visual.steps, {title: '次の工程'}]})}>工程を追加</button>
+      <button disabled={visual.steps.length <= 2} onClick={() => patch({steps: visual.steps.slice(0, -1), activeStep: Math.min(visual.activeStep, visual.steps.length - 2)})}>最後の工程を削除</button>
     </> : null}
   </div>;
 };

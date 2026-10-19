@@ -16,6 +16,7 @@ import {ProjectService} from './project.js';
 import {VoicevoxClient, type SynthesizedVoice, type VoiceSynthesisPlan} from './voicevox.js';
 import {validateProjectLock} from './schema.js';
 import {collectRuntimeVersions} from './runtime-info.js';
+import {pronunciationWarnings, resolveSpeechText} from './speech.js';
 
 export interface VoiceProvider {
   synthesize(text: string, speaker: Speaker, signal?: AbortSignal): Promise<SynthesizedVoice>;
@@ -58,6 +59,7 @@ export interface ResolvePlan {
   estimatedDurationMs: number;
   estimatedFrames: number;
   rightsWarnings: string[];
+  warnings: string[];
   lockPath: string;
 }
 
@@ -178,6 +180,8 @@ function voiceLockedAsset(sceneId: string, text: string, speaker: Speaker, voice
       intonationScale: parameters.intonationScale ?? 1,
       cacheKey: voice.cacheKey,
       textSha256: digestJson(text),
+      synthesisText: text,
+      ...(voice.kana === undefined ? {} : {kana: voice.kana}),
     },
   };
 }
@@ -191,6 +195,7 @@ export async function resolveProject(options: ResolveOptions): Promise<ResolvePl
   const absoluteProjectPath = await service.projectPath(options.projectPath, true);
   const envelope = await service.get(options.projectPath);
   const project = envelope.project;
+  const speechWarnings = pronunciationWarnings(project);
   const projectRoot = dirname(absoluteProjectPath);
   let lockPath = service.lockPath(absoluteProjectPath, project.meta.id);
   const speakers = new Map(project.speakers.map((speaker) => [speaker.id, speaker]));
@@ -210,8 +215,9 @@ export async function resolveProject(options: ResolveOptions): Promise<ResolvePl
   let estimatedFrames = 0;
   for (const section of project.sections) {
     for (const scene of section.scenes) {
+      const speechText = resolveSpeechText(scene, project.pronunciations);
       let estimatedSceneMs = scene.audioAssetId ? (dryAudioDurations.get(scene.audioAssetId) ?? 0) : (scene.durationMs ?? 0);
-      if (!scene.audioAssetId && scene.text && scene.speakerId) {
+      if (!scene.audioAssetId && speechText && scene.speakerId) {
         const speaker = speakers.get(scene.speakerId);
         if (!speaker?.voice) {
           if (scene.durationMs === undefined) {
@@ -221,15 +227,15 @@ export async function resolveProject(options: ResolveOptions): Promise<ResolvePl
           }
         } else {
           const planned = options.dryRun && voiceProvider.plan
-            ? await voiceProvider.plan(scene.text, speaker, options.signal)
+            ? await voiceProvider.plan(speechText, speaker, options.signal)
             : undefined;
           estimatedSceneMs = planned?.durationMs
-            ?? Math.max(600, Math.ceil((scene.text.length / (5 * (speaker.voice.speedScale ?? speaker.speed ?? 1))) * 1000));
+            ?? Math.max(600, Math.ceil((speechText.length / (5 * (speaker.voice.speedScale ?? speaker.speed ?? 1))) * 1000));
           voicevoxCalls.push({
             sectionId: section.id,
             sceneId: scene.id,
             speakerId: speaker.id,
-            characters: scene.text.length,
+            characters: speechText.length,
             cacheHit: planned?.cacheHit ?? null,
             ...(planned?.cacheKey === undefined ? {} : {cacheKey: planned.cacheKey}),
             estimatedDurationMs: estimatedSceneMs,
@@ -252,6 +258,7 @@ export async function resolveProject(options: ResolveOptions): Promise<ResolvePl
       estimatedDurationMs,
       estimatedFrames,
       rightsWarnings: project.assets.filter((asset) => asset.rights.status === 'unknown').map((asset) => `権利情報が未確認です: ${asset.id}`),
+      warnings: speechWarnings,
       lockPath,
     };
   }
@@ -281,6 +288,7 @@ export async function resolveProject(options: ResolveOptions): Promise<ResolvePl
       sceneNumber += 1;
       let audioDurationMs = 0;
       let resolvedAudioAssetId: string | undefined;
+      const speechText = resolveSpeechText(scene, project.pronunciations);
       if (scene.audioAssetId) {
         const audio = lockedById.get(scene.audioAssetId);
         if (!audio?.durationMs) {
@@ -290,10 +298,10 @@ export async function resolveProject(options: ResolveOptions): Promise<ResolvePl
         }
         audioDurationMs = audio.durationMs;
         resolvedAudioAssetId = audio.id;
-      } else if (scene.text && scene.speakerId) {
+      } else if (speechText && scene.speakerId) {
         const speaker = speakers.get(scene.speakerId);
         if (speaker?.voice) {
-          const voice = await voiceProvider.synthesize(scene.text, speaker, options.signal);
+          const voice = await voiceProvider.synthesize(speechText, speaker, options.signal);
           voicevoxVersion = voice.engineVersion;
           const materializedPath = resolve(materializedVoiceRoot, `${voice.cacheKey}.wav`);
           if (resolve(voice.path) !== materializedPath) {
@@ -311,7 +319,7 @@ export async function resolveProject(options: ResolveOptions): Promise<ResolvePl
             path: materializedPath,
             relativePath: relativePortable(projectRoot, materializedPath),
           };
-          const locked = voiceLockedAsset(scene.id, scene.text, speaker, materializedVoice);
+          const locked = voiceLockedAsset(scene.id, speechText, speaker, materializedVoice);
           lockedAssets.push(locked);
           lockedById.set(locked.id, locked);
           audioDurationMs = voice.durationMs;
@@ -350,6 +358,7 @@ export async function resolveProject(options: ResolveOptions): Promise<ResolvePl
   const warnings = project.assets
     .filter((asset) => asset.rights.status === 'unknown')
     .map((asset) => `権利情報が未確認です: ${asset.id}`);
+  warnings.push(...speechWarnings);
   notify(options, 0.82, '実行環境を記録しています');
   const generatedAt = new Date().toISOString();
   const lockBase: ProjectLock = {
