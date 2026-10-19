@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>注文連携API 基本設計</title>
+<style>:root{--grid:#BFBFBF;--hdr:#C6D9F1;--dai:#4BACC6;--chu:#92CDDC;--sho0:#DAEEF3;--sho1:#FDE9D9;--future:#EFEFEF;}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:"游ゴシック","Yu Gothic",YuGothic,Meiryo,sans-serif;font-size:13px;color:#222;margin:0;padding:24px;background:#fff;line-height:1.5}
+.titlebar{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin:4px 0 16px;flex-wrap:wrap}.title{font-size:26px;font-weight:700;margin:0;letter-spacing:.04em}table.meta{border-collapse:collapse;font-size:12px;width:auto}table.meta td{border:1px solid var(--grid);padding:3px 10px;white-space:nowrap}table.meta td.k{background:var(--hdr);text-align:center}
+h2{font-size:17px;margin:6px 0 10px;padding-left:8px;border-left:6px solid var(--dai)}h3{font-size:14px;margin:18px 0 7px}table{border-collapse:collapse;width:100%;table-layout:fixed}caption{font-weight:700;text-align:left;margin:0 0 6px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+th,td{border:1px solid var(--grid);padding:5px 7px;vertical-align:top;word-break:break-word;overflow-wrap:anywhere}thead th{background:var(--hdr);text-align:center;vertical-align:middle;position:sticky;top:46px;z-index:2}td.c{text-align:center}td.dai,td.chu,td.sho0,td.sho1{vertical-align:middle;font-weight:600}td.dai{background:var(--dai)}td.chu{background:var(--chu)}td.sho0{background:var(--sho0)}td.sho1{background:var(--sho1)}td.g{background:#fff}td.future,.future-card{background:var(--future);color:#666}.muted{color:#888}.idbadge,.fnid,.ref{font-size:11px;font-weight:700;background:#edf4f7;border:1px solid #c7dde5;border-radius:3px;padding:1px 4px;white-space:nowrap}.fnlink{color:#12677d;font-weight:700}.status,.kind,.basis,.coverage{display:inline-block;font-size:11px;font-weight:700;border-radius:10px;padding:1px 7px;white-space:nowrap}.current-tag{background:#e5f4ea;color:#27643a}.future-tag{background:#fdeccb;color:#805300}.kind{background:#eaf1f8;color:#315c7b}.basis-specified{background:#e8f3fb;color:#245d83}.basis-derived{background:#fff1da;color:#805300}.basis-confirmed{background:#e5f4ea;color:#27643a}.coverage-covered{background:#e5f4ea}.coverage-partial,.coverage-unresolved{background:#fde5e5;color:#8b2929}.coverage-future{background:#fdeccb}.coverage-out-of-scope{background:#eee;color:#555}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}.toolbar label{font-size:12px;font-weight:600}.toolbar input,.toolbar select{font:inherit;border:1px solid #aebbc4;border-radius:4px;padding:5px 8px;background:#fff}.funclist th:nth-child(1),.funclist th:nth-child(2),.funclist th:nth-child(3){width:7%}.funclist th:nth-child(4){width:6%}.funclist th:nth-child(5){width:10%}.funclist th:nth-child(6){width:19%}.funclist th:nth-child(7){width:8%}.funclist th:nth-child(8){width:10%}.funclist th:nth-child(9){width:12%}.funclist th:nth-child(10){width:7%}
+.function-card{border:1px solid var(--grid);border-left:5px solid var(--dai);border-radius:4px;margin:0 0 14px;padding:12px;background:#fff}.function-card header{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.function-card h3{font-size:16px;margin:0}.breadcrumb{font-size:12px;color:#567;margin:6px 0}.summary{font-weight:600}.detail-grid{display:grid;grid-template-columns:130px minmax(0,1fr);margin:0;border-top:1px solid var(--grid);border-left:1px solid var(--grid)}.detail-grid dt,.detail-grid dd{margin:0;padding:6px 8px;border-right:1px solid var(--grid);border-bottom:1px solid var(--grid)}.detail-grid dt{background:#eef5f7;font-weight:700}.detail-grid ul,.rules{margin:0;padding-left:20px}.rationale{font-size:12px;color:#66512b;margin-top:2px}
+.actor-grid{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:2px 7px;margin:0}.actor-grid dt{font-size:11px;font-weight:700;color:#567}.actor-grid dd{margin:0}.actor-grid ul{margin:0;padding-left:17px}.structured-grid{display:grid;grid-template-columns:minmax(90px,max-content) minmax(0,1fr);margin:0;border-top:1px solid #d8e0e5;border-left:1px solid #d8e0e5}.structured-grid dt,.structured-grid dd{margin:0;padding:4px 6px;border-right:1px solid #d8e0e5;border-bottom:1px solid #d8e0e5}.structured-grid dt{background:#f3f6f8;font-weight:700}.structured-list{margin:0;padding-left:20px}
+.review-banner,.readiness-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:9px;margin:0 0 12px}.review-banner>div,.readiness-card{border:1px solid var(--grid);border-top:4px solid var(--dai);padding:9px 12px;background:#fff}.review-banner span,.readiness-card span{display:block;font-size:11px;color:#667}.review-banner strong,.readiness-card strong{font-size:17px}.readiness-card p{margin:4px 0;font-size:12px}.readiness-passed{border-top-color:#4f9963}.readiness-failed{border-top-color:#b84a4a}.readiness-not-evaluated{border-top-color:#b29a56}.readiness-not-applicable{border-top-color:#929aa0}.notice,.unknown{border-left:4px solid #c49132;background:#fff7e4;padding:8px 10px}.unknown{border-left-color:#8b98a2;background:#f1f4f6}
+.diagram{margin:8px 0 12px;border:1px solid var(--grid);background:#fbfcfd;overflow-x:auto}.diagram-svg{display:block;width:100%;height:auto;min-width:720px}.diagram-node rect,.sequence-participant rect{fill:#fff;stroke:#32788c;stroke-width:2}.node-person rect{fill:#fff3da}.node-external-system rect,.node-external rect{fill:#f1f2f3}.node-container rect{fill:#e9f5f8}.diagram-node-name{font-size:14px;font-weight:700;fill:#173b46}.diagram-node-kind,.diagram-node-desc,.entity-attribute{font-size:11px;fill:#526a72}.diagram-edge{stroke:#5b7078;stroke-width:1.7;fill:none}.diagram-arrow{fill:#5b7078}.diagram-edge-label{font-size:10px;font-weight:600;fill:#334d56;paint-order:stroke;stroke:#fff;stroke-width:4;stroke-linejoin:round}.sequence-lifeline{stroke:#7b8a90;stroke-width:1.2;stroke-dasharray:5 4}.initial-state rect{stroke-width:4}.terminal-state rect{stroke-width:4}.entity-divider{stroke:#32788c;stroke-width:1}.diagram-legend,.diagram-sources{font-size:12px;margin:4px 0}.diagram-table{margin-bottom:14px}
+.terminal-state .terminal-inner{fill:none;stroke-width:2}.contract-card{border:1px solid var(--grid);border-left:5px solid #5c88a5;border-radius:4px;margin:14px 0;padding:12px}.contract-card header{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.contract-card h3{margin:0}.delivery-progress{font-size:16px}.aux th:nth-child(1){width:11%}.aux th:nth-child(2){width:13%}.aux th:nth-child(4){width:15%}.aux th:nth-child(5){width:12%}.compact{max-width:720px}.quality-summary{display:flex;gap:8px;flex-wrap:wrap}.quality-card{border:1px solid var(--grid);border-top:4px solid var(--dai);min-width:130px;padding:8px 12px}.quality-card span{display:block;font-size:11px;color:#667}.quality-card strong{font-size:20px}.panel{display:none}.panel.active{display:block}.tabbar{position:sticky;top:0;z-index:6;display:flex;gap:4px;align-items:flex-end;background:#fff;border-bottom:2px solid var(--dai);padding:6px 0 0;margin:0 0 12px;overflow-x:auto;min-height:40px}.tabbar button{font:inherit;font-size:13px;border:1px solid #d4dde4;border-bottom:none;background:#eef2f5;color:#456;padding:7px 18px;border-radius:6px 6px 0 0;cursor:pointer;white-space:nowrap}.tabbar button:hover,.tabbar button:focus{background:#e3eaef}.tabbar button.active{background:var(--dai);color:#fff;font-weight:700;border-color:var(--dai)}
+@media(max-width:900px){body{padding:12px}.funclist{min-width:1100px}.panel{overflow-x:auto}.detail-grid{grid-template-columns:100px minmax(0,1fr)}}@media print{body{padding:0;font-size:10px}thead th{position:static}tr,.function-card,.contract-card,.diagram{break-inside:avoid}thead{display:table-header-group}.tabbar,.toolbar{display:none}.panel{display:block!important}.panel+.panel{page-break-before:always}.diagram-svg{min-width:0}}</style>
+</head>
+<body>
+<div class="titlebar">
+<h1 class="title">注文連携API 基本設計</h1>
+<table class="meta"><caption class="sr-only">文書情報</caption><tr><td class="k">作成日</td><td></td></tr><tr><td class="k">作成者</td><td></td></tr><tr><td class="k">更新日</td><td></td></tr><tr><td class="k">更新者</td><td></td></tr></table>
+</div>
+<nav class="tabbar" role="tablist" aria-label="設計書シート">
+<button type="button" role="tab" class="active" id="tab-review" aria-controls="panel-review" aria-selected="true" tabindex="0">レビュー概要</button>
+<button type="button" role="tab" class="" id="tab-architecture" aria-controls="panel-architecture" aria-selected="false" tabindex="-1">システム構成</button>
+<button type="button" role="tab" class="" id="tab-functions" aria-controls="panel-functions" aria-selected="false" tabindex="-1">機能一覧</button>
+<button type="button" role="tab" class="" id="tab-details" aria-controls="panel-details" aria-selected="false" tabindex="-1">機能詳細</button>
+<button type="button" role="tab" class="" id="tab-flows" aria-controls="panel-flows" aria-selected="false" tabindex="-1">フロー・状態</button>
+<button type="button" role="tab" class="" id="tab-data" aria-controls="panel-data" aria-selected="false" tabindex="-1">データモデル</button>
+<button type="button" role="tab" class="" id="tab-interfaces" aria-controls="panel-interfaces" aria-selected="false" tabindex="-1">インターフェース・契約</button>
+<button type="button" role="tab" class="" id="tab-quality" aria-controls="panel-quality" aria-selected="false" tabindex="-1">品質・検証・リスク</button>
+<button type="button" role="tab" class="" id="tab-traceability" aria-controls="panel-traceability" aria-selected="false" tabindex="-1">トレーサビリティ</button>
+<button type="button" role="tab" class="" id="tab-delivery" aria-controls="panel-delivery" aria-selected="false" tabindex="-1">実装計画要約</button>
+</nav>
+<section class="panel active" id="panel-review" role="tabpanel" aria-labelledby="tab-review">
+<h2 id="review">レビュー概要</h2>
+<div class="review-banner">
+<div><span>資料レベル</span><strong>実装準備</strong></div>
+<div><span>資料状態</span><strong>blocked</strong></div>
+<div><span>スキーマ</span><strong>v3</strong></div>
+<div><span>現行機能</span><strong>5</strong></div>
+<div><span>将来機能</span><strong>0</strong></div>
+<div><span>インターフェース</span><strong>6</strong></div>
+<div><span>リスク</span><strong>5</strong></div>
+<div><span>tasks完了</span><strong>2/22</strong></div>
+</div>
+<h3>設計準備度</h3><div class="readiness-grid">
+<article class="readiness-card readiness-passed"><span>要求網羅性</span><strong>passed</strong><p></p><small>normative_total=38, covered=38, percent=100.0</small></article>
+<article class="readiness-card readiness-failed"><span>機能設計</span><strong>failed</strong><p></p><small>functions=5, workflows=3, state_models=1</small></article>
+<article class="readiness-card readiness-passed"><span>実装契約</span><strong>passed</strong><p></p><small>interfaces=6, complete_contracts=6</small></article>
+<article class="readiness-card readiness-passed"><span>運用準備</span><strong>passed</strong><p></p><small>quality_scenarios=6, risks=5, verifications=7</small></article>
+</div>
+<h3>入力成果物</h3>
+<table class="aux"><caption>設計に使用した成果物</caption>
+<thead><tr><th scope="col">種別</th><th scope="col">ファイル</th><th scope="col">根拠箇所</th><th scope="col">fingerprint</th></tr></thead><tbody>
+<tr><th scope="row">spec</th><td>spec.md</td><td>*</td><td>fdc8aa361f999271cdc13d50cee8cc9c931b6d7f8833ad2d4e864965bef3a00b</td></tr>
+<tr><th scope="row">plan</th><td>plan.md</td><td>*</td><td>ccb93ed5d9dde6b37e88afbce1d97edc53758b64d18984d63814668142133fac</td></tr>
+<tr><th scope="row">research</th><td>research.md</td><td>*</td><td>7469ef841ab78bce1de915259c3bba9f5403a79bf672ab256e7b529c3ef0da99</td></tr>
+<tr><th scope="row">data-model</th><td>data-model.md</td><td>*</td><td>f35d4f7745e9db2eb9bf2eb5f37f9bd3b46268f83e9f5fc5846eb881f878ce21</td></tr>
+<tr><th scope="row">contract</th><td>contracts/openapi.yaml</td><td>*</td><td>8ce441831a60d4257c884c9e25baf0313fc62cf8c843d447ee665d70e0de4bc4</td></tr>
+<tr><th scope="row">quickstart</th><td>quickstart.md</td><td>*</td><td>0bcf632f69463bd9861c4bb03dd91e325e2d6054dc5aa66d32037cab19be8740</td></tr>
+<tr><th scope="row">tasks</th><td>tasks.md</td><td>*</td><td>602901c2639d4c2bff651ecd6b370aeb370cfa8c908673a9da7d7ba87af68734</td></tr>
+</tbody></table>
+<h3>要求上の確認済み決定</h3>
+<table class="aux"><caption>Clarificationsから同期した決定</caption>
+<thead><tr><th scope="col">ID</th><th scope="col">質問</th><th scope="col">回答</th><th scope="col">spec記録箇所</th></tr></thead><tbody>
+<tr><th scope="row">CL-20260621-01</th><td>同じ冪等キーの注文を再送した場合は？</td><td>最初の受付結果を返し、注文を重複作成しない。</td><td>Feature Specification: 注文連携API — 受付・状態通知・日次照合 &gt; Clarifications &gt; Session 2026-06-21 (L10)</td></tr>
+<tr><th scope="row">CL-20260621-02</th><td>配送済みから取消へ戻せるか？</td><td>戻せない。取消要求を拒否する。</td><td>Feature Specification: 注文連携API — 受付・状態通知・日次照合 &gt; Clarifications &gt; Session 2026-06-21 (L11)</td></tr>
+<tr><th scope="row">CL-20260624-01</th><td>注文で許可する状態遷移は？</td><td>受付済み→配送中、受付済み→取消、配送中→配送済みだけを許可し、表にない遷移は状態を変えず拒否する。</td><td>Feature Specification: 注文連携API — 受付・状態通知・日次照合 &gt; Clarifications &gt; Session 2026-06-24 (L15)</td></tr>
+<tr><th scope="row">CL-20260624-02</th><td>状態通知が3回失敗した後は？</td><td>失敗イベントを隔離し、5分以内に運用担当へ通知する。運用担当は原因解消後に同じイベントIDで手動再送し、成功まで未解決として管理する。</td><td>Feature Specification: 注文連携API — 受付・状態通知・日次照合 &gt; Clarifications &gt; Session 2026-06-24 (L16)</td></tr>
+<tr><th scope="row">CL-20260624-03</th><td>再送間隔は？</td><td>初回失敗から1分、5分、15分後に再送する。</td><td>Feature Specification: 注文連携API — 受付・状態通知・日次照合 &gt; Clarifications &gt; Session 2026-06-24 (L17)</td></tr>
+<tr><th scope="row">CL-20260624-04</th><td>日次02:00のタイムゾーンは？</td><td>Asia/Tokyoとする。</td><td>Feature Specification: 注文連携API — 受付・状態通知・日次照合 &gt; Clarifications &gt; Session 2026-06-24 (L18)</td></tr>
+</tbody></table>
+<h3>条件付き設計資料の要否</h3>
+<table class="aux"><caption>フロー・状態遷移の適用判定</caption>
+<thead><tr><th scope="col">資料</th><th scope="col">判定</th><th scope="col">理由</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row">処理フロー</th><td>required</td><td></td><td></td></tr>
+<tr><th scope="row">状態遷移</th><td>required</td><td></td><td></td></tr>
+</tbody></table>
+<h3>未確定事項</h3>
+<table class="aux"><caption>未確定事項と解消先</caption>
+<thead><tr><th scope="col">質問ID</th><th scope="col">状態</th><th scope="col">質問</th><th scope="col">根拠</th><th scope="col">影響先</th><th scope="col">戻り先</th></tr></thead><tbody>
+<tr><th scope="row">Q-001</th><td>open</td><td>初回送信を含む総試行数を確定してください。spec/researchは『最大3回再送』、plan/data-model/quickstartは『3回目失敗でdead-letter』と読め、合計3回か初回+3回かが不一致です。</td><td><a class="ref ref-link" href="#source-FR-021">spec:FR-021</a> <span class="ref">research:Decision 4</span> <span class="ref">plan:状態変更と通知</span> <span class="ref">data-model:OutboxEvent</span> <span class="ref">quickstart:Scenario 3</span></td><td><a class="ref ref-link" href="#detail-FNC-003">FNC-003</a> <a class="ref ref-link" href="#design-interface-EVT-001">EVT-001</a> <a class="ref ref-link" href="#design-workflow-WF-002">WF-002</a> <a class="ref ref-link" href="#verification-VER-003">VER-003</a></td><td>/speckit.analyze</td></tr>
+<tr><th scope="row">Q-002</th><td>open</td><td>外部EC webhookの配送先URL（設定単位を含む）と外向き認証方式、credential更新・失効時の扱いを確定してください。</td><td><span class="ref">contract:/webhooks/orderStatusChanged/post</span> <span class="ref">plan:System Context</span> <span class="ref">plan:Security</span></td><td><a class="ref ref-link" href="#detail-FNC-003">FNC-003</a> <a class="ref ref-link" href="#design-interface-EVT-001">EVT-001</a> <a class="ref ref-link" href="#design-workflow-WF-002">WF-002</a> <a class="ref ref-link" href="#design-risk-RSK-005">RSK-005</a></td><td>/speckit.plan</td></tr>
+<tr><th scope="row">Q-003</th><td>open</td><td>外部EC件数取得APIのbase endpoint、TLS要件、接続・応答timeout、およびretry.attempts=1が総試行1回か初回後1回再送かを確定してください。</td><td><span class="ref">contract:/x-external-operations/dailyOrderCount</span> <span class="ref">plan:日次照合</span></td><td><a class="ref ref-link" href="#detail-FNC-005">FNC-005</a> <a class="ref ref-link" href="#design-interface-EXT-001">EXT-001</a> <a class="ref ref-link" href="#design-interface-BAT-001">BAT-001</a> <a class="ref ref-link" href="#design-workflow-WF-003">WF-003</a> <a class="ref ref-link" href="#design-risk-RSK-005">RSK-005</a></td><td>/speckit.plan</td></tr>
+<tr><th scope="row">Q-004</th><td>open</td><td>日次jobが途中停止・未完了となった場合の検知期限、再開／手動再実行手順、承認、証跡、通知解消条件を確定してください。</td><td><span class="ref">plan:Operational Design</span> <span class="ref">data-model:DailyReconciliation</span> <span class="ref">quickstart:Scenario 4</span></td><td><a class="ref ref-link" href="#detail-FNC-005">FNC-005</a> <a class="ref ref-link" href="#design-interface-BAT-001">BAT-001</a> <a class="ref ref-link" href="#verification-VER-006">VER-006</a> <a class="ref ref-link" href="#design-risk-RSK-005">RSK-005</a></td><td>/speckit.plan</td></tr>
+<tr><th scope="row">Q-005</th><td>open</td><td>手動再送でOutboxEventをpendingへ戻す更新と操作理由の監査記録を同一transactionにするか、失敗時rollbackを含めて確定してください。</td><td><span class="ref">data-model:OutboxEvent</span> <span class="ref">plan:Recovery</span> <span class="ref">contract:/paths/~1operations~1events~1{eventId}~1replay/post</span></td><td><a class="ref ref-link" href="#detail-FNC-004">FNC-004</a> <a class="ref ref-link" href="#design-interface-API-003">API-003</a> <a class="ref ref-link" href="#design-workflow-WF-002">WF-002</a> <a class="ref ref-link" href="#design-risk-RSK-005">RSK-005</a></td><td>/speckit.plan</td></tr>
+<tr><th scope="row">Q-006</th><td>open</td><td>orders.transition scopeで注文状態変更APIを呼ぶ業務主体／外部・内部システムを確定してください。</td><td><span class="ref">contract:/paths/~1orders~1{orderId}~1transitions/post</span> <span class="ref">plan:System Context</span></td><td><a class="ref ref-link" href="#detail-FNC-002">FNC-002</a> <a class="ref ref-link" href="#design-interface-API-002">API-002</a> <a class="ref ref-link" href="#design-workflow-WF-002">WF-002</a></td><td>/speckit.clarify</td></tr>
+<tr><th scope="row">Q-007</th><td>open</td><td>注文状態変更eventの順序保証単位（注文単位・client単位・保証なし）と、順序逆転時の扱いを確定してください。</td><td><span class="ref">contract:/webhooks/orderStatusChanged/post</span> <span class="ref">research:Decision 3</span></td><td><a class="ref ref-link" href="#detail-FNC-003">FNC-003</a> <a class="ref ref-link" href="#design-interface-EVT-001">EVT-001</a> <a class="ref ref-link" href="#design-workflow-WF-002">WF-002</a> <a class="ref ref-link" href="#design-risk-RSK-002">RSK-002</a></td><td>/speckit.plan</td></tr>
+<tr><th scope="row">Q-008</th><td>open</td><td>Delivery Workerのlease timeout値、worker停止時のlease回収条件、再claim時のattempt扱いを確定してください。</td><td><span class="ref">data-model:OutboxEvent</span> <span class="ref">plan:状態変更と通知</span></td><td><a class="ref ref-link" href="#detail-FNC-003">FNC-003</a> <a class="ref ref-link" href="#design-entity-ENT-OUTBOX-EVENT">ENT-OUTBOX-EVENT</a> <a class="ref ref-link" href="#design-interface-EVT-001">EVT-001</a> <a class="ref ref-link" href="#design-workflow-WF-002">WF-002</a> <a class="ref ref-link" href="#design-risk-RSK-002">RSK-002</a></td><td>/speckit.plan</td></tr>
+<tr><th scope="row">Q-009</th><td>open</td><td>webhookの400（恒久schema違反）と401（認証失敗）を即時隔離するか、alert・再送・手動復旧へどう接続するかを確定してください。</td><td><span class="ref">contract:/webhooks/orderStatusChanged/post/responses/400</span> <span class="ref">contract:/webhooks/orderStatusChanged/post/responses/401</span> <span class="ref">plan:状態変更と通知</span></td><td><a class="ref ref-link" href="#detail-FNC-003">FNC-003</a> <a class="ref ref-link" href="#design-interface-EVT-001">EVT-001</a> <a class="ref ref-link" href="#design-workflow-WF-002">WF-002</a> <a class="ref ref-link" href="#design-risk-RSK-002">RSK-002</a></td><td>/speckit.plan</td></tr>
+<tr><th scope="row">Q-010</th><td>open</td><td>data-modelの『alert対象時刻を記録』に対応する属性がOutboxEvent表にないため、保存先・属性・transaction境界を整合させてください。</td><td><span class="ref">data-model:OutboxEvent</span> <span class="ref">plan:Operational Design</span></td><td><a class="ref ref-link" href="#detail-FNC-003">FNC-003</a> <a class="ref ref-link" href="#design-entity-ENT-OUTBOX-EVENT">ENT-OUTBOX-EVENT</a> <a class="ref ref-link" href="#design-interface-EVT-001">EVT-001</a> <a class="ref ref-link" href="#design-workflow-WF-002">WF-002</a> <a class="ref ref-link" href="#design-quality-scenario-QS-004">QS-004</a></td><td>/speckit.analyze</td></tr>
+<tr><th scope="row">Q-011</th><td>open</td><td>x-external-operationsが要求するreconciliation.read scopeがOAuth security schemeのscopesに存在しないため、認可契約を整合させてください。</td><td><span class="ref">contract:/x-external-operations/dailyOrderCount/auth</span> <span class="ref">contract:/components/securitySchemes/oauth2ClientCredentials/flows/clientCredentials/scopes</span></td><td><a class="ref ref-link" href="#detail-FNC-005">FNC-005</a> <a class="ref ref-link" href="#design-interface-EXT-001">EXT-001</a> <a class="ref ref-link" href="#design-interface-BAT-001">BAT-001</a> <a class="ref ref-link" href="#design-workflow-WF-003">WF-003</a></td><td>/speckit.analyze</td></tr>
+<tr><th scope="row">Q-012</th><td>open</td><td>data-modelではexternal_order_number重複を検知しますが、注文登録API契約に対応するerror code・409条件がないため整合させてください。</td><td><span class="ref">data-model:Constraints</span> <span class="ref">contract:/paths/~1orders/post/responses/409</span></td><td><a class="ref ref-link" href="#detail-FNC-001">FNC-001</a> <a class="ref ref-link" href="#design-entity-ENT-ORDER">ENT-ORDER</a> <a class="ref ref-link" href="#design-interface-API-001">API-001</a> <a class="ref ref-link" href="#design-workflow-WF-001">WF-001</a></td><td>/speckit.analyze</td></tr>
+<tr><th scope="row">Q-013</th><td>open</td><td>SC-001の『通常想定負荷』について、request rate／同時数、traffic mix、payload条件を確定し、k6 profile orders-normal-loadの合格条件を再現可能にしてください。</td><td><a class="ref ref-link" href="#source-SC-001">spec:SC-001</a> <span class="ref">plan:Quality Goals</span> <span class="ref">quickstart:Scenario 5</span></td><td><a class="ref ref-link" href="#design-interface-API-001">API-001</a> <a class="ref ref-link" href="#design-quality-scenario-QS-001">QS-001</a> <a class="ref ref-link" href="#verification-VER-001">VER-001</a></td><td>/speckit.clarify</td></tr>
+</tbody></table>
+<h3>主要リスク</h3><ul><li>RSK-001: API replica間競合による重複注文（影響: high / 状態: mitigated）</li><li>RSK-002: 外部EC停止による状態通知の滞留（影響: high / 状態: mitigated）</li><li>RSK-003: 外部件数API停止による照合不能（影響: medium / 状態: mitigated）</li><li>RSK-004: schema変更とapplication rollbackの非互換（影響: high / 状態: mitigated）</li><li>RSK-005: 外向き連携設定・復旧手順の未定義（影響: high / 状態: open）</li></ul>
+<h3>実装依存関係</h3><ul><li>Phase 1 → Phase 2 → Phase 3</li><li>Phase 1 → Phase 4</li><li>Phase 2 → Phase 5</li><li>Phase 3 → Phase 5</li><li>Phase 4 → Phase 5</li></ul>
+<h3>要求優先度</h3><p>P1: 4件 / P2: 1件</p><ul><li>FNC-001: 注文の冪等受付（P1）</li><li>FNC-002: 注文状態の整合的変更（P1）</li><li>FNC-003: 状態変更イベントの配送（P1）</li><li>FNC-004: 隔離イベントの手動復旧（P1）</li><li>FNC-005: 前日注文件数の日次照合（P2）</li></ul>
+</section>
+<section class="panel" id="panel-architecture" role="tabpanel" aria-labelledby="tab-architecture">
+<h2 id="architecture">システム構成</h2>
+<h3>注文連携API System Context</h3>
+<p class="diagram-legend"><strong>凡例:</strong> 人物・外部システム・対象システムと、その関係</p>
+<p class="diagram-sources"><strong>根拠:</strong> <span class="ref">plan:System Context</span> <span class="ref">plan:Summary</span> <span class="ref">plan:Recovery</span> <span class="ref">contract:/paths/~1orders/post</span> <span class="ref">contract:/webhooks/orderStatusChanged/post</span> <span class="ref">contract:/x-external-operations/dailyOrderCount</span> <span class="ref">plan:Operational Design</span></p>
+<figure class="diagram"><svg class="diagram-svg" viewBox="0 0 960 275" role="img" aria-labelledby="title-architecture-context">
+<title id="title-architecture-context">注文連携API System Context</title>
+<desc>人物・外部システム・対象システムと、その関係。同じ内容を直後の表でも確認できます。</desc>
+<defs><marker id="arrow-architecture-context" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path class="diagram-arrow" d="M0,0 L10,4 L0,8 z"></path></marker></defs>
+<line class="diagram-edge" x1="160" y1="113" x2="470" y2="113" marker-end="url(#arrow-architecture-context)"></line>
+<text class="diagram-edge-label" x="315" y="107">OAuth 2.0で注文登録APIを呼ぶ</text>
+<line class="diagram-edge" x1="470" y1="113" x2="160" y2="113" marker-end="url(#arrow-architecture-context)"></line>
+<text class="diagram-edge-label" x="315" y="107">状態変更webhookを送信する</text>
+<line class="diagram-edge" x1="470" y1="113" x2="160" y2="113" marker-end="url(#arrow-architecture-context)"></line>
+<text class="diagram-edge-label" x="315" y="107">日次件数取得APIを呼ぶ</text>
+<line class="diagram-edge" x1="470" y1="113" x2="780" y2="113" marker-end="url(#arrow-architecture-context)"></line>
+<text class="diagram-edge-label" x="625" y="107">dead-letter・照合異常・job異常を通知…</text>
+<line class="diagram-edge" x1="780" y1="113" x2="470" y2="113" marker-end="url(#arrow-architecture-context)"></line>
+<text class="diagram-edge-label" x="625" y="107">原因解消後にevent IDと理由で手動再送する</text>
+<g class="diagram-node node-external-system"><rect x="40" y="70" width="240" height="86" rx="7"></rect>
+<text class="diagram-node-kind" x="52" y="90">external-system</text>
+<text class="diagram-node-name" x="52" y="113">外部EC</text>
+<text class="diagram-node-desc" x="52" y="135">注文登録、状態通知受信、日次件数提供を行う外部システム</text></g>
+<g class="diagram-node node-system"><rect x="350" y="70" width="240" height="86" rx="7"></rect>
+<text class="diagram-node-kind" x="362" y="90">system</text>
+<text class="diagram-node-name" x="362" y="113">注文連携システム</text>
+<text class="diagram-node-desc" x="362" y="135">注文受付・状態管理・状態通知・日次照合を担う</text></g>
+<g class="diagram-node node-person"><rect x="660" y="70" width="240" height="86" rx="7"></rect>
+<text class="diagram-node-kind" x="672" y="90">person</text>
+<text class="diagram-node-name" x="672" y="113">運用担当者</text>
+<text class="diagram-node-desc" x="672" y="135">alertを受け、隔離eventの原因調査と手動再送を行う</text></g>
+</svg></figure>
+<table class="aux diagram-table"><caption>注文連携API System Contextの構成要素</caption>
+<thead><tr><th scope="col">ID</th><th scope="col">種別</th><th scope="col">名称</th><th scope="col">説明</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row"><span id="design-architecture-EXTSYS-EC">EXTSYS-EC</span></th><td>external-system</td><td>外部EC</td><td>注文登録、状態通知受信、日次件数提供を行う外部システム</td><td><span class="ref">plan:System Context</span></td></tr>
+<tr><th scope="row"><span id="design-architecture-SYS-ORDER">SYS-ORDER</span></th><td>system</td><td>注文連携システム</td><td>注文受付・状態管理・状態通知・日次照合を担う</td><td><span class="ref">plan:Summary</span> <span class="ref">plan:System Context</span></td></tr>
+<tr><th scope="row"><span id="design-architecture-PERSON-OPS">PERSON-OPS</span></th><td>person</td><td>運用担当者</td><td>alertを受け、隔離eventの原因調査と手動再送を行う</td><td><span class="ref">plan:System Context</span> <span class="ref">plan:Recovery</span></td></tr>
+</tbody></table>
+<table class="aux diagram-table"><caption>注文連携API System Contextの関係</caption>
+<thead><tr><th scope="col">接続元</th><th scope="col">接続先</th><th scope="col">関係</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row">EXTSYS-EC</th><td>SYS-ORDER</td><td>OAuth 2.0で注文登録APIを呼ぶ</td><td><span class="ref">plan:System Context</span> <span class="ref">contract:/paths/~1orders/post</span></td></tr>
+<tr><th scope="row">SYS-ORDER</th><td>EXTSYS-EC</td><td>状態変更webhookを送信する</td><td><span class="ref">plan:System Context</span> <span class="ref">contract:/webhooks/orderStatusChanged/post</span></td></tr>
+<tr><th scope="row">SYS-ORDER</th><td>EXTSYS-EC</td><td>日次件数取得APIを呼ぶ</td><td><span class="ref">plan:System Context</span> <span class="ref">contract:/x-external-operations/dailyOrderCount</span></td></tr>
+<tr><th scope="row">SYS-ORDER</th><td>PERSON-OPS</td><td>dead-letter・照合異常・job異常を通知する</td><td><span class="ref">plan:Operational Design</span></td></tr>
+<tr><th scope="row">PERSON-OPS</th><td>SYS-ORDER</td><td>原因解消後にevent IDと理由で手動再送する</td><td><span class="ref">plan:Recovery</span></td></tr>
+</tbody></table>
+<h3>注文連携API Containers</h3>
+<p class="diagram-legend"><strong>凡例:</strong> 実行・保存の主要境界と、その依存関係</p>
+<p class="diagram-sources"><strong>根拠:</strong> <span class="ref">plan:Containers</span> <span class="ref">plan:Technical Context</span> <span class="ref">plan:日次照合</span> <span class="ref">plan:Observability</span> <span class="ref">plan:System Context</span> <span class="ref">plan:Request and Transaction Flow</span> <span class="ref">plan:状態変更と通知</span> <span class="ref">data-model:Transaction Boundaries</span> <span class="ref">plan:Operational Design</span></p>
+<figure class="diagram"><svg class="diagram-svg" viewBox="0 0 960 420" role="img" aria-labelledby="title-architecture-containers">
+<title id="title-architecture-containers">注文連携API Containers</title>
+<desc>実行・保存の主要境界と、その依存関係。同じ内容を直後の表でも確認できます。</desc>
+<defs><marker id="arrow-architecture-containers" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path class="diagram-arrow" d="M0,0 L10,4 L0,8 z"></path></marker></defs>
+<line class="diagram-edge" x1="160" y1="113" x2="160" y2="258" marker-end="url(#arrow-architecture-containers)"></line>
+<text class="diagram-edge-label" x="160" y="179.5">注文・状態・冪等結果・Outboxをtransac…</text>
+<line class="diagram-edge" x1="470" y1="113" x2="160" y2="258" marker-end="url(#arrow-architecture-containers)"></line>
+<text class="diagram-edge-label" x="315" y="179.5">Outboxをclaimし配送結果・attempt…</text>
+<line class="diagram-edge" x1="470" y1="113" x2="780" y2="258" marker-end="url(#arrow-architecture-containers)"></line>
+<text class="diagram-edge-label" x="625" y="179.5">状態変更webhookを配送</text>
+<line class="diagram-edge" x1="780" y1="113" x2="780" y2="258" marker-end="url(#arrow-architecture-containers)"></line>
+<text class="diagram-edge-label" x="780" y="179.5">前日注文件数を取得</text>
+<line class="diagram-edge" x1="780" y1="113" x2="160" y2="258" marker-end="url(#arrow-architecture-containers)"></line>
+<text class="diagram-edge-label" x="470" y="179.5">内部件数を照会し照合結果をupsert</text>
+<line class="diagram-edge" x1="160" y1="113" x2="470" y2="258" marker-end="url(#arrow-architecture-containers)"></line>
+<text class="diagram-edge-label" x="315" y="179.5">API trace・metric・構造化log</text>
+<line class="diagram-edge" x1="470" y1="113" x2="470" y2="258" marker-end="url(#arrow-architecture-containers)"></line>
+<text class="diagram-edge-label" x="470" y="179.5">Outbox・delivery・dead-lett…</text>
+<line class="diagram-edge" x1="780" y1="113" x2="470" y2="258" marker-end="url(#arrow-architecture-containers)"></line>
+<text class="diagram-edge-label" x="625" y="179.5">照合不一致・job未完了metricとalert</text>
+<g class="diagram-node node-application"><rect x="40" y="70" width="240" height="86" rx="7"></rect>
+<text class="diagram-node-kind" x="52" y="90">application</text>
+<text class="diagram-node-name" x="52" y="113">Order API</text>
+<text class="diagram-node-desc" x="52" y="135">注文登録、冪等応答、状態変更要求、手動再送受付</text></g>
+<g class="diagram-node node-worker"><rect x="350" y="70" width="240" height="86" rx="7"></rect>
+<text class="diagram-node-kind" x="362" y="90">worker</text>
+<text class="diagram-node-name" x="362" y="113">Delivery Worker</text>
+<text class="diagram-node-desc" x="362" y="135">Outbox配送、自動再送、隔離</text></g>
+<g class="diagram-node node-worker"><rect x="660" y="70" width="240" height="86" rx="7"></rect>
+<text class="diagram-node-kind" x="672" y="90">worker</text>
+<text class="diagram-node-name" x="672" y="113">Reconciliation Scheduler</text>
+<text class="diagram-node-desc" x="672" y="135">日次件数照合と照合不能通知</text></g>
+<g class="diagram-node node-database"><rect x="40" y="215" width="240" height="86" rx="7"></rect>
+<text class="diagram-node-kind" x="52" y="235">database</text>
+<text class="diagram-node-name" x="52" y="258">Order Database</text>
+<text class="diagram-node-desc" x="52" y="280">注文、冪等結果、状態履歴、Outbox、照合結果を保持</text></g>
+<g class="diagram-node node-application"><rect x="350" y="215" width="240" height="86" rx="7"></rect>
+<text class="diagram-node-kind" x="362" y="235">application</text>
+<text class="diagram-node-name" x="362" y="258">Observability</text>
+<text class="diagram-node-desc" x="362" y="280">metric、trace、構造化log、既存alert chann…</text></g>
+<g class="diagram-node node-external-system"><rect x="660" y="215" width="240" height="86" rx="7"></rect>
+<text class="diagram-node-kind" x="672" y="235">external-system</text>
+<text class="diagram-node-name" x="672" y="258">外部EC</text>
+<text class="diagram-node-desc" x="672" y="280">webhook受信と日次件数APIを提供</text></g>
+</svg></figure>
+<table class="aux diagram-table"><caption>注文連携API Containersの構成要素</caption>
+<thead><tr><th scope="col">ID</th><th scope="col">種別</th><th scope="col">名称</th><th scope="col">説明</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row"><span id="design-architecture-CTR-API">CTR-API</span></th><td>application</td><td>Order API</td><td>注文登録、冪等応答、状態変更要求、手動再送受付</td><td><span class="ref">plan:Containers</span> <span class="ref">plan:Technical Context</span></td></tr>
+<tr><th scope="row"><span id="design-architecture-CTR-DELIVERY">CTR-DELIVERY</span></th><td>worker</td><td>Delivery Worker</td><td>Outbox配送、自動再送、隔離</td><td><span class="ref">plan:Containers</span> <span class="ref">plan:Technical Context</span></td></tr>
+<tr><th scope="row"><span id="design-architecture-CTR-RECON">CTR-RECON</span></th><td>worker</td><td>Reconciliation Scheduler</td><td>日次件数照合と照合不能通知</td><td><span class="ref">plan:Containers</span> <span class="ref">plan:日次照合</span></td></tr>
+<tr><th scope="row"><span id="design-architecture-CTR-DB">CTR-DB</span></th><td>database</td><td>Order Database</td><td>注文、冪等結果、状態履歴、Outbox、照合結果を保持</td><td><span class="ref">plan:Containers</span></td></tr>
+<tr><th scope="row"><span id="design-architecture-CTR-OBS">CTR-OBS</span></th><td>application</td><td>Observability</td><td>metric、trace、構造化log、既存alert channel連携</td><td><span class="ref">plan:Containers</span> <span class="ref">plan:Observability</span></td></tr>
+<tr><th scope="row"><span id="design-architecture-EXTSYS-EC-C">EXTSYS-EC-C</span></th><td>external-system</td><td>外部EC</td><td>webhook受信と日次件数APIを提供</td><td><span class="ref">plan:System Context</span></td></tr>
+</tbody></table>
+<table class="aux diagram-table"><caption>注文連携API Containersの関係</caption>
+<thead><tr><th scope="col">接続元</th><th scope="col">接続先</th><th scope="col">関係</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row">CTR-API</th><td>CTR-DB</td><td>注文・状態・冪等結果・Outboxをtransaction保存</td><td><span class="ref">plan:Request and Transaction Flow</span></td></tr>
+<tr><th scope="row">CTR-DELIVERY</th><td>CTR-DB</td><td>Outboxをclaimし配送結果・attemptを記録</td><td><span class="ref">plan:状態変更と通知</span> <span class="ref">data-model:Transaction Boundaries</span></td></tr>
+<tr><th scope="row">CTR-DELIVERY</th><td>EXTSYS-EC-C</td><td>状態変更webhookを配送</td><td><span class="ref">plan:状態変更と通知</span></td></tr>
+<tr><th scope="row">CTR-RECON</th><td>EXTSYS-EC-C</td><td>前日注文件数を取得</td><td><span class="ref">plan:日次照合</span></td></tr>
+<tr><th scope="row">CTR-RECON</th><td>CTR-DB</td><td>内部件数を照会し照合結果をupsert</td><td><span class="ref">plan:日次照合</span> <span class="ref">data-model:Transaction Boundaries</span></td></tr>
+<tr><th scope="row">CTR-API</th><td>CTR-OBS</td><td>API trace・metric・構造化log</td><td><span class="ref">plan:Operational Design</span></td></tr>
+<tr><th scope="row">CTR-DELIVERY</th><td>CTR-OBS</td><td>Outbox・delivery・dead-letter metricとalert</td><td><span class="ref">plan:Operational Design</span></td></tr>
+<tr><th scope="row">CTR-RECON</th><td>CTR-OBS</td><td>照合不一致・job未完了metricとalert</td><td><span class="ref">plan:Operational Design</span></td></tr>
+</tbody></table>
+<table class="aux"><caption>アーキテクチャ設計判断</caption>
+<thead><tr><th scope="col">ID</th><th scope="col">題名</th><th scope="col">設計判断・理由</th><th scope="col">代替案</th><th scope="col">影響</th><th scope="col">状態</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row">ADR-001</th><td>一意制約による冪等受付</td><td>(client_id, idempotency_key)のPostgreSQL一意制約とrequest hashで冪等性を保証する <span class="basis basis-specified">spec記載</span> <span class="ref">research:Decision 1</span></td><td><ul><li>process内cache</li><li>Redis lockのみ</li></ul></td><td><ul><li>競合transaction完了を待ち保存済み結果を返す</li><li>冪等結果を30日保持する</li></ul></td><td></td><td><span class="ref">research:Decision 1</span></td></tr>
+<tr><th scope="row">ADR-002</th><td>Transactional Outbox</td><td>注文状態、状態履歴、Outbox eventを同じPostgreSQL transactionでcommitする <span class="basis basis-specified">spec記載</span> <span class="ref">research:Decision 2</span></td><td><ul><li>transaction中の同期webhook</li><li>database CDC</li></ul></td><td><ul><li>Delivery Workerによる非同期配送・監視・復旧が必要</li></ul></td><td></td><td><span class="ref">research:Decision 2</span></td></tr>
+<tr><th scope="row">ADR-003</th><td>at-least-once配送とevent ID重複排除</td><td>webhookはat-least-onceで配送し、全再送で同じevent IDを使う <span class="basis basis-specified">spec記載</span> <span class="ref">research:Decision 3</span></td><td><ul><li>exactly-once transport</li></ul></td><td><ul><li>外部ECがevent IDで重複排除する</li></ul></td><td></td><td><span class="ref">research:Decision 3</span></td></tr>
+<tr><th scope="row">ADR-004</th><td>段階的再送とdead-letter復旧</td><td>1分、5分、15分の自動再送後に隔離し、5分以内alertと同一event IDの手動再送で復旧する <span class="basis basis-specified">spec記載</span> <span class="ref">research:Decision 4</span></td><td><ul><li>無期限再送</li><li>3回失敗で破棄</li></ul></td><td><ul><li>dead-letter、alert、runbook、監査記録の運用が必要</li></ul></td><td></td><td><span class="ref">research:Decision 4</span></td></tr>
+<tr><th scope="row">ADR-005</th><td>JST scheduleと対象日一意制約</td><td>0 2 * * *、Asia/Tokyoで前日JSTを対象にし、target_dateへ一意制約を置く <span class="basis basis-specified">spec記載</span> <span class="ref">research:Decision 5</span></td><td><ul><li>host timezone依存</li><li>重複実行を許容</li></ul></td><td><ul><li>scheduleへtimezoneを明示しadvisory lockを併用する</li></ul></td><td></td><td><span class="ref">research:Decision 5</span></td></tr>
+</tbody></table>
+<table class="aux"><caption>配置・監視・復旧設計</caption>
+<thead><tr><th scope="col">設計領域</th><th scope="col">内容・手順</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row">配置・実行環境</th><td>同一artifactをOrder API、Delivery Worker、Reconciliation SchedulerとしてKubernetesへ配置し、scheduleにAsia/Tokyoを明示する。secretはKubernetes Secret providerから注入する。 <span class="basis basis-specified">spec記載</span> <span class="ref">plan:Technical Context</span> <span class="ref">plan:Security</span></td><td><span class="ref">plan:Technical Context</span> <span class="ref">plan:Security</span></td></tr>
+<tr><th scope="row">監視・可観測性</th><td>OpenTelemetry trace/metrics、構造化logでAPI latency、idempotency conflict、Outbox age、delivery failure、dead-letter count、reconciliation mismatchを観測し、dead-letter作成から5分、Outbox最古30分、日次job未完了をalertする。配送先PII・token・secretはlogへ出さない。 <span class="basis basis-specified">spec記載</span> <span class="ref">plan:Operational Design</span> <span class="ref">plan:Security</span></td><td><span class="ref">plan:Operational Design</span> <span class="ref">plan:Security</span></td></tr>
+<tr><th scope="row">障害復旧</th><td>runbookに従い外部EC復旧を確認し、event IDと理由を指定して同じevent IDを手動再送する。migrationは後方互換を先に適用し、rollback時もdatabase migrationを削除しない。 <span class="basis basis-specified">spec記載</span> <span class="ref">plan:Recovery</span> <span class="ref">plan:Migration</span> <span class="ref">plan:Rollback</span></td><td><span class="ref">plan:Recovery</span> <span class="ref">plan:Migration</span> <span class="ref">plan:Rollback</span></td></tr>
+</tbody></table>
+</section>
+<section class="panel" id="panel-functions" role="tabpanel" aria-labelledby="tab-functions">
+<h2 id="functions">機能一覧</h2>
+<div class="toolbar" aria-label="機能一覧の絞り込み">
+<label>検索 <input id="filter-query" type="search" placeholder="ID・名称・根拠"></label>
+<label>状態 <select id="filter-status"><option value="">すべて</option><option value="current">現行</option><option value="future">将来</option></select></label>
+<label>実行形態 <select id="filter-execution"><option value="">すべて</option><option value="screen">screen</option><option value="api">api</option><option value="batch">batch</option><option value="event">event</option><option value="external-interface">external-interface</option><option value="manual">manual</option><option value="cross-cutting">cross-cutting</option></select></label></div>
+<table class="funclist"><caption class="sr-only">基本設計 機能一覧</caption>
+<thead><tr><th scope="col">大分類</th><th scope="col">中分類</th><th scope="col">小分類</th><th scope="col">機能ID</th><th scope="col">機能名</th><th scope="col">概要</th><th scope="col">アクター</th><th scope="col">実行形態</th><th scope="col">根拠</th><th scope="col">提供状態</th></tr></thead>
+<tbody id="function-body">
+<tr data-search="fnc-001 注文の冪等受付 外部ecから注文を受け付け、同一client・冪等キーでは注文を重複作成せず初回結果を返す。 外部ec  order api 外部ec us-001 ac-001-01 ac-001-02 fr-001 fr-002 cl-20260621-01 sc-002 asm-001" data-status="current" data-execution="api"><td class="dai">注文連携</td><td class="chu">注文処理</td><td class="sho0">注文受付</td><th scope="row" class="c"><a class="fnlink" href="#detail-FNC-001" data-detail="FNC-001">FNC-001</a></th><td class="g">注文の冪等受付</td><td class="g">外部ECから注文を受け付け、同一client・冪等キーでは注文を重複作成せず初回結果を返す。</td><td class="g"><dl class="actor-grid"><dt>起動者</dt><dd><ul><li>外部EC</li></ul></dd><dt>処理主体</dt><dd><ul><li>Order API</li></ul></dd><dt>受信者</dt><dd><ul><li>外部EC</li></ul></dd></dl></td><td class="g"><span class="kind kind-api">API</span><br>API-001 注文登録API</td><td class="g"><a class="ref ref-link" href="#source-US-001">US-001</a> <a class="ref ref-link" href="#source-AC-001-01">AC-001-01</a> <a class="ref ref-link" href="#source-AC-001-02">AC-001-02</a> <a class="ref ref-link" href="#source-FR-001">FR-001</a> <a class="ref ref-link" href="#source-FR-002">FR-002</a> <a class="ref ref-link" href="#source-CL-20260621-01">CL-20260621-01</a> <a class="ref ref-link" href="#source-SC-002">SC-002</a> <a class="ref ref-link" href="#source-ASM-001">ASM-001</a></td><td class="c"><span class="status current-tag">現行</span></td></tr>
+<tr data-search="fnc-002 注文状態の整合的変更 許可遷移とversionを検証し、注文・履歴・通知outboxを一体で更新する。 注文状態変更apiのoauth client（主体名は正本未記載）  order api 注文状態変更apiのoauth client fr-010 fr-011 ec-001 cl-20260621-02 cl-20260624-01" data-status="current" data-execution="api"><td class="dai">注文連携</td><td class="chu">注文処理</td><td class="sho1">状態管理</td><th scope="row" class="c"><a class="fnlink" href="#detail-FNC-002" data-detail="FNC-002">FNC-002</a></th><td class="g">注文状態の整合的変更</td><td class="g">許可遷移とversionを検証し、注文・履歴・通知Outboxを一体で更新する。</td><td class="g"><dl class="actor-grid"><dt>起動者</dt><dd><ul><li>注文状態変更APIのOAuth client（主体名は正本未記載）</li></ul></dd><dt>処理主体</dt><dd><ul><li>Order API</li></ul></dd><dt>受信者</dt><dd><ul><li>注文状態変更APIのOAuth client</li></ul></dd></dl></td><td class="g"><span class="kind kind-api">API</span><br>API-002 注文状態変更API</td><td class="g"><a class="ref ref-link" href="#source-FR-010">FR-010</a> <a class="ref ref-link" href="#source-FR-011">FR-011</a> <a class="ref ref-link" href="#source-EC-001">EC-001</a> <a class="ref ref-link" href="#source-CL-20260621-02">CL-20260621-02</a> <a class="ref ref-link" href="#source-CL-20260624-01">CL-20260624-01</a></td><td class="c"><span class="status current-tag">現行</span></td></tr>
+<tr data-search="fnc-003 状態変更イベントの配送 outboxから状態変更イベントをclaimし、同一event idで外部ecへat-least-once配送する。 delivery worker 運用担当者 delivery worker 外部ec us-002 ac-002-01 fr-020 fr-021 fr-022 ec-002 ec-003 cl-20260624-02 cl-20260624-03 sc-003 sc-004 asm-002 asm-004" data-status="current" data-execution="event"><td class="dai">注文連携</td><td class="chu">外部連携・運用</td><td class="sho0">状態通知</td><th scope="row" class="c"><a class="fnlink" href="#detail-FNC-003" data-detail="FNC-003">FNC-003</a></th><td class="g">状態変更イベントの配送</td><td class="g">Outboxから状態変更イベントをclaimし、同一event IDで外部ECへat-least-once配送する。</td><td class="g"><dl class="actor-grid"><dt>起動者</dt><dd><ul><li>Delivery Worker</li></ul></dd><dt>処理主体</dt><dd><ul><li>Delivery Worker</li></ul></dd><dt>受信者</dt><dd><ul><li>外部EC</li></ul></dd><dt>運用担当</dt><dd><ul><li>運用担当者</li></ul></dd></dl></td><td class="g"><span class="kind kind-event">イベント</span><br>EVT-001 注文状態変更webhook</td><td class="g"><a class="ref ref-link" href="#source-US-002">US-002</a> <a class="ref ref-link" href="#source-AC-002-01">AC-002-01</a> <a class="ref ref-link" href="#source-FR-020">FR-020</a> <a class="ref ref-link" href="#source-FR-021">FR-021</a> <a class="ref ref-link" href="#source-FR-022">FR-022</a> <a class="ref ref-link" href="#source-EC-002">EC-002</a> <a class="ref ref-link" href="#source-EC-003">EC-003</a> <a class="ref ref-link" href="#source-CL-20260624-02">CL-20260624-02</a> <a class="ref ref-link" href="#source-CL-20260624-03">CL-20260624-03</a> <a class="ref ref-link" href="#source-SC-003">SC-003</a> <a class="ref ref-link" href="#source-SC-004">SC-004</a> <a class="ref ref-link" href="#source-ASM-002">ASM-002</a> <a class="ref ref-link" href="#source-ASM-004">ASM-004</a></td><td class="c"><span class="status current-tag">現行</span></td></tr>
+<tr data-search="fnc-004 隔離イベントの手動復旧 運用担当者が原因解消後に操作理由を記録し、同じevent idをpendingへ戻して未解決状態を解消する。 運用担当者 運用担当者 order api, delivery worker 外部ec, 運用担当者 us-002 ac-002-02 fr-022 ec-002 cl-20260624-02 sc-003 asm-004" data-status="current" data-execution="api"><td class="dai">注文連携</td><td class="chu">外部連携・運用</td><td class="sho0">状態通知</td><th scope="row" class="c"><a class="fnlink" href="#detail-FNC-004" data-detail="FNC-004">FNC-004</a></th><td class="g">隔離イベントの手動復旧</td><td class="g">運用担当者が原因解消後に操作理由を記録し、同じevent IDをpendingへ戻して未解決状態を解消する。</td><td class="g"><dl class="actor-grid"><dt>起動者</dt><dd><ul><li>運用担当者</li></ul></dd><dt>処理主体</dt><dd><ul><li>Order API</li><li>Delivery Worker</li></ul></dd><dt>受信者</dt><dd><ul><li>外部EC</li><li>運用担当者</li></ul></dd><dt>運用担当</dt><dd><ul><li>運用担当者</li></ul></dd></dl></td><td class="g"><span class="kind kind-api">API</span><br>API-003 隔離イベント手動再送API</td><td class="g"><a class="ref ref-link" href="#source-US-002">US-002</a> <a class="ref ref-link" href="#source-AC-002-02">AC-002-02</a> <a class="ref ref-link" href="#source-FR-022">FR-022</a> <a class="ref ref-link" href="#source-EC-002">EC-002</a> <a class="ref ref-link" href="#source-CL-20260624-02">CL-20260624-02</a> <a class="ref ref-link" href="#source-SC-003">SC-003</a> <a class="ref ref-link" href="#source-ASM-004">ASM-004</a></td><td class="c"><span class="status current-tag">現行</span></td></tr>
+<tr data-search="fnc-005 前日注文件数の日次照合 毎日02:00 asia/tokyoに外部・内部の前日件数を照合し、不一致または取得不能を記録・通知する。 reconciliation scheduler 運用担当者 reconciliation scheduler 運用担当者 us-003 ac-003-01 fr-030 ec-004 cl-20260624-04 asm-003 asm-004" data-status="current" data-execution="batch"><td class="dai">注文連携</td><td class="chu">外部連携・運用</td><td class="sho1">日次照合</td><th scope="row" class="c"><a class="fnlink" href="#detail-FNC-005" data-detail="FNC-005">FNC-005</a></th><td class="g">前日注文件数の日次照合</td><td class="g">毎日02:00 Asia/Tokyoに外部・内部の前日件数を照合し、不一致または取得不能を記録・通知する。</td><td class="g"><dl class="actor-grid"><dt>起動者</dt><dd><ul><li>Reconciliation Scheduler</li></ul></dd><dt>処理主体</dt><dd><ul><li>Reconciliation Scheduler</li></ul></dd><dt>受信者</dt><dd><ul><li>運用担当者</li></ul></dd><dt>運用担当</dt><dd><ul><li>運用担当者</li></ul></dd></dl></td><td class="g"><span class="kind kind-batch">バッチ</span><br>BAT-001 日次注文件数照合job</td><td class="g"><a class="ref ref-link" href="#source-US-003">US-003</a> <a class="ref ref-link" href="#source-AC-003-01">AC-003-01</a> <a class="ref ref-link" href="#source-FR-030">FR-030</a> <a class="ref ref-link" href="#source-EC-004">EC-004</a> <a class="ref ref-link" href="#source-CL-20260624-04">CL-20260624-04</a> <a class="ref ref-link" href="#source-ASM-003">ASM-003</a> <a class="ref ref-link" href="#source-ASM-004">ASM-004</a></td><td class="c"><span class="status current-tag">現行</span></td></tr>
+</tbody></table>
+</section>
+<section class="panel" id="panel-details" role="tabpanel" aria-labelledby="tab-details">
+<h2 id="details">機能詳細</h2>
+<article class="function-card" id="detail-FNC-001">
+<header><span class="fnid">FNC-001</span><h3>注文の冪等受付</h3><span class="status current-tag">現行</span></header>
+<p class="breadcrumb">注文連携 ／ 注文処理 ／ 注文受付</p>
+<p class="summary">外部ECから注文を受け付け、同一client・冪等キーでは注文を重複作成せず初回結果を返す。</p>
+<dl class="detail-grid">
+<dt>アクター</dt><dd><dl class="actor-grid"><dt>起動者</dt><dd><ul><li>外部EC</li></ul></dd><dt>処理主体</dt><dd><ul><li>Order API</li></ul></dd><dt>受信者</dt><dd><ul><li>外部EC</li></ul></dd></dl></dd>
+<dt>起動契機</dt><dd>外部ECが注文登録APIを呼び出す <span class="basis basis-specified">spec記載</span> <a class="ref ref-link" href="#source-US-001">US-001</a> <a class="ref ref-link" href="#source-FR-001">spec:FR-001</a></dd>
+<dt>実行形態</dt><dd><span class="kind kind-api">API</span><br>API-001 注文登録API</dd>
+<dt>入力</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>name</dt><dd>Idempotency-Key</dd><dt>type</dt><dd>string(1..128)</dd><dt>required</dt><dd>True</dd><dt>description</dt><dd>clientごとに30日間保持する冪等キー</dd><dt>根拠</dt><dd><span class="basis basis-specified">spec記載</span> <span class="ref">contract:/components/parameters/IdempotencyKey</span></dd></dl></li><li><dl class="structured-grid"><dt>name</dt><dd>CreateOrderRequest</dd><dt>type</dt><dd>object</dd><dt>required</dt><dd>True</dd><dt>description</dt><dd>注文番号、1件以上の商品明細、配送先</dd><dt>根拠</dt><dd><span class="basis basis-specified">spec記載</span> <span class="ref">contract:/components/schemas/CreateOrderRequest</span></dd></dl></li></ol></dd>
+<dt>出力</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>name</dt><dd>OrderAccepted</dd><dt>type</dt><dd>object</dd><dt>required</dt><dd>True</dd><dt>description</dt><dd>orderId、accepted状態、acceptedAtを含む受付結果</dd><dt>根拠</dt><dd><span class="basis basis-specified">spec記載</span> <span class="ref">contract:/components/schemas/OrderAccepted</span></dd></dl></li></ol></dd>
+<dt>事前条件</dt><dd><ul><li>OAuth 2.0 client credentialsで認証され、orders.write scopeを持つ <span class="basis basis-specified">spec記載</span> <span class="ref">contract:/paths/~1orders/post/security</span></li></ul></dd>
+<dt>事後状態</dt><dd><ul><li>初回受付ではOrder、OrderLine、IdempotencyResultが1transactionで保存され、注文状態はacceptedとなる <span class="basis basis-specified">spec記載</span> <span class="ref">plan:注文登録</span> <span class="ref">data-model:Transaction Boundaries</span></li></ul></dd>
+<dt>業務ルール</dt><dd><ol class="rules"><li>client_idと冪等キーの組が同じでpayloadも同じ再送には、注文を追加せず初回の注文IDを返す <span class="basis basis-specified">spec記載</span> <a class="ref ref-link" href="#source-FR-002">FR-002</a> <a class="ref ref-link" href="#source-AC-001-02">AC-001-02</a> <a class="ref ref-link" href="#source-CL-20260621-01">CL-20260621-01</a></li><li>初回は201、同一key・同一payloadの再送は200で同じ注文IDを返す <span class="basis basis-specified">spec記載</span> <a class="ref ref-link" href="#source-FR-002">FR-002</a> <a class="ref ref-link" href="#source-AC-001-02">AC-001-02</a></li></ol></dd>
+<dt>例外・失敗時</dt><dd><ul><li>request schemaが不正 → 400 InvalidRequestを返し、注文を保存しない <span class="basis basis-specified">spec記載</span> <a class="ref ref-link" href="#source-FR-001">FR-001</a></li><li>同じ冪等キーでpayloadが異なる → 409 IDEMPOTENCY_CONFLICTを返し、既存注文を受付結果として返さない <span class="basis basis-specified">spec記載</span> <a class="ref ref-link" href="#source-FR-002">FR-002</a> <a class="ref ref-link" href="#source-CL-20260621-01">CL-20260621-01</a></li></ul></dd>
+<dt>対象データ</dt><dd><ol class="structured-list"><li>ENT-ORDER</li><li>ENT-ORDER-LINE</li><li>ENT-IDEMPOTENCY-RESULT</li></ol></dd>
+<dt>根拠</dt><dd><a class="ref ref-link" href="#source-US-001">US-001</a> <a class="ref ref-link" href="#source-AC-001-01">AC-001-01</a> <a class="ref ref-link" href="#source-AC-001-02">AC-001-02</a> <a class="ref ref-link" href="#source-FR-001">FR-001</a> <a class="ref ref-link" href="#source-FR-002">FR-002</a> <a class="ref ref-link" href="#source-CL-20260621-01">CL-20260621-01</a> <a class="ref ref-link" href="#source-SC-002">SC-002</a> <a class="ref ref-link" href="#source-ASM-001">ASM-001</a></dd>
+</dl></article>
+<article class="function-card" id="detail-FNC-002">
+<header><span class="fnid">FNC-002</span><h3>注文状態の整合的変更</h3><span class="status current-tag">現行</span></header>
+<p class="breadcrumb">注文連携 ／ 注文処理 ／ 状態管理</p>
+<p class="summary">許可遷移とversionを検証し、注文・履歴・通知Outboxを一体で更新する。</p>
+<dl class="detail-grid">
+<dt>アクター</dt><dd><dl class="actor-grid"><dt>起動者</dt><dd><ul><li>注文状態変更APIのOAuth client（主体名は正本未記載）</li></ul></dd><dt>処理主体</dt><dd><ul><li>Order API</li></ul></dd><dt>受信者</dt><dd><ul><li>注文状態変更APIのOAuth client</li></ul></dd></dl></dd>
+<dt>起動契機</dt><dd>注文状態変更APIがtargetStatus、version、triggerRefを受信する <span class="basis basis-specified">spec記載</span> <span class="ref">contract:/paths/~1orders~1{orderId}~1transitions/post</span></dd>
+<dt>実行形態</dt><dd><span class="kind kind-api">API</span><br>API-002 注文状態変更API</dd>
+<dt>入力</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>name</dt><dd>TransitionOrderRequest</dd><dt>type</dt><dd>object</dd><dt>required</dt><dd>True</dd><dt>description</dt><dd>targetStatus、version、triggerRef</dd><dt>根拠</dt><dd><span class="basis basis-specified">spec記載</span> <span class="ref">contract:/components/schemas/TransitionOrderRequest</span></dd></dl></li></ol></dd>
+<dt>出力</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>name</dt><dd>OrderState</dd><dt>type</dt><dd>object</dd><dt>required</dt><dd>True</dd><dt>description</dt><dd>orderId、status、version、changedAt</dd><dt>根拠</dt><dd><span class="basis basis-specified">spec記載</span> <span class="ref">contract:/components/schemas/OrderState</span></dd></dl></li></ol></dd>
+<dt>事前条件</dt><dd><ul><li>対象Orderが存在し、要求versionが保存済みversionと一致する <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Order State Transitions</span> <span class="ref">plan:状態変更と通知</span></li></ul></dd>
+<dt>事後状態</dt><dd><ul><li>許可遷移ではOrder、OrderStateHistory、OutboxEventが同一transactionで保存される <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Transaction Boundaries</span> <span class="ref">research:Decision 2</span></li></ul></dd>
+<dt>業務ルール</dt><dd><ol class="rules"><li>accepted→shipping、accepted→cancelled、shipping→deliveredだけを許可する <span class="basis basis-confirmed">確認済み</span> <a class="ref ref-link" href="#source-FR-010">FR-010</a> <a class="ref ref-link" href="#source-CL-20260624-01">CL-20260624-01</a></li><li>表にない遷移は状態・履歴・Outboxを変えず拒否する <span class="basis basis-confirmed">確認済み</span> <a class="ref ref-link" href="#source-FR-011">FR-011</a> <a class="ref ref-link" href="#source-CL-20260624-01">CL-20260624-01</a> <a class="ref ref-link" href="#source-EC-001">EC-001</a></li></ol></dd>
+<dt>例外・失敗時</dt><dd><ul><li>許可表にない遷移（配送済みから取消を含む） → 409 INVALID_STATE_TRANSITIONを返し、注文・履歴・Outboxを変更しない <span class="basis basis-specified">spec記載</span> <a class="ref ref-link" href="#source-FR-011">FR-011</a> <a class="ref ref-link" href="#source-EC-001">EC-001</a> <a class="ref ref-link" href="#source-CL-20260621-02">CL-20260621-02</a></li><li>要求versionが競合する → 409 VERSION_CONFLICTを返し、更新しない <span class="basis basis-specified">spec記載</span> <a class="ref ref-link" href="#source-FR-010">FR-010</a></li></ul></dd>
+<dt>対象データ</dt><dd><ol class="structured-list"><li>ENT-ORDER</li><li>ENT-ORDER-STATE-HISTORY</li><li>ENT-OUTBOX-EVENT</li></ol></dd>
+<dt>根拠</dt><dd><a class="ref ref-link" href="#source-FR-010">FR-010</a> <a class="ref ref-link" href="#source-FR-011">FR-011</a> <a class="ref ref-link" href="#source-EC-001">EC-001</a> <a class="ref ref-link" href="#source-CL-20260621-02">CL-20260621-02</a> <a class="ref ref-link" href="#source-CL-20260624-01">CL-20260624-01</a></dd>
+</dl></article>
+<article class="function-card" id="detail-FNC-003">
+<header><span class="fnid">FNC-003</span><h3>状態変更イベントの配送</h3><span class="status current-tag">現行</span></header>
+<p class="breadcrumb">注文連携 ／ 外部連携・運用 ／ 状態通知</p>
+<p class="summary">Outboxから状態変更イベントをclaimし、同一event IDで外部ECへat-least-once配送する。</p>
+<dl class="detail-grid">
+<dt>アクター</dt><dd><dl class="actor-grid"><dt>起動者</dt><dd><ul><li>Delivery Worker</li></ul></dd><dt>処理主体</dt><dd><ul><li>Delivery Worker</li></ul></dd><dt>受信者</dt><dd><ul><li>外部EC</li></ul></dd><dt>運用担当</dt><dd><ul><li>運用担当者</li></ul></dd></dl></dd>
+<dt>起動契機</dt><dd>Delivery Workerが送信待ちOutboxEventをclaimする <span class="basis basis-specified">spec記載</span> <span class="ref">plan:状態変更と通知</span></dd>
+<dt>実行形態</dt><dd><span class="kind kind-event">イベント</span><br>EVT-001 注文状態変更webhook</dd>
+<dt>入力</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>name</dt><dd>OutboxEvent</dd><dt>type</dt><dd>order.status.changed.v1</dd><dt>required</dt><dd>True</dd><dt>description</dt><dd>状態変更transactionで作成された送信待ちevent</dd><dt>根拠</dt><dd><span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OutboxEvent</span></dd></dl></li></ol></dd>
+<dt>出力</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>name</dt><dd>OrderStatusChangedEvent</dd><dt>type</dt><dd>webhook payload</dd><dt>required</dt><dd>True</dd><dt>description</dt><dd>eventId、orderId、previousStatus、currentStatus、changedAt</dd><dt>根拠</dt><dd><span class="basis basis-specified">spec記載</span> <span class="ref">contract:/components/schemas/OrderStatusChangedEvent</span></dd></dl></li></ol></dd>
+<dt>事前条件</dt><dd><ul><li>状態変更transactionがcommitされ、OutboxEventがpendingである <span class="basis basis-specified">spec記載</span> <span class="ref">research:Decision 2</span> <span class="ref">data-model:OutboxEvent</span></li></ul></dd>
+<dt>事後状態</dt><dd><ul><li>成功時はeventをdeliveredとしDeliveryAttemptを記録する。上限到達時はdead_letterとする <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OutboxEvent</span> <span class="ref">data-model:DeliveryAttempt</span></li></ul></dd>
+<dt>業務ルール</dt><dd><ol class="rules"><li>event IDは全再送で不変とし、外部ECはevent IDで重複排除する <span class="basis basis-specified">spec記載</span> <a class="ref ref-link" href="#source-FR-020">FR-020</a> <a class="ref ref-link" href="#source-EC-003">EC-003</a> <a class="ref ref-link" href="#source-ASM-002">ASM-002</a></li><li>失敗後は1分、5分、15分の間隔で最大3回自動再送し、全結果を記録する <span class="basis basis-confirmed">確認済み</span> <a class="ref ref-link" href="#source-FR-021">FR-021</a> <a class="ref ref-link" href="#source-CL-20260624-03">CL-20260624-03</a></li></ol></dd>
+<dt>例外・失敗時</dt><dd><ul><li>自動再送上限へ到達する → eventをdead_letterへ隔離し、5分以内のalert対象にする <span class="basis basis-confirmed">確認済み</span> <a class="ref ref-link" href="#source-FR-022">FR-022</a> <a class="ref ref-link" href="#source-EC-002">EC-002</a> <a class="ref ref-link" href="#source-CL-20260624-02">CL-20260624-02</a></li></ul></dd>
+<dt>対象データ</dt><dd><ol class="structured-list"><li>ENT-OUTBOX-EVENT</li><li>ENT-DELIVERY-ATTEMPT</li></ol></dd>
+<dt>根拠</dt><dd><a class="ref ref-link" href="#source-US-002">US-002</a> <a class="ref ref-link" href="#source-AC-002-01">AC-002-01</a> <a class="ref ref-link" href="#source-FR-020">FR-020</a> <a class="ref ref-link" href="#source-FR-021">FR-021</a> <a class="ref ref-link" href="#source-FR-022">FR-022</a> <a class="ref ref-link" href="#source-EC-002">EC-002</a> <a class="ref ref-link" href="#source-EC-003">EC-003</a> <a class="ref ref-link" href="#source-CL-20260624-02">CL-20260624-02</a> <a class="ref ref-link" href="#source-CL-20260624-03">CL-20260624-03</a> <a class="ref ref-link" href="#source-SC-003">SC-003</a> <a class="ref ref-link" href="#source-SC-004">SC-004</a> <a class="ref ref-link" href="#source-ASM-002">ASM-002</a> <a class="ref ref-link" href="#source-ASM-004">ASM-004</a></dd>
+</dl></article>
+<article class="function-card" id="detail-FNC-004">
+<header><span class="fnid">FNC-004</span><h3>隔離イベントの手動復旧</h3><span class="status current-tag">現行</span></header>
+<p class="breadcrumb">注文連携 ／ 外部連携・運用 ／ 状態通知</p>
+<p class="summary">運用担当者が原因解消後に操作理由を記録し、同じevent IDをpendingへ戻して未解決状態を解消する。</p>
+<dl class="detail-grid">
+<dt>アクター</dt><dd><dl class="actor-grid"><dt>起動者</dt><dd><ul><li>運用担当者</li></ul></dd><dt>処理主体</dt><dd><ul><li>Order API</li><li>Delivery Worker</li></ul></dd><dt>受信者</dt><dd><ul><li>外部EC</li><li>運用担当者</li></ul></dd><dt>運用担当</dt><dd><ul><li>運用担当者</li></ul></dd></dl></dd>
+<dt>起動契機</dt><dd>運用担当者が外部EC復旧を確認し、event IDと操作理由を指定して手動再送APIを呼ぶ <span class="basis basis-specified">spec記載</span> <span class="ref">plan:Recovery</span> <span class="ref">contract:/paths/~1operations~1events~1{eventId}~1replay/post</span></dd>
+<dt>実行形態</dt><dd><span class="kind kind-api">API</span><br>API-003 隔離イベント手動再送API</dd>
+<dt>入力</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>name</dt><dd>eventId / reason</dd><dt>type</dt><dd>UUID / string(1..512)</dd><dt>required</dt><dd>True</dd><dt>description</dt><dd>隔離イベントIDと操作理由</dd><dt>根拠</dt><dd><span class="basis basis-specified">spec記載</span> <span class="ref">contract:/paths/~1operations~1events~1{eventId}~1replay/post</span></dd></dl></li></ol></dd>
+<dt>出力</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>name</dt><dd>ReplayAccepted</dd><dt>type</dt><dd>object</dd><dt>required</dt><dd>True</dd><dt>description</dt><dd>同じeventIdとpending状態</dd><dt>根拠</dt><dd><span class="basis basis-specified">spec記載</span> <span class="ref">contract:/components/schemas/ReplayAccepted</span></dd></dl></li></ol></dd>
+<dt>事前条件</dt><dd><ul><li>対象eventがdead_letterで、運用者scope events.replayを持ち、原因が解消済みである <span class="basis basis-specified">spec記載</span> <span class="ref">plan:Security</span> <span class="ref">plan:Recovery</span></li></ul></dd>
+<dt>事後状態</dt><dd><ul><li>同じevent IDが再配送され、成功時にincidentを解消し未解決dead-letterを0件へ戻す <span class="basis basis-specified">spec記載</span> <span class="ref">plan:状態変更と通知</span> <span class="ref">quickstart:Scenario 3</span></li></ul></dd>
+<dt>業務ルール</dt><dd><ol class="rules"><li>手動再送は新しいeventを作らず同じevent IDを使い、操作理由を監査記録へ残す <span class="basis basis-confirmed">確認済み</span> <a class="ref ref-link" href="#source-FR-022">FR-022</a> <a class="ref ref-link" href="#source-CL-20260624-02">CL-20260624-02</a></li></ol></dd>
+<dt>例外・失敗時</dt><dd><ul><li>eventがdead_letterでない、または既に再送中 → 409を返して再送状態を変更しない <span class="basis basis-specified">spec記載</span> <a class="ref ref-link" href="#source-FR-022">FR-022</a></li></ul></dd>
+<dt>対象データ</dt><dd><ol class="structured-list"><li>ENT-OUTBOX-EVENT</li><li>ENT-DELIVERY-ATTEMPT</li></ol></dd>
+<dt>根拠</dt><dd><a class="ref ref-link" href="#source-US-002">US-002</a> <a class="ref ref-link" href="#source-AC-002-02">AC-002-02</a> <a class="ref ref-link" href="#source-FR-022">FR-022</a> <a class="ref ref-link" href="#source-EC-002">EC-002</a> <a class="ref ref-link" href="#source-CL-20260624-02">CL-20260624-02</a> <a class="ref ref-link" href="#source-SC-003">SC-003</a> <a class="ref ref-link" href="#source-ASM-004">ASM-004</a></dd>
+</dl></article>
+<article class="function-card" id="detail-FNC-005">
+<header><span class="fnid">FNC-005</span><h3>前日注文件数の日次照合</h3><span class="status current-tag">現行</span></header>
+<p class="breadcrumb">注文連携 ／ 外部連携・運用 ／ 日次照合</p>
+<p class="summary">毎日02:00 Asia/Tokyoに外部・内部の前日件数を照合し、不一致または取得不能を記録・通知する。</p>
+<dl class="detail-grid">
+<dt>アクター</dt><dd><dl class="actor-grid"><dt>起動者</dt><dd><ul><li>Reconciliation Scheduler</li></ul></dd><dt>処理主体</dt><dd><ul><li>Reconciliation Scheduler</li></ul></dd><dt>受信者</dt><dd><ul><li>運用担当者</li></ul></dd><dt>運用担当</dt><dd><ul><li>運用担当者</li></ul></dd></dl></dd>
+<dt>起動契機</dt><dd>CronJob相当のschedulerが0 2 * * *、Asia/Tokyoで起動する <span class="basis basis-confirmed">確認済み</span> <a class="ref ref-link" href="#source-FR-030">FR-030</a> <a class="ref ref-link" href="#source-CL-20260624-04">CL-20260624-04</a></dd>
+<dt>実行形態</dt><dd><span class="kind kind-batch">バッチ</span><br>BAT-001 日次注文件数照合job</dd>
+<dt>入力</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>name</dt><dd>前日注文件数</dd><dt>type</dt><dd>external integer / internal integer</dd><dt>required</dt><dd>True</dd><dt>description</dt><dd>前日JSTの外部EC件数と内部database件数</dd><dt>根拠</dt><dd><span class="basis basis-specified">spec記載</span> <span class="ref">plan:日次照合</span> <span class="ref">contract:/x-external-operations/dailyOrderCount</span></dd></dl></li></ol></dd>
+<dt>出力</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>name</dt><dd>DailyReconciliation / 監視通知</dd><dt>type</dt><dd>record / alert</dd><dt>required</dt><dd>True</dd><dt>description</dt><dd>matched、mismatched、unavailableの結果と不一致・照合不能通知</dd><dt>根拠</dt><dd><span class="basis basis-specified">spec記載</span> <span class="ref">data-model:DailyReconciliation</span> <span class="ref">plan:日次照合</span></dd></dl></li></ol></dd>
+<dt>事前条件</dt><dd><ul><li>外部ECが件数取得APIを提供し、既存監視通知チャネルを利用できる <span class="basis basis-specified">spec記載</span> <a class="ref ref-link" href="#source-ASM-003">ASM-003</a> <a class="ref ref-link" href="#source-ASM-004">ASM-004</a></li></ul></dd>
+<dt>事後状態</dt><dd><ul><li>対象日につきDailyReconciliationを1件だけ記録し、不一致または取得不能なら運用担当へ通知する <span class="basis basis-specified">spec記載</span> <span class="ref">plan:日次照合</span> <span class="ref">data-model:DailyReconciliation</span></li></ul></dd>
+<dt>業務ルール</dt><dd><ol class="rules"><li>前日のJST日付範囲をUTCへ変換して照合する <span class="basis basis-specified">spec記載</span> <a class="ref ref-link" href="#source-FR-030">FR-030</a> <a class="ref ref-link" href="#source-CL-20260624-04">CL-20260624-04</a></li><li>同じtarget_dateは一意制約とadvisory lockで重複実行しない <span class="basis basis-specified">spec記載</span> <a class="ref ref-link" href="#source-FR-030">FR-030</a></li></ol></dd>
+<dt>例外・失敗時</dt><dd><ul><li>外部EC件数取得APIを利用できない → 結果を確定せずunavailableとして記録し、照合不能を運用担当へ通知する <span class="basis basis-specified">spec記載</span> <a class="ref ref-link" href="#source-FR-030">FR-030</a> <a class="ref ref-link" href="#source-EC-004">EC-004</a></li></ul></dd>
+<dt>対象データ</dt><dd><ol class="structured-list"><li>ENT-DAILY-RECONCILIATION</li><li>ENT-ORDER</li></ol></dd>
+<dt>根拠</dt><dd><a class="ref ref-link" href="#source-US-003">US-003</a> <a class="ref ref-link" href="#source-AC-003-01">AC-003-01</a> <a class="ref ref-link" href="#source-FR-030">FR-030</a> <a class="ref ref-link" href="#source-EC-004">EC-004</a> <a class="ref ref-link" href="#source-CL-20260624-04">CL-20260624-04</a> <a class="ref ref-link" href="#source-ASM-003">ASM-003</a> <a class="ref ref-link" href="#source-ASM-004">ASM-004</a></dd>
+</dl></article>
+</section>
+<section class="panel" id="panel-flows" role="tabpanel" aria-labelledby="tab-flows">
+<h2 id="flows">フロー・状態</h2>
+<span class="anchor-target" id="design-workflow-WF-001" aria-hidden="true"></span>
+<h3>注文の初回受付と冪等再送</h3>
+<p class="diagram-legend"><strong>凡例:</strong> 上から下が時系列、縦線は参加者、横矢印はメッセージ・処理呼出し</p>
+<p class="diagram-sources"><strong>根拠:</strong> <a class="ref ref-link" href="#source-US-001">US-001</a> <a class="ref ref-link" href="#source-AC-001-01">AC-001-01</a> <a class="ref ref-link" href="#source-AC-001-02">AC-001-02</a> <a class="ref ref-link" href="#source-FR-001">spec:FR-001</a> <a class="ref ref-link" href="#source-FR-002">spec:FR-002</a> <a class="ref ref-link" href="#source-CL-20260621-01">CL-20260621-01</a> <a class="ref ref-link" href="#source-SC-002">spec:SC-002</a> <a class="ref ref-link" href="#source-ASM-001">ASM-001</a> <span class="ref">plan:System Context</span> <span class="ref">plan:Containers</span> <span class="ref">contract:/paths/~1orders/post</span> <span class="ref">plan:注文登録</span> <span class="ref">data-model:Transaction Boundaries</span> <span class="ref">contract:/paths/~1orders/post/responses/201</span> <span class="ref">research:Decision 1</span> <span class="ref">contract:/paths/~1orders/post/responses/409</span></p>
+<figure class="diagram"><svg class="diagram-svg" viewBox="0 0 960 498" role="img" aria-labelledby="title-workflow-1">
+<title id="title-workflow-1">注文の初回受付と冪等再送</title>
+<desc>参加者間のメッセージ順を上から下へ示します。同じ内容を直後の表でも確認できます。</desc>
+<defs><marker id="arrow-workflow-1" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path class="diagram-arrow" d="M0,0 L10,4 L0,8 z"></path></marker></defs>
+<g class="sequence-participant"><rect x="82" y="30" width="156" height="48" rx="6"></rect>
+<text class="diagram-node-name" text-anchor="middle" x="160" y="59">外部EC</text>
+<line class="sequence-lifeline" x1="160" y1="78" x2="160" y2="473"></line></g>
+<g class="sequence-participant"><rect x="402" y="30" width="156" height="48" rx="6"></rect>
+<text class="diagram-node-name" text-anchor="middle" x="480" y="59">Order API</text>
+<line class="sequence-lifeline" x1="480" y1="78" x2="480" y2="473"></line></g>
+<g class="sequence-participant"><rect x="722" y="30" width="156" height="48" rx="6"></rect>
+<text class="diagram-node-name" text-anchor="middle" x="800" y="59">Order Database</text>
+<line class="sequence-lifeline" x1="800" y1="78" x2="800" y2="473"></line></g>
+<line class="diagram-edge" x1="160" y1="112" x2="480" y2="112" marker-end="url(#arrow-workflow-1)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="320" y="104">[normal] Idempotency-KeyとCreateOrderR…</text>
+<line class="diagram-edge" x1="480" y1="170" x2="800" y2="170" marker-end="url(#arrow-workflow-1)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="640" y="162">[normal] client_idとIdempotency-Keyで既存…</text>
+<line class="diagram-edge" x1="480" y1="228" x2="800" y2="228" marker-end="url(#arrow-workflow-1)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="640" y="220">[normal] Order、OrderLine、IdempotencyR…</text>
+<line class="diagram-edge" x1="480" y1="286" x2="160" y2="286" marker-end="url(#arrow-workflow-1)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="320" y="278">[normal] 201とOrderAcceptedを返す</text>
+<line class="diagram-edge" x1="800" y1="344" x2="480" y2="344" marker-end="url(#arrow-workflow-1)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="640" y="336">[normal] 保存済みrequest hashと初回受付結果を返す</text>
+<line class="diagram-edge" x1="480" y1="402" x2="160" y2="402" marker-end="url(#arrow-workflow-1)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="320" y="394">[exception] 同一payloadは200で初回結果を返し、異なる…</text>
+</svg></figure>
+<table class="aux diagram-table participant-table"><caption>注文の初回受付と冪等再送の参加者</caption>
+<thead><tr><th scope="col">参加者ID</th><th scope="col">名称</th><th scope="col">役割</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row">P-EC</th><td>外部EC</td><td>initiator</td><td><span class="ref">plan:System Context</span></td></tr>
+<tr><th scope="row">P-API</th><td>Order API</td><td>processor</td><td><span class="ref">plan:Containers</span></td></tr>
+<tr><th scope="row">P-DB</th><td>Order Database</td><td>processor</td><td><span class="ref">plan:Containers</span></td></tr>
+</tbody></table>
+<table class="aux diagram-table step-table"><caption>注文の初回受付と冪等再送の構造化ステップ</caption>
+<thead><tr><th scope="col">順序</th><th scope="col">起点</th><th scope="col">終点</th><th scope="col">処理</th><th scope="col">条件・次状態</th><th scope="col">種別</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row">STEP-001-01</th><td>P-EC</td><td>P-API</td><td>Idempotency-KeyとCreateOrderRequestでPOST /v1/ordersを呼ぶ</td><td>STEP-001-02</td><td>normal</td><td><a class="ref ref-link" href="#source-US-001">US-001</a> <a class="ref ref-link" href="#source-FR-001">spec:FR-001</a> <span class="ref">contract:/paths/~1orders/post</span></td></tr>
+<tr><th scope="row">STEP-001-02</th><td>P-API</td><td>P-DB</td><td>client_idとIdempotency-Keyで既存受付結果を検索する</td><td><ul><li>未登録</li><li>登録済み</li></ul></td><td>normal</td><td><span class="ref">plan:注文登録</span> <a class="ref ref-link" href="#source-FR-002">spec:FR-002</a></td></tr>
+<tr><th scope="row">STEP-001-03</th><td>P-API</td><td>P-DB</td><td>Order、OrderLine、IdempotencyResultを1transactionで保存する</td><td>新規keyでrequestが有効</td><td>normal</td><td><span class="ref">plan:注文登録</span> <span class="ref">data-model:Transaction Boundaries</span> <a class="ref ref-link" href="#source-AC-001-01">AC-001-01</a></td></tr>
+<tr><th scope="row">STEP-001-04</th><td>P-API</td><td>P-EC</td><td>201とOrderAcceptedを返す</td><td><span class="muted">なし</span></td><td>normal</td><td><span class="ref">contract:/paths/~1orders/post/responses/201</span> <a class="ref ref-link" href="#source-AC-001-01">AC-001-01</a></td></tr>
+<tr><th scope="row">STEP-001-05</th><td>P-DB</td><td>P-API</td><td>保存済みrequest hashと初回受付結果を返す</td><td>STEP-001-06</td><td>normal</td><td><span class="ref">research:Decision 1</span> <a class="ref ref-link" href="#source-CL-20260621-01">CL-20260621-01</a></td></tr>
+<tr><th scope="row">STEP-001-06</th><td>P-API</td><td>P-EC</td><td>同一payloadは200で初回結果を返し、異なるpayloadは409 IDEMPOTENCY_CONFLICTを返す</td><td>同じ冪等キーの再送</td><td>exception</td><td><a class="ref ref-link" href="#source-AC-001-02">AC-001-02</a> <a class="ref ref-link" href="#source-FR-002">spec:FR-002</a> <span class="ref">contract:/paths/~1orders/post/responses/409</span></td></tr>
+</tbody></table>
+<span class="anchor-target" id="design-workflow-WF-002" aria-hidden="true"></span>
+<h3>状態変更から通知・隔離・手動復旧まで</h3>
+<p class="diagram-legend"><strong>凡例:</strong> 上から下が時系列、縦線は参加者、横矢印はメッセージ・処理呼出し</p>
+<p class="diagram-sources"><strong>根拠:</strong> <a class="ref ref-link" href="#source-US-002">US-002</a> <a class="ref ref-link" href="#source-AC-002-01">AC-002-01</a> <a class="ref ref-link" href="#source-AC-002-02">AC-002-02</a> <a class="ref ref-link" href="#source-FR-010">spec:FR-010</a> <a class="ref ref-link" href="#source-FR-011">spec:FR-011</a> <a class="ref ref-link" href="#source-FR-020">spec:FR-020</a> <a class="ref ref-link" href="#source-FR-021">spec:FR-021</a> <a class="ref ref-link" href="#source-FR-022">spec:FR-022</a> <a class="ref ref-link" href="#source-EC-001">EC-001</a> <a class="ref ref-link" href="#source-EC-002">EC-002</a> <a class="ref ref-link" href="#source-EC-003">EC-003</a> <a class="ref ref-link" href="#source-CL-20260621-02">CL-20260621-02</a> <a class="ref ref-link" href="#source-CL-20260624-01">CL-20260624-01</a> <a class="ref ref-link" href="#source-CL-20260624-02">CL-20260624-02</a> <a class="ref ref-link" href="#source-CL-20260624-03">CL-20260624-03</a> <a class="ref ref-link" href="#source-SC-003">spec:SC-003</a> <a class="ref ref-link" href="#source-SC-004">spec:SC-004</a> <a class="ref ref-link" href="#source-ASM-002">ASM-002</a> <a class="ref ref-link" href="#source-ASM-004">ASM-004</a> <span class="ref">contract:/paths/~1orders~1{orderId}~1transitions/post</span> <span class="ref">plan:Containers</span> <span class="ref">plan:System Context</span> <span class="ref">research:Decision 2</span> <span class="ref">plan:状態変更と通知</span> <span class="ref">contract:/webhooks/orderStatusChanged/post</span> <span class="ref">data-model:Transaction Boundaries</span> <span class="ref">plan:Recovery</span> <span class="ref">data-model:OutboxEvent</span> <span class="ref">research:Decision 3</span> <span class="ref">quickstart:Scenario 3</span></p>
+<figure class="diagram"><svg class="diagram-svg" viewBox="0 0 1320 846" role="img" aria-labelledby="title-workflow-2">
+<title id="title-workflow-2">状態変更から通知・隔離・手動復旧まで</title>
+<desc>参加者間のメッセージ順を上から下へ示します。同じ内容を直後の表でも確認できます。</desc>
+<defs><marker id="arrow-workflow-2" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path class="diagram-arrow" d="M0,0 L10,4 L0,8 z"></path></marker></defs>
+<g class="sequence-participant"><rect x="32" y="30" width="156" height="48" rx="6"></rect>
+<text class="diagram-node-name" text-anchor="middle" x="110" y="59">状態変更API client（主体名は…</text>
+<line class="sequence-lifeline" x1="110" y1="78" x2="110" y2="821"></line></g>
+<g class="sequence-participant"><rect x="252" y="30" width="156" height="48" rx="6"></rect>
+<text class="diagram-node-name" text-anchor="middle" x="330" y="59">Order API</text>
+<line class="sequence-lifeline" x1="330" y1="78" x2="330" y2="821"></line></g>
+<g class="sequence-participant"><rect x="472" y="30" width="156" height="48" rx="6"></rect>
+<text class="diagram-node-name" text-anchor="middle" x="550" y="59">Order Database</text>
+<line class="sequence-lifeline" x1="550" y1="78" x2="550" y2="821"></line></g>
+<g class="sequence-participant"><rect x="692" y="30" width="156" height="48" rx="6"></rect>
+<text class="diagram-node-name" text-anchor="middle" x="770" y="59">Delivery Worker</text>
+<line class="sequence-lifeline" x1="770" y1="78" x2="770" y2="821"></line></g>
+<g class="sequence-participant"><rect x="912" y="30" width="156" height="48" rx="6"></rect>
+<text class="diagram-node-name" text-anchor="middle" x="990" y="59">外部EC</text>
+<line class="sequence-lifeline" x1="990" y1="78" x2="990" y2="821"></line></g>
+<g class="sequence-participant"><rect x="1132" y="30" width="156" height="48" rx="6"></rect>
+<text class="diagram-node-name" text-anchor="middle" x="1210" y="59">運用担当者</text>
+<line class="sequence-lifeline" x1="1210" y1="78" x2="1210" y2="821"></line></g>
+<line class="diagram-edge" x1="110" y1="112" x2="330" y2="112" marker-end="url(#arrow-workflow-2)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="220" y="104">[normal] targetStatus、version、trigger…</text>
+<line class="diagram-edge" x1="330" y1="170" x2="550" y2="170" marker-end="url(#arrow-workflow-2)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="440" y="162">[normal] row lockとversion、許可遷移を検証し、Or…</text>
+<line class="diagram-edge" x1="550" y1="228" x2="770" y2="228" marker-end="url(#arrow-workflow-2)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="660" y="220">[normal] commit済みのpending OutboxEvent…</text>
+<line class="diagram-edge" x1="770" y1="286" x2="990" y2="286" marker-end="url(#arrow-workflow-2)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="880" y="278">[normal] X-Event-IdとOrderStatusChange…</text>
+<line class="diagram-edge" x1="770" y1="344" x2="550" y2="344" marker-end="url(#arrow-workflow-2)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="660" y="336">[normal] eventをdeliveredとし成功attemptを記…</text>
+<line class="diagram-edge" x1="770" y1="402" x2="550" y2="402" marker-end="url(#arrow-workflow-2)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="660" y="394">[exception] 失敗attemptを記録し、1分・5分・15分の次…</text>
+<line class="diagram-edge" x1="770" y1="460" x2="1210" y2="460" marker-end="url(#arrow-workflow-2)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="990" y="452">[exception] eventをdead_letterへ隔離し、移行か…</text>
+<line class="diagram-edge" x1="1210" y1="518" x2="330" y2="518" marker-end="url(#arrow-workflow-2)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="770" y="510">[recovery] 原因解消後、event IDと操作理由で手動再送を要…</text>
+<line class="diagram-edge" x1="330" y1="576" x2="550" y2="576" marker-end="url(#arrow-workflow-2)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="440" y="568">[recovery] 同じevent IDをpendingへ戻し操作理由を…</text>
+<line class="diagram-edge" x1="770" y1="634" x2="990" y2="634" marker-end="url(#arrow-workflow-2)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="880" y="626">[recovery] 同じevent IDでwebhookを再送する</text>
+<line class="diagram-edge" x1="770" y1="692" x2="1210" y2="692" marker-end="url(#arrow-workflow-2)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="990" y="684">[recovery] 成功を記録しincidentを解消して未解決dead…</text>
+<line class="diagram-edge" x1="330" y1="750" x2="110" y2="750" marker-end="url(#arrow-workflow-2)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="220" y="742">[exception] 409 INVALID_STATE_TRANSIT…</text>
+</svg></figure>
+<table class="aux diagram-table participant-table"><caption>状態変更から通知・隔離・手動復旧までの参加者</caption>
+<thead><tr><th scope="col">参加者ID</th><th scope="col">名称</th><th scope="col">役割</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row">P-STATE-CLIENT</th><td>状態変更API client（主体名は正本未記載）</td><td>initiator</td><td><span class="ref">contract:/paths/~1orders~1{orderId}~1transitions/post</span></td></tr>
+<tr><th scope="row">P-ORDER-API</th><td>Order API</td><td>processor</td><td><span class="ref">plan:Containers</span></td></tr>
+<tr><th scope="row">P-ORDER-DB</th><td>Order Database</td><td>processor</td><td><span class="ref">plan:Containers</span></td></tr>
+<tr><th scope="row">P-WORKER</th><td>Delivery Worker</td><td>processor</td><td><span class="ref">plan:Containers</span></td></tr>
+<tr><th scope="row">P-EXTERNAL-EC</th><td>外部EC</td><td>recipient</td><td><span class="ref">plan:System Context</span></td></tr>
+<tr><th scope="row">P-OPS</th><td>運用担当者</td><td>operator</td><td><span class="ref">plan:System Context</span></td></tr>
+</tbody></table>
+<table class="aux diagram-table step-table"><caption>状態変更から通知・隔離・手動復旧までの構造化ステップ</caption>
+<thead><tr><th scope="col">順序</th><th scope="col">起点</th><th scope="col">終点</th><th scope="col">処理</th><th scope="col">条件・次状態</th><th scope="col">種別</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row">STEP-002-01</th><td>P-STATE-CLIENT</td><td>P-ORDER-API</td><td>targetStatus、version、triggerRefを指定して状態変更を要求する</td><td>STEP-002-02</td><td>normal</td><td><a class="ref ref-link" href="#source-FR-010">spec:FR-010</a> <span class="ref">contract:/paths/~1orders~1{orderId}~1transitions/post</span></td></tr>
+<tr><th scope="row">STEP-002-02</th><td>P-ORDER-API</td><td>P-ORDER-DB</td><td>row lockとversion、許可遷移を検証し、Order・History・Outboxを1transactionで保存する</td><td><ul><li>許可遷移かつversion一致</li><li>禁止遷移またはversion競合</li></ul></td><td>normal</td><td><a class="ref ref-link" href="#source-FR-010">spec:FR-010</a> <a class="ref ref-link" href="#source-FR-011">spec:FR-011</a> <a class="ref ref-link" href="#source-CL-20260624-01">CL-20260624-01</a> <span class="ref">research:Decision 2</span></td></tr>
+<tr><th scope="row">STEP-002-03</th><td>P-ORDER-DB</td><td>P-WORKER</td><td>commit済みのpending OutboxEventをworkerがclaimする</td><td>STEP-002-04</td><td>normal</td><td><span class="ref">plan:状態変更と通知</span> <a class="ref ref-link" href="#source-FR-020">spec:FR-020</a></td></tr>
+<tr><th scope="row">STEP-002-04</th><td>P-WORKER</td><td>P-EXTERNAL-EC</td><td>X-Event-IdとOrderStatusChangedEventをwebhook送信する</td><td><ul><li>204</li><li>再送対象の失敗</li></ul></td><td>normal</td><td><a class="ref ref-link" href="#source-FR-020">spec:FR-020</a> <span class="ref">contract:/webhooks/orderStatusChanged/post</span></td></tr>
+<tr><th scope="row">STEP-002-05</th><td>P-WORKER</td><td>P-ORDER-DB</td><td>eventをdeliveredとし成功attemptを記録する</td><td><span class="muted">なし</span></td><td>normal</td><td><span class="ref">data-model:Transaction Boundaries</span> <a class="ref ref-link" href="#source-SC-003">spec:SC-003</a></td></tr>
+<tr><th scope="row">STEP-002-06</th><td>P-WORKER</td><td>P-ORDER-DB</td><td>失敗attemptを記録し、1分・5分・15分の次回送信を設定する</td><td><ul><li>自動再送上限未到達</li><li>自動再送上限到達</li></ul></td><td>exception</td><td><a class="ref ref-link" href="#source-FR-021">spec:FR-021</a> <a class="ref ref-link" href="#source-CL-20260624-03">CL-20260624-03</a> <span class="ref">plan:状態変更と通知</span></td></tr>
+<tr><th scope="row">STEP-002-07</th><td>P-WORKER</td><td>P-OPS</td><td>eventをdead_letterへ隔離し、移行から5分以内にalertする</td><td>STEP-002-08</td><td>exception</td><td><a class="ref ref-link" href="#source-FR-022">spec:FR-022</a> <a class="ref ref-link" href="#source-EC-002">EC-002</a> <a class="ref ref-link" href="#source-CL-20260624-02">CL-20260624-02</a> <a class="ref ref-link" href="#source-SC-004">spec:SC-004</a></td></tr>
+<tr><th scope="row">STEP-002-08</th><td>P-OPS</td><td>P-ORDER-API</td><td>原因解消後、event IDと操作理由で手動再送を要求する</td><td>STEP-002-09</td><td>recovery</td><td><a class="ref ref-link" href="#source-AC-002-02">AC-002-02</a> <a class="ref ref-link" href="#source-FR-022">spec:FR-022</a> <span class="ref">plan:Recovery</span></td></tr>
+<tr><th scope="row">STEP-002-09</th><td>P-ORDER-API</td><td>P-ORDER-DB</td><td>同じevent IDをpendingへ戻し操作理由を監査記録へ残す</td><td>STEP-002-10</td><td>recovery</td><td><a class="ref ref-link" href="#source-CL-20260624-02">CL-20260624-02</a> <span class="ref">data-model:OutboxEvent</span></td></tr>
+<tr><th scope="row">STEP-002-10</th><td>P-WORKER</td><td>P-EXTERNAL-EC</td><td>同じevent IDでwebhookを再送する</td><td>STEP-002-11</td><td>recovery</td><td><a class="ref ref-link" href="#source-AC-002-02">AC-002-02</a> <a class="ref ref-link" href="#source-EC-003">EC-003</a> <span class="ref">research:Decision 3</span></td></tr>
+<tr><th scope="row">STEP-002-11</th><td>P-WORKER</td><td>P-OPS</td><td>成功を記録しincidentを解消して未解決dead-letterを0件にする</td><td><span class="muted">なし</span></td><td>recovery</td><td><a class="ref ref-link" href="#source-AC-002-02">AC-002-02</a> <a class="ref ref-link" href="#source-SC-003">spec:SC-003</a> <span class="ref">quickstart:Scenario 3</span></td></tr>
+<tr><th scope="row">STEP-002-12</th><td>P-ORDER-API</td><td>P-STATE-CLIENT</td><td>409 INVALID_STATE_TRANSITIONまたはVERSION_CONFLICTを返し、Order・History・Outboxを変更しない</td><td><span class="muted">なし</span></td><td>exception</td><td><a class="ref ref-link" href="#source-FR-011">spec:FR-011</a> <a class="ref ref-link" href="#source-EC-001">EC-001</a> <a class="ref ref-link" href="#source-CL-20260621-02">CL-20260621-02</a></td></tr>
+</tbody></table>
+<span class="anchor-target" id="design-workflow-WF-003" aria-hidden="true"></span>
+<h3>日次件数照合と異常通知</h3>
+<p class="diagram-legend"><strong>凡例:</strong> 上から下が時系列、縦線は参加者、横矢印はメッセージ・処理呼出し</p>
+<p class="diagram-sources"><strong>根拠:</strong> <a class="ref ref-link" href="#source-US-003">US-003</a> <a class="ref ref-link" href="#source-AC-003-01">AC-003-01</a> <a class="ref ref-link" href="#source-FR-030">spec:FR-030</a> <a class="ref ref-link" href="#source-EC-004">EC-004</a> <a class="ref ref-link" href="#source-CL-20260624-04">CL-20260624-04</a> <a class="ref ref-link" href="#source-ASM-003">ASM-003</a> <a class="ref ref-link" href="#source-ASM-004">ASM-004</a> <span class="ref">plan:Containers</span> <span class="ref">contract:/x-external-operations/dailyOrderCount</span> <span class="ref">plan:System Context</span> <span class="ref">plan:日次照合</span></p>
+<figure class="diagram"><svg class="diagram-svg" viewBox="0 0 960 382" role="img" aria-labelledby="title-workflow-3">
+<title id="title-workflow-3">日次件数照合と異常通知</title>
+<desc>参加者間のメッセージ順を上から下へ示します。同じ内容を直後の表でも確認できます。</desc>
+<defs><marker id="arrow-workflow-3" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path class="diagram-arrow" d="M0,0 L10,4 L0,8 z"></path></marker></defs>
+<g class="sequence-participant"><rect x="42" y="30" width="156" height="48" rx="6"></rect>
+<text class="diagram-node-name" text-anchor="middle" x="120" y="59">Reconciliation Sche…</text>
+<line class="sequence-lifeline" x1="120" y1="78" x2="120" y2="357"></line></g>
+<g class="sequence-participant"><rect x="282" y="30" width="156" height="48" rx="6"></rect>
+<text class="diagram-node-name" text-anchor="middle" x="360" y="59">外部EC件数API</text>
+<line class="sequence-lifeline" x1="360" y1="78" x2="360" y2="357"></line></g>
+<g class="sequence-participant"><rect x="522" y="30" width="156" height="48" rx="6"></rect>
+<text class="diagram-node-name" text-anchor="middle" x="600" y="59">Order Database</text>
+<line class="sequence-lifeline" x1="600" y1="78" x2="600" y2="357"></line></g>
+<g class="sequence-participant"><rect x="762" y="30" width="156" height="48" rx="6"></rect>
+<text class="diagram-node-name" text-anchor="middle" x="840" y="59">運用担当者</text>
+<line class="sequence-lifeline" x1="840" y1="78" x2="840" y2="357"></line></g>
+<line class="diagram-edge" x1="120" y1="112" x2="175" y2="112" marker-end="url(#arrow-workflow-3)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="147.5" y="104">[normal] 02:00 Asia/Tokyoに起動し、前日JST日付…</text>
+<line class="diagram-edge" x1="120" y1="170" x2="360" y2="170" marker-end="url(#arrow-workflow-3)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="240" y="162">[normal] targetDateで外部ECの注文件数を取得する</text>
+<line class="diagram-edge" x1="120" y1="228" x2="600" y2="228" marker-end="url(#arrow-workflow-3)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="360" y="220">[normal] 対象日lockを取得し、内部件数を照会してDailyRe…</text>
+<line class="diagram-edge" x1="120" y1="286" x2="840" y2="286" marker-end="url(#arrow-workflow-3)"></line>
+<text class="diagram-edge-label" text-anchor="middle" x="480" y="278">[exception] 件数不一致は差分と対象日を、外部取得失敗は照合不能…</text>
+</svg></figure>
+<table class="aux diagram-table participant-table"><caption>日次件数照合と異常通知の参加者</caption>
+<thead><tr><th scope="col">参加者ID</th><th scope="col">名称</th><th scope="col">役割</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row">P-SCHED</th><td>Reconciliation Scheduler</td><td>initiator</td><td><span class="ref">plan:Containers</span></td></tr>
+<tr><th scope="row">P-EC-COUNT</th><td>外部EC件数API</td><td>processor</td><td><span class="ref">contract:/x-external-operations/dailyOrderCount</span></td></tr>
+<tr><th scope="row">P-DB-RECON</th><td>Order Database</td><td>processor</td><td><span class="ref">plan:Containers</span></td></tr>
+<tr><th scope="row">P-OPS-RECON</th><td>運用担当者</td><td>recipient</td><td><span class="ref">plan:System Context</span></td></tr>
+</tbody></table>
+<table class="aux diagram-table step-table"><caption>日次件数照合と異常通知の構造化ステップ</caption>
+<thead><tr><th scope="col">順序</th><th scope="col">起点</th><th scope="col">終点</th><th scope="col">処理</th><th scope="col">条件・次状態</th><th scope="col">種別</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row">STEP-003-01</th><td>P-SCHED</td><td>P-SCHED</td><td>02:00 Asia/Tokyoに起動し、前日JST日付範囲をUTCへ変換する</td><td>STEP-003-02</td><td>normal</td><td><a class="ref ref-link" href="#source-FR-030">spec:FR-030</a> <a class="ref ref-link" href="#source-CL-20260624-04">CL-20260624-04</a> <span class="ref">plan:日次照合</span></td></tr>
+<tr><th scope="row">STEP-003-02</th><td>P-SCHED</td><td>P-EC-COUNT</td><td>targetDateで外部ECの注文件数を取得する</td><td>STEP-003-03</td><td>normal</td><td><a class="ref ref-link" href="#source-ASM-003">ASM-003</a> <span class="ref">contract:/x-external-operations/dailyOrderCount</span></td></tr>
+<tr><th scope="row">STEP-003-03</th><td>P-SCHED</td><td>P-DB-RECON</td><td>対象日lockを取得し、内部件数を照会してDailyReconciliationをupsertする</td><td>STEP-003-04</td><td>normal</td><td><span class="ref">plan:日次照合</span> <a class="ref ref-link" href="#source-FR-030">spec:FR-030</a></td></tr>
+<tr><th scope="row">STEP-003-04</th><td>P-SCHED</td><td>P-OPS-RECON</td><td>件数不一致は差分と対象日を、外部取得失敗は照合不能を通知する</td><td>mismatchedまたはunavailable</td><td>exception</td><td><a class="ref ref-link" href="#source-AC-003-01">AC-003-01</a> <a class="ref ref-link" href="#source-EC-004">EC-004</a> <a class="ref ref-link" href="#source-FR-030">spec:FR-030</a></td></tr>
+</tbody></table>
+<span class="anchor-target" id="design-state-model-STM-001" aria-hidden="true"></span>
+<h3>注文状態</h3>
+<p class="diagram-legend"><strong>凡例:</strong> 二重枠は終端状態、太枠は初期状態、矢印は状態遷移</p>
+<p class="diagram-sources"><strong>根拠:</strong> <a class="ref ref-link" href="#source-FR-010">spec:FR-010</a> <a class="ref ref-link" href="#source-FR-011">spec:FR-011</a> <a class="ref ref-link" href="#source-EC-001">EC-001</a> <a class="ref ref-link" href="#source-CL-20260621-02">CL-20260621-02</a> <a class="ref ref-link" href="#source-CL-20260624-01">CL-20260624-01</a> <span class="ref">data-model:Order State Transitions</span></p>
+<figure class="diagram"><svg class="diagram-svg" viewBox="0 0 960 270" role="img" aria-labelledby="title-state-model-1">
+<title id="title-state-model-1">注文状態</title>
+<desc>状態と許可された遷移を示します。同じ内容を直後の表でも確認できます。</desc>
+<defs><marker id="arrow-state-model-1" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path class="diagram-arrow" d="M0,0 L10,4 L0,8 z"></path></marker></defs>
+<line class="diagram-edge" x1="125" y1="96" x2="360" y2="96" marker-end="url(#arrow-state-model-1)"></line>
+<text class="diagram-edge-label" x="242.5" y="89">出荷完了</text>
+<line class="diagram-edge" x1="125" y1="96" x2="830" y2="96" marker-end="url(#arrow-state-model-1)"></line>
+<text class="diagram-edge-label" x="477.5" y="89">取消承認</text>
+<line class="diagram-edge" x1="360" y1="96" x2="595" y2="96" marker-end="url(#arrow-state-model-1)"></line>
+<text class="diagram-edge-label" x="477.5" y="89">配送完了</text>
+<g class="diagram-node state-node initial-state"><rect x="35" y="65" width="180" height="62" rx="22"></rect>
+<text class="diagram-node-name" text-anchor="middle" x="125" y="102">受付済み</text></g>
+<g class="diagram-node state-node"><rect x="270" y="65" width="180" height="62" rx="22"></rect>
+<text class="diagram-node-name" text-anchor="middle" x="360" y="102">配送中</text></g>
+<g class="diagram-node state-node terminal-state"><rect x="505" y="65" width="180" height="62" rx="22"></rect>
+<rect class="terminal-inner" x="510" y="70" width="170" height="52" rx="18"></rect>
+<text class="diagram-node-name" text-anchor="middle" x="595" y="102">配送済み</text></g>
+<g class="diagram-node state-node terminal-state"><rect x="740" y="65" width="180" height="62" rx="22"></rect>
+<rect class="terminal-inner" x="745" y="70" width="170" height="52" rx="18"></rect>
+<text class="diagram-node-name" text-anchor="middle" x="830" y="102">取消</text></g>
+</svg></figure>
+<table class="aux diagram-table"><caption>注文状態の状態</caption>
+<thead><tr><th scope="col">状態ID</th><th scope="col">状態</th><th scope="col">初期</th><th scope="col">終端</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row">accepted</th><td>受付済み</td><td>初期</td><td></td><td><span class="ref">data-model:Order State Transitions</span></td></tr>
+<tr><th scope="row">shipping</th><td>配送中</td><td></td><td></td><td><span class="ref">data-model:Order State Transitions</span></td></tr>
+<tr><th scope="row">delivered</th><td>配送済み</td><td></td><td>終端</td><td><span class="ref">data-model:Order State Transitions</span></td></tr>
+<tr><th scope="row">cancelled</th><td>取消</td><td></td><td>終端</td><td><span class="ref">data-model:Order State Transitions</span></td></tr>
+</tbody></table>
+<table class="aux diagram-table"><caption>注文状態の遷移</caption>
+<thead><tr><th scope="col">遷移元</th><th scope="col">遷移先</th><th scope="col">契機</th><th scope="col">条件</th><th scope="col">処理</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row">accepted</th><td>shipping</td><td>出荷完了</td><td>version一致</td><td>Order、OrderStateHistory、OutboxEventを同一transactionで保存する</td><td><span class="ref">data-model:Order State Transitions</span> <a class="ref ref-link" href="#source-FR-010">spec:FR-010</a></td></tr>
+<tr><th scope="row">accepted</th><td>cancelled</td><td>取消承認</td><td>version一致</td><td>Order、OrderStateHistory、OutboxEventを同一transactionで保存する</td><td><span class="ref">data-model:Order State Transitions</span> <a class="ref ref-link" href="#source-FR-010">spec:FR-010</a></td></tr>
+<tr><th scope="row">shipping</th><td>delivered</td><td>配送完了</td><td>version一致</td><td>Order、OrderStateHistory、OutboxEventを同一transactionで保存する</td><td><span class="ref">data-model:Order State Transitions</span> <a class="ref ref-link" href="#source-FR-010">spec:FR-010</a></td></tr>
+</tbody></table>
+<table class="aux diagram-table"><caption>注文状態の禁止遷移方針</caption>
+<thead><tr><th scope="col">規則</th><th scope="col">未定義・禁止遷移の扱い</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row">未定義遷移</th><td>409 INVALID_STATE_TRANSITIONで拒否し、Order、OrderStateHistory、OutboxEventを変更しない</td><td><a class="ref ref-link" href="#source-FR-010">spec:FR-010</a> <a class="ref ref-link" href="#source-FR-011">spec:FR-011</a> <a class="ref ref-link" href="#source-EC-001">EC-001</a> <a class="ref ref-link" href="#source-CL-20260621-02">CL-20260621-02</a> <a class="ref ref-link" href="#source-CL-20260624-01">CL-20260624-01</a> <span class="ref">data-model:Order State Transitions</span></td></tr>
+</tbody></table>
+</section>
+<section class="panel" id="panel-data" role="tabpanel" aria-labelledby="tab-data">
+<h2 id="data-model">データモデル</h2>
+<h3>論理データモデル</h3>
+<p class="diagram-legend"><strong>凡例:</strong> 箱は論理エンティティ、線はエンティティ間の関係</p>
+<p class="diagram-sources"><strong>根拠:</strong> <span class="ref">data-model:Order</span> <span class="ref">data-model:OrderLine</span> <span class="ref">data-model:OrderStateHistory</span> <span class="ref">data-model:IdempotencyResult</span> <span class="ref">data-model:OutboxEvent</span> <span class="ref">data-model:DeliveryAttempt</span> <span class="ref">data-model:DailyReconciliation</span> <span class="ref">data-model:Constraints</span> <span class="ref">data-model:Retention</span> <span class="ref">research:Decision 5</span> <span class="ref">data-model:Relationships</span></p>
+<figure class="diagram"><svg class="diagram-svg" viewBox="0 0 960 670" role="img" aria-labelledby="title-er-model">
+<title id="title-er-model">論理データモデル</title>
+<desc>論理エンティティ、属性、関係を示します。同じ内容を直後の表でも確認できます。</desc>
+<defs><marker id="arrow-er-model" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path class="diagram-arrow" d="M0,0 L10,4 L0,8 z"></path></marker></defs>
+<line class="diagram-edge" x1="160" y1="124" x2="470" y2="124" marker-end="url(#arrow-er-model)"></line>
+<text class="diagram-edge-label" x="315" y="117">1件以上の商品明細を持つ</text>
+<line class="diagram-edge" x1="160" y1="124" x2="780" y2="124" marker-end="url(#arrow-er-model)"></line>
+<text class="diagram-edge-label" x="470" y="117">状態履歴を持つ</text>
+<line class="diagram-edge" x1="160" y1="124" x2="160" y2="299" marker-end="url(#arrow-er-model)"></line>
+<text class="diagram-edge-label" x="160" y="204.5">初回受付結果を持つ</text>
+<line class="diagram-edge" x1="160" y1="124" x2="470" y2="299" marker-end="url(#arrow-er-model)"></line>
+<text class="diagram-edge-label" x="315" y="204.5">状態変更eventを持つ</text>
+<line class="diagram-edge" x1="470" y1="124" x2="160" y2="124" marker-end="url(#arrow-er-model)"></line>
+<text class="diagram-edge-label" x="315" y="117">親Order</text>
+<line class="diagram-edge" x1="780" y1="124" x2="160" y2="124" marker-end="url(#arrow-er-model)"></line>
+<text class="diagram-edge-label" x="470" y="117">対象Order</text>
+<line class="diagram-edge" x1="160" y1="299" x2="160" y2="124" marker-end="url(#arrow-er-model)"></line>
+<text class="diagram-edge-label" x="160" y="204.5">受付済みOrder</text>
+<line class="diagram-edge" x1="470" y1="299" x2="160" y2="124" marker-end="url(#arrow-er-model)"></line>
+<text class="diagram-edge-label" x="315" y="204.5">対象Order</text>
+<line class="diagram-edge" x1="470" y1="299" x2="780" y2="299" marker-end="url(#arrow-er-model)"></line>
+<text class="diagram-edge-label" x="625" y="292">配送試行</text>
+<line class="diagram-edge" x1="780" y1="299" x2="470" y2="299" marker-end="url(#arrow-er-model)"></line>
+<text class="diagram-edge-label" x="625" y="292">対象event</text>
+<g class="diagram-node entity-node"><rect x="35" y="65" width="250" height="118" rx="5"></rect>
+<line class="entity-divider" x1="35" y1="99" x2="285" y2="99"></line>
+<text class="diagram-node-name" x="47" y="88">Order</text>
+<text class="entity-attribute" x="47" y="120">id: UUID</text>
+<text class="entity-attribute" x="47" y="136">client_id: varchar(64)</text>
+<text class="entity-attribute" x="47" y="152">external_order_number: varchar(64)</text>
+<text class="entity-attribute" x="47" y="168">idempotency_key: varchar(128)</text>
+</g>
+<g class="diagram-node entity-node"><rect x="345" y="65" width="250" height="118" rx="5"></rect>
+<line class="entity-divider" x1="345" y1="99" x2="595" y2="99"></line>
+<text class="diagram-node-name" x="357" y="88">OrderLine</text>
+<text class="entity-attribute" x="357" y="120">id: UUID</text>
+<text class="entity-attribute" x="357" y="136">order_id: UUID</text>
+<text class="entity-attribute" x="357" y="152">sku: varchar(64)</text>
+<text class="entity-attribute" x="357" y="168">quantity: integer</text>
+</g>
+<g class="diagram-node entity-node"><rect x="655" y="65" width="250" height="118" rx="5"></rect>
+<line class="entity-divider" x1="655" y1="99" x2="905" y2="99"></line>
+<text class="diagram-node-name" x="667" y="88">OrderStateHistory</text>
+<text class="entity-attribute" x="667" y="120">id: UUID</text>
+<text class="entity-attribute" x="667" y="136">order_id: UUID</text>
+<text class="entity-attribute" x="667" y="152">from_status: order_status</text>
+<text class="entity-attribute" x="667" y="168">to_status: order_status</text>
+</g>
+<g class="diagram-node entity-node"><rect x="35" y="240" width="250" height="118" rx="5"></rect>
+<line class="entity-divider" x1="35" y1="274" x2="285" y2="274"></line>
+<text class="diagram-node-name" x="47" y="263">IdempotencyResult</text>
+<text class="entity-attribute" x="47" y="295">client_id: varchar(64)</text>
+<text class="entity-attribute" x="47" y="311">idempotency_key: varchar(128)</text>
+<text class="entity-attribute" x="47" y="327">request_hash: char(64)</text>
+<text class="entity-attribute" x="47" y="343">order_id: UUID</text>
+</g>
+<g class="diagram-node entity-node"><rect x="345" y="240" width="250" height="118" rx="5"></rect>
+<line class="entity-divider" x1="345" y1="274" x2="595" y2="274"></line>
+<text class="diagram-node-name" x="357" y="263">OutboxEvent</text>
+<text class="entity-attribute" x="357" y="295">event_id: UUID</text>
+<text class="entity-attribute" x="357" y="311">order_id: UUID</text>
+<text class="entity-attribute" x="357" y="327">event_type: varchar(64)</text>
+<text class="entity-attribute" x="357" y="343">payload: jsonb</text>
+</g>
+<g class="diagram-node entity-node"><rect x="655" y="240" width="250" height="118" rx="5"></rect>
+<line class="entity-divider" x1="655" y1="274" x2="905" y2="274"></line>
+<text class="diagram-node-name" x="667" y="263">DeliveryAttempt</text>
+<text class="entity-attribute" x="667" y="295">id: UUID</text>
+<text class="entity-attribute" x="667" y="311">event_id: UUID</text>
+<text class="entity-attribute" x="667" y="327">attempt_kind: attempt_kind</text>
+<text class="entity-attribute" x="667" y="343">attempted_at: timestamptz</text>
+</g>
+<g class="diagram-node entity-node"><rect x="35" y="415" width="250" height="118" rx="5"></rect>
+<line class="entity-divider" x1="35" y1="449" x2="285" y2="449"></line>
+<text class="diagram-node-name" x="47" y="438">DailyReconciliation</text>
+<text class="entity-attribute" x="47" y="470">target_date: date</text>
+<text class="entity-attribute" x="47" y="486">external_count: integer</text>
+<text class="entity-attribute" x="47" y="502">internal_count: integer</text>
+<text class="entity-attribute" x="47" y="518">result: reconciliation_result</text>
+</g>
+</svg></figure>
+<table class="aux diagram-table"><caption>論理エンティティ</caption>
+<thead><tr><th scope="col">ID</th><th scope="col">名称</th><th scope="col">説明</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row"><span id="design-entity-ENT-ORDER">ENT-ORDER</span></th><td>Order</td><td>注文の集約root</td><td><span class="ref">data-model:Order</span></td></tr>
+<tr><th scope="row"><span id="design-entity-ENT-ORDER-LINE">ENT-ORDER-LINE</span></th><td>OrderLine</td><td>注文の商品明細</td><td><span class="ref">data-model:OrderLine</span></td></tr>
+<tr><th scope="row"><span id="design-entity-ENT-ORDER-STATE-HISTORY">ENT-ORDER-STATE-HISTORY</span></th><td>OrderStateHistory</td><td>注文状態の変更履歴</td><td><span class="ref">data-model:OrderStateHistory</span></td></tr>
+<tr><th scope="row"><span id="design-entity-ENT-IDEMPOTENCY-RESULT">ENT-IDEMPOTENCY-RESULT</span></th><td>IdempotencyResult</td><td>冪等キーごとの初回受付結果</td><td><span class="ref">data-model:IdempotencyResult</span></td></tr>
+<tr><th scope="row"><span id="design-entity-ENT-OUTBOX-EVENT">ENT-OUTBOX-EVENT</span></th><td>OutboxEvent</td><td>状態変更と同一transactionで保存する配送event</td><td><span class="ref">data-model:OutboxEvent</span></td></tr>
+<tr><th scope="row"><span id="design-entity-ENT-DELIVERY-ATTEMPT">ENT-DELIVERY-ATTEMPT</span></th><td>DeliveryAttempt</td><td>eventの初回・自動・手動配送試行の証跡</td><td><span class="ref">data-model:DeliveryAttempt</span></td></tr>
+<tr><th scope="row"><span id="design-entity-ENT-DAILY-RECONCILIATION">ENT-DAILY-RECONCILIATION</span></th><td>DailyReconciliation</td><td>日次件数照合の結果と通知時刻</td><td><span class="ref">data-model:DailyReconciliation</span></td></tr>
+</tbody></table>
+<table class="aux diagram-table"><caption>論理エンティティと属性</caption>
+<thead><tr><th scope="col">エンティティID</th><th scope="col">名称</th><th scope="col">属性</th><th scope="col">型</th><th scope="col">必須</th><th scope="col">説明・根拠</th></tr></thead><tbody>
+<tr><th scope="row">ENT-ORDER</th><td>Order</td><td>id</td><td>UUID</td><td>必須</td><td>primary key <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Order</span></td></tr>
+<tr><th scope="row">ENT-ORDER</th><td>Order</td><td>client_id</td><td>varchar(64)</td><td>必須</td><td>OAuth client identifier <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Order</span></td></tr>
+<tr><th scope="row">ENT-ORDER</th><td>Order</td><td>external_order_number</td><td>varchar(64)</td><td>必須</td><td>client内で一意 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Order</span></td></tr>
+<tr><th scope="row">ENT-ORDER</th><td>Order</td><td>idempotency_key</td><td>varchar(128)</td><td>必須</td><td>client_idとの複合一意 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Order</span></td></tr>
+<tr><th scope="row">ENT-ORDER</th><td>Order</td><td>request_hash</td><td>char(64)</td><td>必須</td><td>正規化requestのSHA-256 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Order</span></td></tr>
+<tr><th scope="row">ENT-ORDER</th><td>Order</td><td>status</td><td>order_status</td><td>必須</td><td>accepted/shipping/delivered/cancelled <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Order</span></td></tr>
+<tr><th scope="row">ENT-ORDER</th><td>Order</td><td>destination</td><td>jsonb</td><td>必須</td><td>配送先。application logへ内容を出さない <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Order</span></td></tr>
+<tr><th scope="row">ENT-ORDER</th><td>Order</td><td>accepted_at</td><td>timestamptz</td><td>必須</td><td>API受付時刻 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Order</span></td></tr>
+<tr><th scope="row">ENT-ORDER</th><td>Order</td><td>version</td><td>bigint</td><td>必須</td><td>0から始まる楽観lock version <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Order</span></td></tr>
+<tr><th scope="row">ENT-ORDER-LINE</th><td>OrderLine</td><td>id</td><td>UUID</td><td>必須</td><td>primary key <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OrderLine</span></td></tr>
+<tr><th scope="row">ENT-ORDER-LINE</th><td>OrderLine</td><td>order_id</td><td>UUID</td><td>必須</td><td>Order.id、delete restrict <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OrderLine</span></td></tr>
+<tr><th scope="row">ENT-ORDER-LINE</th><td>OrderLine</td><td>sku</td><td>varchar(64)</td><td>必須</td><td>空文字不可 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OrderLine</span></td></tr>
+<tr><th scope="row">ENT-ORDER-LINE</th><td>OrderLine</td><td>quantity</td><td>integer</td><td>必須</td><td>1以上 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OrderLine</span></td></tr>
+<tr><th scope="row">ENT-ORDER-STATE-HISTORY</th><td>OrderStateHistory</td><td>id</td><td>UUID</td><td>必須</td><td>primary key <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OrderStateHistory</span></td></tr>
+<tr><th scope="row">ENT-ORDER-STATE-HISTORY</th><td>OrderStateHistory</td><td>order_id</td><td>UUID</td><td>必須</td><td>Order.id <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OrderStateHistory</span></td></tr>
+<tr><th scope="row">ENT-ORDER-STATE-HISTORY</th><td>OrderStateHistory</td><td>from_status</td><td>order_status</td><td>任意</td><td>初回受付だけnull <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OrderStateHistory</span></td></tr>
+<tr><th scope="row">ENT-ORDER-STATE-HISTORY</th><td>OrderStateHistory</td><td>to_status</td><td>order_status</td><td>必須</td><td>変更後状態 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OrderStateHistory</span></td></tr>
+<tr><th scope="row">ENT-ORDER-STATE-HISTORY</th><td>OrderStateHistory</td><td>changed_at</td><td>timestamptz</td><td>必須</td><td>状態変更時刻 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OrderStateHistory</span></td></tr>
+<tr><th scope="row">ENT-ORDER-STATE-HISTORY</th><td>OrderStateHistory</td><td>trigger_ref</td><td>varchar(128)</td><td>必須</td><td>出荷・配送・取消処理の参照ID <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OrderStateHistory</span></td></tr>
+<tr><th scope="row">ENT-IDEMPOTENCY-RESULT</th><td>IdempotencyResult</td><td>client_id</td><td>varchar(64)</td><td>必須</td><td>primary key part 1 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:IdempotencyResult</span></td></tr>
+<tr><th scope="row">ENT-IDEMPOTENCY-RESULT</th><td>IdempotencyResult</td><td>idempotency_key</td><td>varchar(128)</td><td>必須</td><td>primary key part 2 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:IdempotencyResult</span></td></tr>
+<tr><th scope="row">ENT-IDEMPOTENCY-RESULT</th><td>IdempotencyResult</td><td>request_hash</td><td>char(64)</td><td>必須</td><td>request一致判定 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:IdempotencyResult</span></td></tr>
+<tr><th scope="row">ENT-IDEMPOTENCY-RESULT</th><td>IdempotencyResult</td><td>order_id</td><td>UUID</td><td>必須</td><td>Order.id <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:IdempotencyResult</span></td></tr>
+<tr><th scope="row">ENT-IDEMPOTENCY-RESULT</th><td>IdempotencyResult</td><td>response_status</td><td>integer</td><td>必須</td><td>初回status <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:IdempotencyResult</span></td></tr>
+<tr><th scope="row">ENT-IDEMPOTENCY-RESULT</th><td>IdempotencyResult</td><td>response_body</td><td>jsonb</td><td>必須</td><td>初回受付結果 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:IdempotencyResult</span></td></tr>
+<tr><th scope="row">ENT-IDEMPOTENCY-RESULT</th><td>IdempotencyResult</td><td>created_at</td><td>timestamptz</td><td>必須</td><td>保存時刻 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:IdempotencyResult</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>OutboxEvent</td><td>event_id</td><td>UUID</td><td>必須</td><td>primary key、全再送で不変 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OutboxEvent</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>OutboxEvent</td><td>order_id</td><td>UUID</td><td>必須</td><td>Order.id <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OutboxEvent</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>OutboxEvent</td><td>event_type</td><td>varchar(64)</td><td>必須</td><td>order.status.changed.v1 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OutboxEvent</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>OutboxEvent</td><td>payload</td><td>jsonb</td><td>必須</td><td>contract schemaに一致 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OutboxEvent</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>OutboxEvent</td><td>delivery_status</td><td>delivery_status</td><td>必須</td><td>pending/sending/delivered/dead_letter <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OutboxEvent</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>OutboxEvent</td><td>attempt_count</td><td>integer</td><td>必須</td><td>0..3 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OutboxEvent</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>OutboxEvent</td><td>next_attempt_at</td><td>timestamptz</td><td>任意</td><td>pending時に指定 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OutboxEvent</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>OutboxEvent</td><td>last_error_code</td><td>varchar(64)</td><td>任意</td><td>秘密・個人情報を含めない <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OutboxEvent</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>OutboxEvent</td><td>delivered_at</td><td>timestamptz</td><td>任意</td><td>成功時刻 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OutboxEvent</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>OutboxEvent</td><td>locked_at</td><td>timestamptz</td><td>任意</td><td>worker lease開始 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OutboxEvent</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>OutboxEvent</td><td>locked_by</td><td>varchar(128)</td><td>任意</td><td>worker instance ID <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OutboxEvent</span></td></tr>
+<tr><th scope="row">ENT-DELIVERY-ATTEMPT</th><td>DeliveryAttempt</td><td>id</td><td>UUID</td><td>必須</td><td>primary key <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:DeliveryAttempt</span></td></tr>
+<tr><th scope="row">ENT-DELIVERY-ATTEMPT</th><td>DeliveryAttempt</td><td>event_id</td><td>UUID</td><td>必須</td><td>OutboxEvent.event_id <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:DeliveryAttempt</span></td></tr>
+<tr><th scope="row">ENT-DELIVERY-ATTEMPT</th><td>DeliveryAttempt</td><td>attempt_kind</td><td>attempt_kind</td><td>必須</td><td>initial/automatic/manual <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:DeliveryAttempt</span></td></tr>
+<tr><th scope="row">ENT-DELIVERY-ATTEMPT</th><td>DeliveryAttempt</td><td>attempted_at</td><td>timestamptz</td><td>必須</td><td>開始時刻 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:DeliveryAttempt</span></td></tr>
+<tr><th scope="row">ENT-DELIVERY-ATTEMPT</th><td>DeliveryAttempt</td><td>result</td><td>delivery_result</td><td>必須</td><td>succeeded/failed <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:DeliveryAttempt</span></td></tr>
+<tr><th scope="row">ENT-DELIVERY-ATTEMPT</th><td>DeliveryAttempt</td><td>response_status</td><td>integer</td><td>任意</td><td>HTTP responseがある場合 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:DeliveryAttempt</span></td></tr>
+<tr><th scope="row">ENT-DELIVERY-ATTEMPT</th><td>DeliveryAttempt</td><td>error_code</td><td>varchar(64)</td><td>任意</td><td>秘密・個人情報を含めない <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:DeliveryAttempt</span></td></tr>
+<tr><th scope="row">ENT-DELIVERY-ATTEMPT</th><td>DeliveryAttempt</td><td>operator_reason</td><td>varchar(512)</td><td>任意</td><td>manual時に必須 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:DeliveryAttempt</span></td></tr>
+<tr><th scope="row">ENT-DAILY-RECONCILIATION</th><td>DailyReconciliation</td><td>target_date</td><td>date</td><td>必須</td><td>primary key、Asia/Tokyoの業務日 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:DailyReconciliation</span></td></tr>
+<tr><th scope="row">ENT-DAILY-RECONCILIATION</th><td>DailyReconciliation</td><td>external_count</td><td>integer</td><td>任意</td><td>取得不能時null <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:DailyReconciliation</span></td></tr>
+<tr><th scope="row">ENT-DAILY-RECONCILIATION</th><td>DailyReconciliation</td><td>internal_count</td><td>integer</td><td>必須</td><td>0以上 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:DailyReconciliation</span></td></tr>
+<tr><th scope="row">ENT-DAILY-RECONCILIATION</th><td>DailyReconciliation</td><td>result</td><td>reconciliation_result</td><td>必須</td><td>matched/mismatched/unavailable <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:DailyReconciliation</span></td></tr>
+<tr><th scope="row">ENT-DAILY-RECONCILIATION</th><td>DailyReconciliation</td><td>executed_at</td><td>timestamptz</td><td>必須</td><td>実行時刻 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:DailyReconciliation</span></td></tr>
+<tr><th scope="row">ENT-DAILY-RECONCILIATION</th><td>DailyReconciliation</td><td>notified_at</td><td>timestamptz</td><td>任意</td><td>mismatched/unavailable時 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:DailyReconciliation</span></td></tr>
+</tbody></table>
+<table class="aux diagram-table"><caption>エンティティ間の関係</caption>
+<thead><tr><th scope="col">関係元</th><th scope="col">関係先</th><th scope="col">多重度・種別</th><th scope="col">説明</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row">ENT-ORDER</th><td>ENT-ORDER-LINE</td><td>one-to-many</td><td>1件以上の商品明細を持つ</td><td><span class="ref">data-model:Relationships</span></td></tr>
+<tr><th scope="row">ENT-ORDER</th><td>ENT-ORDER-STATE-HISTORY</td><td>one-to-many</td><td>状態履歴を持つ</td><td><span class="ref">data-model:Relationships</span></td></tr>
+<tr><th scope="row">ENT-ORDER</th><td>ENT-IDEMPOTENCY-RESULT</td><td>one-to-one</td><td>初回受付結果を持つ</td><td><span class="ref">data-model:Relationships</span></td></tr>
+<tr><th scope="row">ENT-ORDER</th><td>ENT-OUTBOX-EVENT</td><td>one-to-many</td><td>状態変更eventを持つ</td><td><span class="ref">data-model:Relationships</span></td></tr>
+<tr><th scope="row">ENT-ORDER-LINE</th><td>ENT-ORDER</td><td>reference</td><td>親Order</td><td><span class="ref">data-model:OrderLine</span></td></tr>
+<tr><th scope="row">ENT-ORDER-STATE-HISTORY</th><td>ENT-ORDER</td><td>reference</td><td>対象Order</td><td><span class="ref">data-model:OrderStateHistory</span></td></tr>
+<tr><th scope="row">ENT-IDEMPOTENCY-RESULT</th><td>ENT-ORDER</td><td>reference</td><td>受付済みOrder</td><td><span class="ref">data-model:IdempotencyResult</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>ENT-ORDER</td><td>reference</td><td>対象Order</td><td><span class="ref">data-model:Relationships</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>ENT-DELIVERY-ATTEMPT</td><td>one-to-many</td><td>配送試行</td><td><span class="ref">data-model:Relationships</span></td></tr>
+<tr><th scope="row">ENT-DELIVERY-ATTEMPT</th><td>ENT-OUTBOX-EVENT</td><td>reference</td><td>対象event</td><td><span class="ref">data-model:DeliveryAttempt</span></td></tr>
+</tbody></table>
+<table class="aux diagram-table"><caption>データ制約</caption>
+<thead><tr><th scope="col">エンティティID</th><th scope="col">制約</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row">ENT-ORDER</th><td>UNIQUE(client_id, idempotency_key) <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Constraints</span></td><td><span class="ref">data-model:Constraints</span></td></tr>
+<tr><th scope="row">ENT-ORDER</th><td>UNIQUE(client_id, external_order_number) <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Constraints</span></td><td><span class="ref">data-model:Constraints</span></td></tr>
+<tr><th scope="row">ENT-ORDER</th><td>同じidempotency keyでrequest hashが異なる場合はconflict <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Constraints</span></td><td><span class="ref">data-model:Constraints</span></td></tr>
+<tr><th scope="row">ENT-ORDER</th><td>Order、OrderLine、OrderStateHistoryの保持期間は7年 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Retention</span></td><td><span class="ref">data-model:Retention</span></td></tr>
+<tr><th scope="row">ENT-ORDER-LINE</th><td>skuは空文字不可 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OrderLine</span></td><td><span class="ref">data-model:OrderLine</span></td></tr>
+<tr><th scope="row">ENT-ORDER-LINE</th><td>quantityは1以上 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OrderLine</span></td><td><span class="ref">data-model:OrderLine</span></td></tr>
+<tr><th scope="row">ENT-ORDER-STATE-HISTORY</th><td>初回受付履歴だけfrom_statusをnullとする <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OrderStateHistory</span></td><td><span class="ref">data-model:OrderStateHistory</span></td></tr>
+<tr><th scope="row">ENT-IDEMPOTENCY-RESULT</th><td>client_idとidempotency_keyの複合primary key <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:IdempotencyResult</span></td><td><span class="ref">data-model:IdempotencyResult</span></td></tr>
+<tr><th scope="row">ENT-IDEMPOTENCY-RESULT</th><td>保持期間は30日。経過後の同じkeyは新規要求として扱う <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Retention</span></td><td><span class="ref">data-model:Retention</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>attempt_countは自動送信試行だけを数え3を超えない <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OutboxEvent</span></td><td><span class="ref">data-model:OutboxEvent</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>3回目失敗transactionでdead_letterへ変更しalert対象時刻を記録 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OutboxEvent</span></td><td><span class="ref">data-model:OutboxEvent</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>手動再送は同じevent_idをpendingへ戻し監査記録を追加し、新eventを作らない <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OutboxEvent</span></td><td><span class="ref">data-model:OutboxEvent</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>FOR UPDATE SKIP LOCKEDとlease timeoutで同時claimを防ぐ <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:OutboxEvent</span></td><td><span class="ref">data-model:OutboxEvent</span></td></tr>
+<tr><th scope="row">ENT-OUTBOX-EVENT</th><td>通常は90日保持し、未解決dead-letterは解決後90日まで削除しない <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Retention</span></td><td><span class="ref">data-model:Retention</span></td></tr>
+<tr><th scope="row">ENT-DELIVERY-ATTEMPT</th><td>manual試行ではoperator_reasonが必須 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:DeliveryAttempt</span></td><td><span class="ref">data-model:DeliveryAttempt</span></td></tr>
+<tr><th scope="row">ENT-DELIVERY-ATTEMPT</th><td>通常は90日保持し、未解決dead-letter関連は解決後90日まで保持 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Retention</span></td><td><span class="ref">data-model:Retention</span></td></tr>
+<tr><th scope="row">ENT-DAILY-RECONCILIATION</th><td>target_dateを一意にし同日の重複実行を防ぐ <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:DailyReconciliation</span> <span class="ref">research:Decision 5</span></td><td><span class="ref">data-model:DailyReconciliation</span> <span class="ref">research:Decision 5</span></td></tr>
+<tr><th scope="row">ENT-DAILY-RECONCILIATION</th><td>保持期間は2年 <span class="basis basis-specified">spec記載</span> <span class="ref">data-model:Retention</span></td><td><span class="ref">data-model:Retention</span></td></tr>
+</tbody></table>
+</section>
+<section class="panel" id="panel-interfaces" role="tabpanel" aria-labelledby="tab-interfaces">
+<h2 id="interfaces">インターフェース・契約</h2>
+<table class="aux"><caption>機能の実行接点</caption>
+<thead><tr><th scope="col">ID</th><th scope="col">種別</th><th scope="col">名称</th><th scope="col">概要</th><th scope="col">アクター</th><th scope="col">状態</th></tr></thead><tbody>
+<tr><th scope="row">API-001</th><td>api</td><td>注文登録API</td><td>外部ECから注文を冪等に受け付ける</td><td><ul><li>外部EC</li><li>Order API</li></ul></td><td><span class="status current-tag">現行</span></td></tr>
+<tr><th scope="row">API-002</th><td>api</td><td>注文状態変更API</td><td>versionと許可遷移を検証して注文状態を変更する</td><td><ul><li>注文状態変更APIのOAuth client</li><li>Order API</li></ul></td><td><span class="status current-tag">現行</span></td></tr>
+<tr><th scope="row">EVT-001</th><td>event</td><td>注文状態変更webhook</td><td>状態変更イベントを外部ECへat-least-once配送する</td><td><ul><li>Delivery Worker</li><li>外部EC</li><li>運用担当者</li></ul></td><td><span class="status current-tag">現行</span></td></tr>
+<tr><th scope="row">API-003</th><td>api</td><td>隔離イベント手動再送API</td><td>運用担当者が隔離eventを同じevent IDでpendingへ戻す</td><td><ul><li>運用担当者</li><li>Order API</li><li>Delivery Worker</li></ul></td><td><span class="status current-tag">現行</span></td></tr>
+<tr><th scope="row">EXT-001</th><td>external-interface</td><td>外部EC日次注文件数取得</td><td>前日JSTの外部EC注文件数を取得する</td><td><ul><li>Reconciliation Scheduler</li><li>外部EC</li></ul></td><td><span class="status current-tag">現行</span></td></tr>
+<tr><th scope="row">BAT-001</th><td>batch</td><td>日次注文件数照合job</td><td>前日JSTの外部・内部件数を照合し結果を記録・通知する</td><td><ul><li>Reconciliation Scheduler</li><li>外部EC</li><li>運用担当者</li></ul></td><td><span class="status current-tag">現行</span></td></tr>
+</tbody></table>
+<article class="contract-card" id="design-interface-API-001">
+<header><span class="fnid">API-001</span><h3>注文登録API</h3><span class="status current-tag">現行</span></header>
+<dl class="detail-grid contract-grid">
+<dt>HTTPメソッド</dt><dd>POST</dd>
+<dt>パス</dt><dd>/v1/orders</dd>
+<dt>認証・認可</dt><dd><dl class="structured-grid"><dt>scheme</dt><dd>oauth2-client-credentials</dd><dt>scopes</dt><dd><ol class="structured-list"><li>orders.write</li></ol></dd></dl></dd>
+<dt>要求</dt><dd><dl class="structured-grid"><dt>headers</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>name</dt><dd>Idempotency-Key</dd><dt>type</dt><dd>string</dd><dt>required</dt><dd>True</dd><dt>minLength</dt><dd>1</dd><dt>maxLength</dt><dd>128</dd></dl></li></ol></dd><dt>body_schema_ref</dt><dd>#/components/schemas/CreateOrderRequest</dd></dl></dd>
+<dt>応答</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>status</dt><dd>201</dd><dt>condition</dt><dd>初回受付</dd><dt>schema_ref</dt><dd>#/components/schemas/OrderAccepted</dd></dl></li><li><dl class="structured-grid"><dt>status</dt><dd>200</dd><dt>condition</dt><dd>同じkey・同じpayload</dd><dt>schema_ref</dt><dd>#/components/schemas/OrderAccepted</dd></dl></li></ol></dd>
+<dt>エラー</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>code</dt><dd>INVALID_REQUEST</dd><dt>status</dt><dd>400</dd><dt>condition</dt><dd>request schema違反</dd></dl></li><li><dl class="structured-grid"><dt>code</dt><dd>IDEMPOTENCY_CONFLICT</dd><dt>status</dt><dd>409</dd><dt>condition</dt><dd>同じkeyでpayloadが異なる</dd></dl></li><li><dl class="structured-grid"><dt>code</dt><dd>UNAUTHORIZED</dd><dt>status</dt><dd>401</dd><dt>condition</dt><dd>認証またはscope不足</dd></dl></li></ol></dd>
+<dt>冪等性</dt><dd><dl class="structured-grid"><dt>key</dt><dd>Idempotency-Key</dd><dt>scope</dt><dd>client_id</dd><dt>duplicate_behavior</dt><dd>同一payloadなら初回結果を返し、異なるpayloadなら409</dd><dt>retention</dt><dd>30日</dd></dl></dd>
+<dt>トランザクション</dt><dd><dl class="structured-grid"><dt>boundary</dt><dd>Order、OrderLine、IdempotencyResultを1transactionでcommit</dd><dt>rollback_behavior</dt><dd>競合・入力不正時は新規注文を残さない</dd></dl></dd>
+<dt>排他・競合</dt><dd><dl class="structured-grid"><dt>conflict_detection</dt><dd>UNIQUE(client_id, idempotency_key)とrequest_hash</dd><dt>応答</dt><dd>競合transaction完了後、同一payloadは保存済み初回結果、異なるpayloadは409</dd></dl></dd>
+<dt>根拠区分</dt><dd>specified <span class="basis basis-specified">spec記載</span> <span class="ref">contract:/paths/~1orders/post</span> <span class="ref">plan:注文登録</span> <span class="ref">data-model:IdempotencyResult</span> <a class="ref ref-link" href="#source-FR-001">spec:FR-001</a> <a class="ref ref-link" href="#source-FR-002">spec:FR-002</a> <a class="ref ref-link" href="#source-AC-001-01">AC-001-01</a> <a class="ref ref-link" href="#source-AC-001-02">AC-001-02</a></dd>
+</dl>
+</article>
+<article class="contract-card" id="design-interface-API-002">
+<header><span class="fnid">API-002</span><h3>注文状態変更API</h3><span class="status current-tag">現行</span></header>
+<dl class="detail-grid contract-grid">
+<dt>HTTPメソッド</dt><dd>POST</dd>
+<dt>パス</dt><dd>/v1/orders/{orderId}/transitions</dd>
+<dt>認証・認可</dt><dd><dl class="structured-grid"><dt>scheme</dt><dd>oauth2-client-credentials</dd><dt>scopes</dt><dd><ol class="structured-list"><li>orders.transition</li></ol></dd></dl></dd>
+<dt>要求</dt><dd><dl class="structured-grid"><dt>path_parameters</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>name</dt><dd>orderId</dd><dt>type</dt><dd>string(uuid)</dd><dt>required</dt><dd>True</dd></dl></li></ol></dd><dt>body_schema_ref</dt><dd>#/components/schemas/TransitionOrderRequest</dd></dl></dd>
+<dt>応答</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>status</dt><dd>200</dd><dt>schema_ref</dt><dd>#/components/schemas/OrderState</dd></dl></li></ol></dd>
+<dt>エラー</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>code</dt><dd>INVALID_STATE_TRANSITION</dd><dt>status</dt><dd>409</dd><dt>condition</dt><dd>禁止遷移</dd></dl></li><li><dl class="structured-grid"><dt>code</dt><dd>VERSION_CONFLICT</dd><dt>status</dt><dd>409</dd><dt>condition</dt><dd>version競合</dd></dl></li><li><dl class="structured-grid"><dt>code</dt><dd>NOT_FOUND</dd><dt>status</dt><dd>404</dd><dt>condition</dt><dd>対象注文なし</dd></dl></li></ol></dd>
+<dt>冪等性</dt><dd><dl class="structured-grid"><dt>key</dt><dd>none</dd><dt>scope</dt><dd>not-applicable</dd><dt>duplicate_behavior</dt><dd>状態とversionに基づき、既適用・禁止・競合要求は409</dd><dt>retention</dt><dd>none</dd></dl></dd>
+<dt>トランザクション</dt><dd><dl class="structured-grid"><dt>boundary</dt><dd>Order row lock、OrderStateHistory、OutboxEventを1transactionでcommit</dd><dt>rollback_behavior</dt><dd>禁止遷移・version競合時はOrder、History、Outboxを変更しない</dd></dl></dd>
+<dt>排他・競合</dt><dd><dl class="structured-grid"><dt>conflict_detection</dt><dd>Order row lockとversion一致</dd><dt>応答</dt><dd>version競合は409 VERSION_CONFLICT</dd></dl></dd>
+<dt>根拠区分</dt><dd>specified <span class="basis basis-specified">spec記載</span> <span class="ref">contract:/paths/~1orders~1{orderId}~1transitions/post</span> <span class="ref">plan:状態変更と通知</span> <span class="ref">data-model:Order State Transitions</span> <a class="ref ref-link" href="#source-FR-010">spec:FR-010</a> <a class="ref ref-link" href="#source-FR-011">spec:FR-011</a> <a class="ref ref-link" href="#source-EC-001">EC-001</a></dd>
+</dl>
+</article>
+<article class="contract-card" id="design-interface-EVT-001">
+<header><span class="fnid">EVT-001</span><h3>注文状態変更webhook</h3><span class="status current-tag">現行</span></header>
+<dl class="detail-grid contract-grid">
+<dt>生成元</dt><dd>Delivery Worker</dd>
+<dt>購読先</dt><dd><ol class="structured-list"><li>外部EC</li></ol></dd>
+<dt>起動契機</dt><dd>状態変更transactionで作成されたpending OutboxEventをclaim</dd>
+<dt>ペイロード</dt><dd><dl class="structured-grid"><dt>header</dt><dd><dl class="structured-grid"><dt>X-Event-Id</dt><dd>string(uuid), required</dd></dl></dd><dt>schema_ref</dt><dd>#/components/schemas/OrderStatusChangedEvent</dd><dt>event_type</dt><dd>order.status.changed.v1</dd></dl></dd>
+<dt>配送保証</dt><dd>at-least-once</dd>
+<dt>順序保証</dt><dd>正本未定義</dd>
+<dt>重複排除</dt><dd>全再送で同じevent IDを使用し、外部ECがevent IDで重複排除</dd>
+<dt>再試行</dt><dd><dl class="structured-grid"><dt>max_attempts</dt><dd>自動再送3回（初回送信を含む総試行数は正本間で要分析）</dd><dt>interval</dt><dd><ol class="structured-list"><li>初回失敗から1分後</li><li>5分後</li><li>15分後</li></ol></dd><dt>retry_on</dt><dd><ol class="structured-list"><li>429</li><li>500</li><li>一時的失敗</li></ol></dd><dt>on_exhaustion</dt><dd>dead_letterへ隔離し、alert対象時刻を記録</dd></dl></dd>
+<dt>復旧</dt><dd><dl class="structured-grid"><dt>alert</dt><dd>dead-letter移行から5分以内に既存alert channelへ通知</dd><dt>manual_recovery</dt><dd>runbookに従い原因解消後、同じevent IDと理由で手動再送し、成功まで未解決管理</dd></dl></dd>
+<dt>接続先・チャネル</dt><dd>OpenAPI webhook orderStatusChanged（具体的な配送先URLは正本未定義）</dd>
+<dt>認証・認可</dt><dd>外向きwebhookの認証方式は正本未定義</dd>
+<dt>schema</dt><dd>#/components/schemas/OrderStatusChangedEvent</dd>
+<dt>schema_version</dt><dd>v1</dd>
+<dt>トランザクション</dt><dd><dl class="structured-grid"><dt>claim</dt><dd>FOR UPDATE SKIP LOCKEDでclaim更新だけを短いtransactionにし、外部HTTP中は保持しない</dd><dt>result</dt><dd>OutboxEventとDeliveryAttemptを1transactionで更新</dd></dl></dd>
+<dt>排他・競合</dt><dd>FOR UPDATE SKIP LOCKEDとlease timeoutで同時claimを防止（timeout値は正本未定義）</dd>
+<dt>根拠区分</dt><dd>specified <span class="basis basis-specified">spec記載</span> <span class="ref">contract:/webhooks/orderStatusChanged/post</span> <span class="ref">plan:状態変更と通知</span> <span class="ref">research:Decision 3</span> <span class="ref">research:Decision 4</span> <span class="ref">data-model:OutboxEvent</span> <a class="ref ref-link" href="#source-FR-020">spec:FR-020</a> <a class="ref ref-link" href="#source-FR-021">spec:FR-021</a> <a class="ref ref-link" href="#source-FR-022">spec:FR-022</a> <a class="ref ref-link" href="#source-EC-002">EC-002</a> <a class="ref ref-link" href="#source-EC-003">EC-003</a> <a class="ref ref-link" href="#source-CL-20260624-02">CL-20260624-02</a> <a class="ref ref-link" href="#source-CL-20260624-03">CL-20260624-03</a></dd>
+</dl>
+</article>
+<article class="contract-card" id="design-interface-API-003">
+<header><span class="fnid">API-003</span><h3>隔離イベント手動再送API</h3><span class="status current-tag">現行</span></header>
+<dl class="detail-grid contract-grid">
+<dt>HTTPメソッド</dt><dd>POST</dd>
+<dt>パス</dt><dd>/v1/operations/events/{eventId}/replay</dd>
+<dt>認証・認可</dt><dd><dl class="structured-grid"><dt>scheme</dt><dd>oauth2-client-credentials</dd><dt>scopes</dt><dd><ol class="structured-list"><li>events.replay</li></ol></dd></dl></dd>
+<dt>要求</dt><dd><dl class="structured-grid"><dt>path_parameters</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>name</dt><dd>eventId</dd><dt>type</dt><dd>string(uuid)</dd><dt>required</dt><dd>True</dd></dl></li></ol></dd><dt>body</dt><dd><dl class="structured-grid"><dt>reason</dt><dd>string(1..512), required</dd></dl></dd></dl></dd>
+<dt>応答</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>status</dt><dd>202</dd><dt>schema_ref</dt><dd>#/components/schemas/ReplayAccepted</dd></dl></li></ol></dd>
+<dt>エラー</dt><dd><ol class="structured-list"><li><dl class="structured-grid"><dt>code</dt><dd>CONFLICT</dd><dt>status</dt><dd>409</dd><dt>condition</dt><dd>dead-letterでない、または既に再送中</dd></dl></li><li><dl class="structured-grid"><dt>code</dt><dd>NOT_FOUND</dd><dt>status</dt><dd>404</dd><dt>condition</dt><dd>対象eventなし</dd></dl></li></ol></dd>
+<dt>冪等性</dt><dd><dl class="structured-grid"><dt>key</dt><dd>eventId and delivery_status</dd><dt>scope</dt><dd>隔離event</dd><dt>duplicate_behavior</dt><dd>dead-letter以外または既に再送中なら409</dd><dt>retention</dt><dd>OutboxEvent保持90日。ただし未解決dead-letterは解決後90日まで保持</dd></dl></dd>
+<dt>トランザクション</dt><dd><dl class="structured-grid"><dt>boundary</dt><dd>statusをpendingへ戻し監査記録を追加するが、両者のtransaction境界は正本未定義</dd><dt>rollback_behavior</dt><dd>409/404では再送状態を受理しない</dd></dl></dd>
+<dt>排他・競合</dt><dd><dl class="structured-grid"><dt>conflict_detection</dt><dd>dead-letter状態または再送中かを判定</dd><dt>応答</dt><dd>競合時409</dd></dl></dd>
+<dt>根拠区分</dt><dd>specified <span class="basis basis-specified">spec記載</span> <span class="ref">contract:/paths/~1operations~1events~1{eventId}~1replay/post</span> <span class="ref">plan:Recovery</span> <span class="ref">data-model:OutboxEvent</span> <a class="ref ref-link" href="#source-FR-022">spec:FR-022</a> <a class="ref ref-link" href="#source-AC-002-02">AC-002-02</a> <a class="ref ref-link" href="#source-CL-20260624-02">CL-20260624-02</a></dd>
+</dl>
+</article>
+<article class="contract-card" id="design-interface-EXT-001">
+<header><span class="fnid">EXT-001</span><h3>外部EC日次注文件数取得</h3><span class="status current-tag">現行</span></header>
+<dl class="detail-grid contract-grid">
+<dt>方向</dt><dd>outbound</dd>
+<dt>プロトコル</dt><dd>HTTP GET（base endpointおよびTLS要件は正本未定義）</dd>
+<dt>接続先・チャネル</dt><dd>/v1/reconciliation/orders/count</dd>
+<dt>認証・認可</dt><dd><dl class="structured-grid"><dt>scheme</dt><dd>oauth2-client-credentials</dd><dt>scope</dt><dd>reconciliation.read</dd></dl></dd>
+<dt>ペイロード</dt><dd><dl class="structured-grid"><dt>query</dt><dd><dl class="structured-grid"><dt>targetDate</dt><dd>string(date), Asia/Tokyo</dd></dl></dd><dt>success</dt><dd><dl class="structured-grid"><dt>status</dt><dd>200</dd><dt>required</dt><dd><ol class="structured-list"><li>targetDate</li><li>count</li></ol></dd><dt>count</dt><dd>integer &gt;= 0</dd></dl></dd></dl></dd>
+<dt>タイムアウト</dt><dd>正本未定義</dd>
+<dt>配送保証</dt><dd>同期request/response</dd>
+<dt>再試行</dt><dd><dl class="structured-grid"><dt>max_attempts</dt><dd>1</dd><dt>interval</dt><dd>1回のみのため間隔なし</dd><dt>retry_on</dt><dd><ol class="structured-list"><li>429</li><li>500</li><li>502</li><li>503</li><li>504</li></ol></dd><dt>on_exhaustion</dt><dd>unavailableとして記録し運用担当へ通知</dd></dl></dd>
+<dt>復旧</dt><dd><dl class="structured-grid"><dt>alert</dt><dd>照合不能として運用担当へ通知</dd><dt>manual_recovery</dt><dd>手動再照合・再取得手順は正本未定義</dd></dl></dd>
+<dt>根拠区分</dt><dd>specified <span class="basis basis-specified">spec記載</span> <span class="ref">contract:/x-external-operations/dailyOrderCount</span> <span class="ref">plan:日次照合</span> <a class="ref ref-link" href="#source-FR-030">spec:FR-030</a> <a class="ref ref-link" href="#source-EC-004">EC-004</a> <a class="ref ref-link" href="#source-ASM-003">ASM-003</a></dd>
+</dl>
+</article>
+<article class="contract-card" id="design-interface-BAT-001">
+<header><span class="fnid">BAT-001</span><h3>日次注文件数照合job</h3><span class="status current-tag">現行</span></header>
+<dl class="detail-grid contract-grid">
+<dt>スケジュール</dt><dd>0 2 * * *</dd>
+<dt>タイムゾーン</dt><dd>Asia/Tokyo</dd>
+<dt>起動者</dt><dd>Kubernetes CronJob相当のscheduler</dd>
+<dt>入力</dt><dd><ol class="structured-list"><li>前日JSTのtarget_date</li><li>外部EC件数</li><li>内部database件数</li></ol></dd>
+<dt>出力</dt><dd><ol class="structured-list"><li>DailyReconciliation</li><li>mismatched/unavailable時の通知</li></ol></dd>
+<dt>対象範囲</dt><dd>前日のJST日付範囲をUTCへ変換</dd>
+<dt>多重起動</dt><dd>target_date一意制約とadvisory lockで重複実行しない</dd>
+<dt>トランザクション</dt><dd>対象日のadvisory lockを取得しDailyReconciliationをupsert</dd>
+<dt>再試行</dt><dd><dl class="structured-grid"><dt>max_attempts</dt><dd>job自身の再試行回数は正本未定義</dd><dt>interval</dt><dd>job自身の再試行間隔は正本未定義</dd><dt>on_exhaustion</dt><dd>日次job未完了alertの対象。再開・手動再実行手順は正本未定義</dd><dt>external_count_attempts</dt><dd>1</dd></dl></dd>
+<dt>復旧</dt><dd><dl class="structured-grid"><dt>resume</dt><dd>job再開・手動再実行手順は正本未定義</dd><dt>実施証跡</dt><dd>DailyReconciliation、構造化log、日次job未完了alert</dd></dl></dd>
+<dt>監視・通知</dt><dd>reconciliation mismatchと日次job未完了を検知</dd>
+<dt>根拠区分</dt><dd>specified <span class="basis basis-specified">spec記載</span> <span class="ref">plan:日次照合</span> <span class="ref">plan:Operational Design</span> <span class="ref">data-model:DailyReconciliation</span> <span class="ref">quickstart:Scenario 4</span> <span class="ref">contract:/x-external-operations/dailyOrderCount</span> <a class="ref ref-link" href="#source-FR-030">spec:FR-030</a> <a class="ref ref-link" href="#source-AC-003-01">AC-003-01</a> <a class="ref ref-link" href="#source-CL-20260624-04">CL-20260624-04</a></dd>
+</dl>
+</article>
+</section>
+<section class="panel" id="panel-quality" role="tabpanel" aria-labelledby="tab-quality">
+<h2 id="quality">品質・検証・リスク</h2>
+<h3>設計準備度</h3><div class="readiness-grid">
+<article class="readiness-card readiness-passed"><span>要求網羅性</span><strong>passed</strong><p></p><small>normative_total=38, covered=38, percent=100.0 / 指摘 0件</small></article>
+<article class="readiness-card readiness-failed"><span>機能設計</span><strong>failed</strong><p></p><small>functions=5, workflows=3, state_models=1 / 指摘 1件</small></article>
+<article class="readiness-card readiness-passed"><span>実装契約</span><strong>passed</strong><p></p><small>interfaces=6, complete_contracts=6 / 指摘 0件</small></article>
+<article class="readiness-card readiness-passed"><span>運用準備</span><strong>passed</strong><p></p><small>quality_scenarios=6, risks=5, verifications=7 / 指摘 0件</small></article>
+</div>
+<table class="aux"><caption>非機能品質シナリオ</caption>
+<thead><tr><th scope="col">ID</th><th scope="col">品質特性</th><th scope="col">シナリオ</th><th scope="col">期待応答</th><th scope="col">測定基準</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row"><span id="design-quality-scenario-QS-001">QS-001</span></th><td>performance</td><td>通常想定負荷で外部ECが注文登録APIを呼ぶ</td><td>Order APIが受付結果を返す</td><td>createOrderの95パーセンタイル応答時間が2秒以内</td><td><a class="ref ref-link" href="#source-SC-001">spec:SC-001</a> <span class="ref">plan:Quality Goals</span> <span class="ref">quickstart:Scenario 5</span></td></tr>
+<tr><th scope="row"><span id="design-quality-scenario-QS-002">QS-002</span></th><td>reliability</td><td>同一client・Idempotency-Keyの同一注文を並行送信する</td><td>一意制約で競合を直列化し、同じ注文IDの初回結果を返す</td><td>同一冪等キーによる重複注文0件</td><td><a class="ref ref-link" href="#source-SC-002">spec:SC-002</a> <span class="ref">plan:Quality Goals</span> <span class="ref">quickstart:Scenario 1</span></td></tr>
+<tr><th scope="row"><span id="design-quality-scenario-QS-003">QS-003</span></th><td>reliability</td><td>外部EC webhookが失敗し、自動再送上限へ到達した後に復旧する</td><td>eventを隔離・通知し、同じevent IDの手動再送でdeliveredへ戻す</td><td>状態変更eventの未解決送信漏れ0件</td><td><a class="ref ref-link" href="#source-SC-003">spec:SC-003</a> <span class="ref">plan:Quality Goals</span> <span class="ref">quickstart:Scenario 3</span></td></tr>
+<tr><th scope="row"><span id="design-quality-scenario-QS-004">QS-004</span></th><td>operability</td><td>状態変更eventが自動再送上限へ到達してdead-letterになる</td><td>event IDとrunbook linkを運用担当へ通知する</td><td>dead-letter移行からalert発火まで5分以内</td><td><a class="ref ref-link" href="#source-SC-004">spec:SC-004</a> <span class="ref">plan:Quality Goals</span> <span class="ref">quickstart:Scenario 3</span></td></tr>
+<tr><th scope="row"><span id="design-quality-scenario-QS-005">QS-005</span></th><td>security</td><td>注文登録・状態配送・手動再送を実行してlogとsecret注入を確認する</td><td>scopeで認可し、配送先PII・token・secretをlogへ出さない</td><td>log検査で配送先、token、secretの検出0件</td><td><span class="ref">plan:Security</span> <span class="ref">quickstart:Scenario 5</span></td></tr>
+<tr><th scope="row"><span id="design-quality-scenario-QS-006">QS-006</span></th><td>operability</td><td>日次照合の外部件数取得が失敗する、またはjobが完了しない</td><td>unavailableを記録して照合不能を通知し、job未完了をalertする</td><td>DailyReconciliationがunavailableとなり通知証跡が残る。job未完了はalert対象となる</td><td><span class="ref">plan:Operational Design</span> <span class="ref">quickstart:Scenario 4</span></td></tr>
+</tbody></table>
+<table class="aux"><caption>成功基準の検証計画</caption>
+<thead><tr><th scope="col">ID</th><th scope="col">成功基準</th><th scope="col">レベル</th><th scope="col">検証方法</th><th scope="col">期待結果</th><th scope="col">状態</th></tr></thead><tbody>
+<tr><th scope="row"><span id="verification-VER-001">VER-001</span></th><td><a class="ref ref-link" href="#source-SC-001">SC-001</a></td><td>performance</td><td>k6 profile orders-normal-loadを10分実行しcreateOrder latency分布を測定する</td><td>注文登録APIのp95が2秒以内</td><td>planned</td></tr>
+<tr><th scope="row"><span id="verification-VER-002">VER-002</span></th><td><a class="ref ref-link" href="#source-SC-002">SC-002</a></td><td>e2e</td><td>同じIdempotency-Keyとrequestを2回並行送信し、database件数とresponseを確認する</td><td>2応答のorderIdが同じでOrder、OrderLine、IdempotencyResultが各1組、異なるpayloadは409</td><td>planned</td></tr>
+<tr><th scope="row"><span id="verification-VER-003">VER-003</span></th><td><a class="ref ref-link" href="#source-SC-003">SC-003</a></td><td>e2e</td><td>外部EC stubを500にし、規定間隔を進めて隔離後、204へ戻して同じevent IDを手動再送する</td><td>全attemptが記録され、同じevent IDがdelivered、未解決dead-letterが0件、重複反映がない</td><td>planned</td></tr>
+<tr><th scope="row"><span id="verification-VER-004">VER-004</span></th><td><a class="ref ref-link" href="#source-SC-004">SC-004</a></td><td>integration</td><td>3回目失敗後にtest clockを5分未満進め、alert sinkのevent IDとrunbook linkを確認する</td><td>dead-letterからalert発火まで5分以内</td><td>planned</td></tr>
+<tr><th scope="row"><span id="verification-VER-005">VER-005</span></th><td><a class="ref ref-link" href="#source-FR-010">FR-010</a></td><td>e2e</td><td>許可・禁止状態遷移とversion競合をparameterized E2Eで実行し、Order・History・Outboxを照合する</td><td>許可3遷移だけ成功し、全禁止遷移とversion競合は409で3 entityに変更がない</td><td>planned</td></tr>
+<tr><th scope="row"><span id="verification-VER-006">VER-006</span></th><td><a class="ref ref-link" href="#source-FR-030">FR-030</a></td><td>e2e</td><td>clockを02:00 Asia/Tokyoへ固定し、不一致・同日並行実行・外部503をE2Eで実行する</td><td>前日target_dateのmismatched/unavailableが1件だけ記録され、対応通知が残る</td><td>planned</td></tr>
+<tr><th scope="row"><span id="verification-VER-007">VER-007</span></th><td><span class="ref">plan-security</span></td><td>security</td><td>主要scenario後の構造化logを走査し、配送先、token、secretの混入を確認する</td><td>配送先PII、token、secretの検出0件</td><td>planned</td></tr>
+</tbody></table>
+<table class="aux"><caption>設計・実装リスク</caption>
+<thead><tr><th scope="col">ID</th><th scope="col">リスク</th><th scope="col">発生可能性</th><th scope="col">影響</th><th scope="col">対応</th><th scope="col">所有者</th><th scope="col">状態</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row"><span id="design-risk-RSK-001">RSK-001</span></th><td>API replica間競合による重複注文</td><td>medium</td><td>high</td><td>(client_id, idempotency_key)一意制約、request hash、競合transaction完了後の初回結果再利用</td><td>undetermined（正本に担当記載なし）</td><td>mitigated</td><td><span class="ref">research:Decision 1</span> <span class="ref">plan:注文登録</span></td></tr>
+<tr><th scope="row"><span id="design-risk-RSK-002">RSK-002</span></th><td>外部EC停止による状態通知の滞留</td><td>medium</td><td>high</td><td>段階的再送、dead-letter、5分以内alert、runbookと同一event IDの手動再送</td><td>運用担当者</td><td>mitigated</td><td><span class="ref">research:Decision 4</span> <span class="ref">plan:Operational Design</span> <span class="ref">plan:Recovery</span></td></tr>
+<tr><th scope="row"><span id="design-risk-RSK-003">RSK-003</span></th><td>外部件数API停止による照合不能</td><td>medium</td><td>medium</td><td>結果をunavailableとして記録し運用担当へ通知する</td><td>運用担当者</td><td>mitigated</td><td><span class="ref">contract:/x-external-operations/dailyOrderCount</span> <span class="ref">plan:日次照合</span></td></tr>
+<tr><th scope="row"><span id="design-risk-RSK-004">RSK-004</span></th><td>schema変更とapplication rollbackの非互換</td><td>low</td><td>high</td><td>後方互換migrationを先に適用し並行稼働後に制約を有効化する。rollback時もdatabase migrationを削除しない</td><td>undetermined（正本に担当記載なし）</td><td>mitigated</td><td><span class="ref">plan:Migration</span> <span class="ref">plan:Rollback</span></td></tr>
+<tr><th scope="row"><span id="design-risk-RSK-005">RSK-005</span></th><td>外向き連携設定・復旧手順の未定義</td><td>high</td><td>high</td><td>Q-002〜Q-005をplan/contractへ反映してから実装開始判定を再実行する</td><td>undetermined（正本に担当記載なし）</td><td>open</td><td><span class="ref">contract:/webhooks/orderStatusChanged/post</span> <span class="ref">contract:/x-external-operations/dailyOrderCount</span> <span class="ref">plan:Operational Design</span></td></tr>
+</tbody></table>
+<h3>ブロッキングエラー</h3><ul><li>ユーザー確認が必要な未解決事項が13件あります</li></ul>
+<h3>警告</h3><span class="muted">なし</span>
+<h3>ユーザー確認待ち</h3>
+<table class="aux"><caption>未確定事項と解消先</caption>
+<thead><tr><th scope="col">質問ID</th><th scope="col">状態</th><th scope="col">質問</th><th scope="col">根拠</th><th scope="col">影響先</th><th scope="col">戻り先</th></tr></thead><tbody>
+<tr><th scope="row">Q-001</th><td>open</td><td>初回送信を含む総試行数を確定してください。spec/researchは『最大3回再送』、plan/data-model/quickstartは『3回目失敗でdead-letter』と読め、合計3回か初回+3回かが不一致です。</td><td><a class="ref ref-link" href="#source-FR-021">spec:FR-021</a> <span class="ref">research:Decision 4</span> <span class="ref">plan:状態変更と通知</span> <span class="ref">data-model:OutboxEvent</span> <span class="ref">quickstart:Scenario 3</span></td><td><a class="ref ref-link" href="#detail-FNC-003">FNC-003</a> <a class="ref ref-link" href="#design-interface-EVT-001">EVT-001</a> <a class="ref ref-link" href="#design-workflow-WF-002">WF-002</a> <a class="ref ref-link" href="#verification-VER-003">VER-003</a></td><td>/speckit.analyze</td></tr>
+<tr><th scope="row">Q-002</th><td>open</td><td>外部EC webhookの配送先URL（設定単位を含む）と外向き認証方式、credential更新・失効時の扱いを確定してください。</td><td><span class="ref">contract:/webhooks/orderStatusChanged/post</span> <span class="ref">plan:System Context</span> <span class="ref">plan:Security</span></td><td><a class="ref ref-link" href="#detail-FNC-003">FNC-003</a> <a class="ref ref-link" href="#design-interface-EVT-001">EVT-001</a> <a class="ref ref-link" href="#design-workflow-WF-002">WF-002</a> <a class="ref ref-link" href="#design-risk-RSK-005">RSK-005</a></td><td>/speckit.plan</td></tr>
+<tr><th scope="row">Q-003</th><td>open</td><td>外部EC件数取得APIのbase endpoint、TLS要件、接続・応答timeout、およびretry.attempts=1が総試行1回か初回後1回再送かを確定してください。</td><td><span class="ref">contract:/x-external-operations/dailyOrderCount</span> <span class="ref">plan:日次照合</span></td><td><a class="ref ref-link" href="#detail-FNC-005">FNC-005</a> <a class="ref ref-link" href="#design-interface-EXT-001">EXT-001</a> <a class="ref ref-link" href="#design-interface-BAT-001">BAT-001</a> <a class="ref ref-link" href="#design-workflow-WF-003">WF-003</a> <a class="ref ref-link" href="#design-risk-RSK-005">RSK-005</a></td><td>/speckit.plan</td></tr>
+<tr><th scope="row">Q-004</th><td>open</td><td>日次jobが途中停止・未完了となった場合の検知期限、再開／手動再実行手順、承認、証跡、通知解消条件を確定してください。</td><td><span class="ref">plan:Operational Design</span> <span class="ref">data-model:DailyReconciliation</span> <span class="ref">quickstart:Scenario 4</span></td><td><a class="ref ref-link" href="#detail-FNC-005">FNC-005</a> <a class="ref ref-link" href="#design-interface-BAT-001">BAT-001</a> <a class="ref ref-link" href="#verification-VER-006">VER-006</a> <a class="ref ref-link" href="#design-risk-RSK-005">RSK-005</a></td><td>/speckit.plan</td></tr>
+<tr><th scope="row">Q-005</th><td>open</td><td>手動再送でOutboxEventをpendingへ戻す更新と操作理由の監査記録を同一transactionにするか、失敗時rollbackを含めて確定してください。</td><td><span class="ref">data-model:OutboxEvent</span> <span class="ref">plan:Recovery</span> <span class="ref">contract:/paths/~1operations~1events~1{eventId}~1replay/post</span></td><td><a class="ref ref-link" href="#detail-FNC-004">FNC-004</a> <a class="ref ref-link" href="#design-interface-API-003">API-003</a> <a class="ref ref-link" href="#design-workflow-WF-002">WF-002</a> <a class="ref ref-link" href="#design-risk-RSK-005">RSK-005</a></td><td>/speckit.plan</td></tr>
+<tr><th scope="row">Q-006</th><td>open</td><td>orders.transition scopeで注文状態変更APIを呼ぶ業務主体／外部・内部システムを確定してください。</td><td><span class="ref">contract:/paths/~1orders~1{orderId}~1transitions/post</span> <span class="ref">plan:System Context</span></td><td><a class="ref ref-link" href="#detail-FNC-002">FNC-002</a> <a class="ref ref-link" href="#design-interface-API-002">API-002</a> <a class="ref ref-link" href="#design-workflow-WF-002">WF-002</a></td><td>/speckit.clarify</td></tr>
+<tr><th scope="row">Q-007</th><td>open</td><td>注文状態変更eventの順序保証単位（注文単位・client単位・保証なし）と、順序逆転時の扱いを確定してください。</td><td><span class="ref">contract:/webhooks/orderStatusChanged/post</span> <span class="ref">research:Decision 3</span></td><td><a class="ref ref-link" href="#detail-FNC-003">FNC-003</a> <a class="ref ref-link" href="#design-interface-EVT-001">EVT-001</a> <a class="ref ref-link" href="#design-workflow-WF-002">WF-002</a> <a class="ref ref-link" href="#design-risk-RSK-002">RSK-002</a></td><td>/speckit.plan</td></tr>
+<tr><th scope="row">Q-008</th><td>open</td><td>Delivery Workerのlease timeout値、worker停止時のlease回収条件、再claim時のattempt扱いを確定してください。</td><td><span class="ref">data-model:OutboxEvent</span> <span class="ref">plan:状態変更と通知</span></td><td><a class="ref ref-link" href="#detail-FNC-003">FNC-003</a> <a class="ref ref-link" href="#design-entity-ENT-OUTBOX-EVENT">ENT-OUTBOX-EVENT</a> <a class="ref ref-link" href="#design-interface-EVT-001">EVT-001</a> <a class="ref ref-link" href="#design-workflow-WF-002">WF-002</a> <a class="ref ref-link" href="#design-risk-RSK-002">RSK-002</a></td><td>/speckit.plan</td></tr>
+<tr><th scope="row">Q-009</th><td>open</td><td>webhookの400（恒久schema違反）と401（認証失敗）を即時隔離するか、alert・再送・手動復旧へどう接続するかを確定してください。</td><td><span class="ref">contract:/webhooks/orderStatusChanged/post/responses/400</span> <span class="ref">contract:/webhooks/orderStatusChanged/post/responses/401</span> <span class="ref">plan:状態変更と通知</span></td><td><a class="ref ref-link" href="#detail-FNC-003">FNC-003</a> <a class="ref ref-link" href="#design-interface-EVT-001">EVT-001</a> <a class="ref ref-link" href="#design-workflow-WF-002">WF-002</a> <a class="ref ref-link" href="#design-risk-RSK-002">RSK-002</a></td><td>/speckit.plan</td></tr>
+<tr><th scope="row">Q-010</th><td>open</td><td>data-modelの『alert対象時刻を記録』に対応する属性がOutboxEvent表にないため、保存先・属性・transaction境界を整合させてください。</td><td><span class="ref">data-model:OutboxEvent</span> <span class="ref">plan:Operational Design</span></td><td><a class="ref ref-link" href="#detail-FNC-003">FNC-003</a> <a class="ref ref-link" href="#design-entity-ENT-OUTBOX-EVENT">ENT-OUTBOX-EVENT</a> <a class="ref ref-link" href="#design-interface-EVT-001">EVT-001</a> <a class="ref ref-link" href="#design-workflow-WF-002">WF-002</a> <a class="ref ref-link" href="#design-quality-scenario-QS-004">QS-004</a></td><td>/speckit.analyze</td></tr>
+<tr><th scope="row">Q-011</th><td>open</td><td>x-external-operationsが要求するreconciliation.read scopeがOAuth security schemeのscopesに存在しないため、認可契約を整合させてください。</td><td><span class="ref">contract:/x-external-operations/dailyOrderCount/auth</span> <span class="ref">contract:/components/securitySchemes/oauth2ClientCredentials/flows/clientCredentials/scopes</span></td><td><a class="ref ref-link" href="#detail-FNC-005">FNC-005</a> <a class="ref ref-link" href="#design-interface-EXT-001">EXT-001</a> <a class="ref ref-link" href="#design-interface-BAT-001">BAT-001</a> <a class="ref ref-link" href="#design-workflow-WF-003">WF-003</a></td><td>/speckit.analyze</td></tr>
+<tr><th scope="row">Q-012</th><td>open</td><td>data-modelではexternal_order_number重複を検知しますが、注文登録API契約に対応するerror code・409条件がないため整合させてください。</td><td><span class="ref">data-model:Constraints</span> <span class="ref">contract:/paths/~1orders/post/responses/409</span></td><td><a class="ref ref-link" href="#detail-FNC-001">FNC-001</a> <a class="ref ref-link" href="#design-entity-ENT-ORDER">ENT-ORDER</a> <a class="ref ref-link" href="#design-interface-API-001">API-001</a> <a class="ref ref-link" href="#design-workflow-WF-001">WF-001</a></td><td>/speckit.analyze</td></tr>
+<tr><th scope="row">Q-013</th><td>open</td><td>SC-001の『通常想定負荷』について、request rate／同時数、traffic mix、payload条件を確定し、k6 profile orders-normal-loadの合格条件を再現可能にしてください。</td><td><a class="ref ref-link" href="#source-SC-001">spec:SC-001</a> <span class="ref">plan:Quality Goals</span> <span class="ref">quickstart:Scenario 5</span></td><td><a class="ref ref-link" href="#design-interface-API-001">API-001</a> <a class="ref ref-link" href="#design-quality-scenario-QS-001">QS-001</a> <a class="ref ref-link" href="#verification-VER-001">VER-001</a></td><td>/speckit.clarify</td></tr>
+</tbody></table>
+<h3>確認済み決定</h3>
+<table class="aux"><caption>要求上の確認済み決定</caption>
+<thead><tr><th scope="col">ID</th><th scope="col">質問</th><th scope="col">回答</th><th scope="col">spec記録箇所</th></tr></thead><tbody>
+<tr><th scope="row">CL-20260621-01</th><td>同じ冪等キーの注文を再送した場合は？</td><td>最初の受付結果を返し、注文を重複作成しない。</td><td>Feature Specification: 注文連携API — 受付・状態通知・日次照合 &gt; Clarifications &gt; Session 2026-06-21 (L10)</td></tr>
+<tr><th scope="row">CL-20260621-02</th><td>配送済みから取消へ戻せるか？</td><td>戻せない。取消要求を拒否する。</td><td>Feature Specification: 注文連携API — 受付・状態通知・日次照合 &gt; Clarifications &gt; Session 2026-06-21 (L11)</td></tr>
+<tr><th scope="row">CL-20260624-01</th><td>注文で許可する状態遷移は？</td><td>受付済み→配送中、受付済み→取消、配送中→配送済みだけを許可し、表にない遷移は状態を変えず拒否する。</td><td>Feature Specification: 注文連携API — 受付・状態通知・日次照合 &gt; Clarifications &gt; Session 2026-06-24 (L15)</td></tr>
+<tr><th scope="row">CL-20260624-02</th><td>状態通知が3回失敗した後は？</td><td>失敗イベントを隔離し、5分以内に運用担当へ通知する。運用担当は原因解消後に同じイベントIDで手動再送し、成功まで未解決として管理する。</td><td>Feature Specification: 注文連携API — 受付・状態通知・日次照合 &gt; Clarifications &gt; Session 2026-06-24 (L16)</td></tr>
+<tr><th scope="row">CL-20260624-03</th><td>再送間隔は？</td><td>初回失敗から1分、5分、15分後に再送する。</td><td>Feature Specification: 注文連携API — 受付・状態通知・日次照合 &gt; Clarifications &gt; Session 2026-06-24 (L17)</td></tr>
+<tr><th scope="row">CL-20260624-04</th><td>日次02:00のタイムゾーンは？</td><td>Asia/Tokyoとする。</td><td>Feature Specification: 注文連携API — 受付・状態通知・日次照合 &gt; Clarifications &gt; Session 2026-06-24 (L18)</td></tr>
+</tbody></table>
+</section>
+<section class="panel" id="panel-traceability" role="tabpanel" aria-labelledby="tab-traceability">
+<h2 id="traceability">トレーサビリティ</h2>
+<table class="aux"><caption>spec規範要素と機能の対応</caption>
+<thead><tr><th scope="col">根拠ID</th><th scope="col">種別</th><th scope="col">spec記載</th><th scope="col">機能ID</th><th scope="col">設計要素</th><th scope="col">検証ID</th><th scope="col">カバレッジ</th><th scope="col">理由</th></tr></thead><tbody>
+<tr><th scope="row" class="c" id="source-US-001"><a class="ref ref-link" href="#source-US-001">US-001</a></th><td>ユーザーストーリー</td><td>User Story 1 - 外部ECから注文を登録する (Priority: P1)</td><td><a class="fnlink" href="#detail-FNC-001" data-detail="FNC-001">FNC-001</a></td><td><a class="ref ref-link" href="#design-workflow-WF-001">workflow:WF-001</a></td><td><a class="ref ref-link" href="#verification-VER-002">VER-002</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>注文の初回受付と冪等再送をFNC-001、API-001、WF-001、E2Eで具体化する</td></tr>
+<tr><th scope="row" class="c" id="source-AC-001-01"><a class="ref ref-link" href="#source-AC-001-01">AC-001-01</a></th><td>受入シナリオ</td><td>Given 正常な注文、When 注文APIを呼ぶ、Then 注文は受付済みとなり注文IDが返る。</td><td><a class="fnlink" href="#detail-FNC-001" data-detail="FNC-001">FNC-001</a></td><td><a class="ref ref-link" href="#design-interface-API-001">interface:API-001</a> <a class="ref ref-link" href="#design-workflow-WF-001">workflow:WF-001</a></td><td><a class="ref ref-link" href="#verification-VER-002">VER-002</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>正常注文を201でacceptedとして返す流れと契約を定義する</td></tr>
+<tr><th scope="row" class="c" id="source-AC-001-02"><a class="ref ref-link" href="#source-AC-001-02">AC-001-02</a></th><td>受入シナリオ</td><td>Given 受付済みと同じ冪等キー、When 再送する、Then 新しい注文を作らず既存の受付結果を返す。</td><td><a class="fnlink" href="#detail-FNC-001" data-detail="FNC-001">FNC-001</a></td><td><a class="ref ref-link" href="#design-interface-API-001">interface:API-001</a> <a class="ref ref-link" href="#design-workflow-WF-001">workflow:WF-001</a></td><td><a class="ref ref-link" href="#verification-VER-002">VER-002</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>同一keyの既存結果再利用と並行E2Eを定義する</td></tr>
+<tr><th scope="row" class="c" id="source-US-002"><a class="ref ref-link" href="#source-US-002">US-002</a></th><td>ユーザーストーリー</td><td>User Story 2 - 注文状態を外部ECへ通知する (Priority: P1)</td><td><a class="fnlink" href="#detail-FNC-003" data-detail="FNC-003">FNC-003</a> <a class="fnlink" href="#detail-FNC-004" data-detail="FNC-004">FNC-004</a></td><td><a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a></td><td><a class="ref ref-link" href="#verification-VER-003">VER-003</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>状態通知から隔離・手動復旧までを一つの重要フローとして定義する</td></tr>
+<tr><th scope="row" class="c" id="source-AC-002-01"><a class="ref ref-link" href="#source-AC-002-01">AC-002-01</a></th><td>受入シナリオ</td><td>Given 受付済みの注文、When 出荷処理が完了する、Then 配送中イベントが1回発行される。</td><td><a class="fnlink" href="#detail-FNC-003" data-detail="FNC-003">FNC-003</a></td><td><a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a></td><td><a class="ref ref-link" href="#verification-VER-003">VER-003</a> <a class="ref ref-link" href="#verification-VER-005">VER-005</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>acceptedからshippingへの状態更新とOutbox配送を定義する</td></tr>
+<tr><th scope="row" class="c" id="source-AC-002-02"><a class="ref ref-link" href="#source-AC-002-02">AC-002-02</a></th><td>受入シナリオ</td><td>Given 3回の自動再送に失敗したイベント、When 原因解消後に運用担当が再送する、Then 同じイベントIDで送信され未解決件数が0になる。</td><td><a class="fnlink" href="#detail-FNC-004" data-detail="FNC-004">FNC-004</a></td><td><a class="ref ref-link" href="#design-interface-API-003">interface:API-003</a> <a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a></td><td><a class="ref ref-link" href="#verification-VER-003">VER-003</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>同一event IDの手動再送と未解決0件確認を定義する</td></tr>
+<tr><th scope="row" class="c" id="source-US-003"><a class="ref ref-link" href="#source-US-003">US-003</a></th><td>ユーザーストーリー</td><td>User Story 3 - 注文件数を日次照合する (Priority: P2)</td><td><a class="fnlink" href="#detail-FNC-005" data-detail="FNC-005">FNC-005</a></td><td><a class="ref ref-link" href="#design-workflow-WF-003">workflow:WF-003</a></td><td><a class="ref ref-link" href="#verification-VER-006">VER-006</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>前日件数照合と運用通知を日次batchとして定義する</td></tr>
+<tr><th scope="row" class="c" id="source-AC-003-01"><a class="ref ref-link" href="#source-AC-003-01">AC-003-01</a></th><td>受入シナリオ</td><td>Given 前日の件数が異なる、When Asia/Tokyoの02:00に照合する、Then 差分と対象日が運用担当へ通知される。</td><td><a class="fnlink" href="#detail-FNC-005" data-detail="FNC-005">FNC-005</a></td><td><a class="ref ref-link" href="#design-interface-BAT-001">interface:BAT-001</a> <a class="ref ref-link" href="#design-workflow-WF-003">workflow:WF-003</a></td><td><a class="ref ref-link" href="#verification-VER-006">VER-006</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>JST 02:00実行、不一致記録、対象日通知を定義する</td></tr>
+<tr><th scope="row" class="c" id="source-EC-001"><a class="ref ref-link" href="#source-EC-001">EC-001</a></th><td>エッジケース</td><td>配送済み注文への取消要求は拒否し、状態を変更しない。</td><td><a class="fnlink" href="#detail-FNC-002" data-detail="FNC-002">FNC-002</a></td><td><a class="ref ref-link" href="#design-interface-API-002">interface:API-002</a> <a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a> <a class="ref ref-link" href="#design-state-model-STM-001">state-model:STM-001</a></td><td><a class="ref ref-link" href="#verification-VER-005">VER-005</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>配送済みから取消を含む未定義遷移を409で拒否し副作用なしとする</td></tr>
+<tr><th scope="row" class="c" id="source-EC-002"><a class="ref ref-link" href="#source-EC-002">EC-002</a></th><td>エッジケース</td><td>外部ECへのイベント送信に3回失敗した場合は隔離し、通知後の手動再送で復旧する。</td><td><a class="fnlink" href="#detail-FNC-003" data-detail="FNC-003">FNC-003</a> <a class="fnlink" href="#detail-FNC-004" data-detail="FNC-004">FNC-004</a></td><td><a class="ref ref-link" href="#design-interface-EVT-001">interface:EVT-001</a> <a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a></td><td><a class="ref ref-link" href="#verification-VER-003">VER-003</a> <a class="ref ref-link" href="#verification-VER-004">VER-004</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>再送上限後の隔離、alert、手動復旧を定義する</td></tr>
+<tr><th scope="row" class="c" id="source-EC-003"><a class="ref ref-link" href="#source-EC-003">EC-003</a></th><td>エッジケース</td><td>同じ状態変更イベントを外部ECが複数回受信しても、イベントIDにより業務結果を重複反映しない。</td><td><a class="fnlink" href="#detail-FNC-003" data-detail="FNC-003">FNC-003</a></td><td><a class="ref ref-link" href="#design-interface-EVT-001">interface:EVT-001</a> <a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a></td><td><a class="ref ref-link" href="#verification-VER-003">VER-003</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>event ID不変と外部EC重複排除を契約・E2Eへ反映する</td></tr>
+<tr><th scope="row" class="c" id="source-EC-004"><a class="ref ref-link" href="#source-EC-004">EC-004</a></th><td>エッジケース</td><td>外部ECの件数取得APIが利用できない場合は照合結果を確定せず、照合不能として通知する。</td><td><a class="fnlink" href="#detail-FNC-005" data-detail="FNC-005">FNC-005</a></td><td><a class="ref ref-link" href="#design-interface-EXT-001">interface:EXT-001</a> <a class="ref ref-link" href="#design-workflow-WF-003">workflow:WF-003</a></td><td><a class="ref ref-link" href="#verification-VER-006">VER-006</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>外部取得失敗をunavailableとして記録・通知する</td></tr>
+<tr><th scope="row" class="c" id="source-CL-20260621-01"><a class="ref ref-link" href="#source-CL-20260621-01">CL-20260621-01</a></th><td>確認回答</td><td>Q: 同じ冪等キーの注文を再送した場合は？ → A: 最初の受付結果を返し、注文を重複作成しない。</td><td><a class="fnlink" href="#detail-FNC-001" data-detail="FNC-001">FNC-001</a></td><td><a class="ref ref-link" href="#design-workflow-WF-001">workflow:WF-001</a></td><td><a class="ref ref-link" href="#verification-VER-002">VER-002</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>同じ冪等キーでは初回結果を返す回答を機能・フローへ反映する</td></tr>
+<tr><th scope="row" class="c" id="source-CL-20260621-02"><a class="ref ref-link" href="#source-CL-20260621-02">CL-20260621-02</a></th><td>確認回答</td><td>Q: 配送済みから取消へ戻せるか？ → A: 戻せない。取消要求を拒否する。</td><td><a class="fnlink" href="#detail-FNC-002" data-detail="FNC-002">FNC-002</a></td><td><a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a> <a class="ref ref-link" href="#design-state-model-STM-001">state-model:STM-001</a></td><td><a class="ref ref-link" href="#verification-VER-005">VER-005</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>配送済みから取消へ戻さない回答を禁止遷移へ反映する</td></tr>
+<tr><th scope="row" class="c" id="source-CL-20260624-01"><a class="ref ref-link" href="#source-CL-20260624-01">CL-20260624-01</a></th><td>確認回答</td><td>Q: 注文で許可する状態遷移は？ → A: 受付済み→配送中、受付済み→取消、配送中→配送済みだけを許可し、表にない遷移は状態を変えず拒否する。</td><td><a class="fnlink" href="#detail-FNC-002" data-detail="FNC-002">FNC-002</a></td><td><a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a> <a class="ref ref-link" href="#design-state-model-STM-001">state-model:STM-001</a></td><td><a class="ref ref-link" href="#verification-VER-005">VER-005</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>許可3遷移と表外拒否を完全な状態モデルへ反映する</td></tr>
+<tr><th scope="row" class="c" id="source-CL-20260624-02"><a class="ref ref-link" href="#source-CL-20260624-02">CL-20260624-02</a></th><td>確認回答</td><td>Q: 状態通知が3回失敗した後は？ → A: 失敗イベントを隔離し、5分以内に運用担当へ通知する。運用担当は原因解消後に同じイベントIDで手動再送し、成功まで未解決として管理する。</td><td><a class="fnlink" href="#detail-FNC-003" data-detail="FNC-003">FNC-003</a> <a class="fnlink" href="#detail-FNC-004" data-detail="FNC-004">FNC-004</a></td><td><a class="ref ref-link" href="#design-interface-EVT-001">interface:EVT-001</a> <a class="ref ref-link" href="#design-interface-API-003">interface:API-003</a> <a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a></td><td><a class="ref ref-link" href="#verification-VER-003">VER-003</a> <a class="ref ref-link" href="#verification-VER-004">VER-004</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>隔離、5分以内通知、同一event ID手動再送、未解決管理へ反映する</td></tr>
+<tr><th scope="row" class="c" id="source-CL-20260624-03"><a class="ref ref-link" href="#source-CL-20260624-03">CL-20260624-03</a></th><td>確認回答</td><td>Q: 再送間隔は？ → A: 初回失敗から1分、5分、15分後に再送する。</td><td><a class="fnlink" href="#detail-FNC-003" data-detail="FNC-003">FNC-003</a></td><td><a class="ref ref-link" href="#design-interface-EVT-001">interface:EVT-001</a> <a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a></td><td><a class="ref ref-link" href="#verification-VER-003">VER-003</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>1分、5分、15分の再送間隔をevent契約とフローへ反映する</td></tr>
+<tr><th scope="row" class="c" id="source-CL-20260624-04"><a class="ref ref-link" href="#source-CL-20260624-04">CL-20260624-04</a></th><td>確認回答</td><td>Q: 日次02:00のタイムゾーンは？ → A: Asia/Tokyoとする。</td><td><a class="fnlink" href="#detail-FNC-005" data-detail="FNC-005">FNC-005</a></td><td><a class="ref ref-link" href="#design-interface-BAT-001">interface:BAT-001</a> <a class="ref ref-link" href="#design-workflow-WF-003">workflow:WF-003</a></td><td><a class="ref ref-link" href="#verification-VER-006">VER-006</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>02:00 scheduleのtimezoneをAsia/Tokyoとして反映する</td></tr>
+<tr><th scope="row" class="c" id="source-FR-001"><a class="ref ref-link" href="#source-FR-001">FR-001</a></th><td>機能要件</td><td>外部ECは注文番号、商品明細、配送先、冪等キーを指定して注文を登録できなければならない。</td><td><a class="fnlink" href="#detail-FNC-001" data-detail="FNC-001">FNC-001</a></td><td><a class="ref ref-link" href="#design-interface-API-001">interface:API-001</a> <a class="ref ref-link" href="#design-workflow-WF-001">workflow:WF-001</a></td><td><a class="ref ref-link" href="#verification-VER-002">VER-002</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>注文番号、明細、配送先、冪等キーの型付き受付契約を定義する</td></tr>
+<tr><th scope="row" class="c" id="source-FR-002"><a class="ref ref-link" href="#source-FR-002">FR-002</a></th><td>機能要件</td><td>同一の冪等キーを再受信した場合、注文を重複作成せず最初の受付結果を返さなければならない。</td><td><a class="fnlink" href="#detail-FNC-001" data-detail="FNC-001">FNC-001</a></td><td><a class="ref ref-link" href="#design-interface-API-001">interface:API-001</a> <a class="ref ref-link" href="#design-workflow-WF-001">workflow:WF-001</a></td><td><a class="ref ref-link" href="#verification-VER-002">VER-002</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>冪等競合処理、初回結果再利用、重複0件検証を定義する</td></tr>
+<tr><th scope="row" class="c" id="source-FR-010"><a class="ref ref-link" href="#source-FR-010">FR-010</a></th><td>機能要件</td><td>注文状態はClarificationsに定義した許可遷移だけに従って変更されなければならない。</td><td><a class="fnlink" href="#detail-FNC-002" data-detail="FNC-002">FNC-002</a></td><td><a class="ref ref-link" href="#design-interface-API-002">interface:API-002</a> <a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a> <a class="ref ref-link" href="#design-state-model-STM-001">state-model:STM-001</a></td><td><a class="ref ref-link" href="#verification-VER-005">VER-005</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>許可状態遷移とtransactionを状態モデル・APIへ反映する</td></tr>
+<tr><th scope="row" class="c" id="source-FR-011"><a class="ref ref-link" href="#source-FR-011">FR-011</a></th><td>機能要件</td><td>許可表にない遷移要求を拒否し、現在状態を維持しなければならない。</td><td><a class="fnlink" href="#detail-FNC-002" data-detail="FNC-002">FNC-002</a></td><td><a class="ref ref-link" href="#design-interface-API-002">interface:API-002</a> <a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a> <a class="ref ref-link" href="#design-state-model-STM-001">state-model:STM-001</a></td><td><a class="ref ref-link" href="#verification-VER-005">VER-005</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>表外遷移の409拒否と副作用なしを定義する</td></tr>
+<tr><th scope="row" class="c" id="source-FR-020"><a class="ref ref-link" href="#source-FR-020">FR-020</a></th><td>機能要件</td><td>注文状態が変わった場合、イベントID、注文ID、変更前後の状態、変更日時を含むイベントを外部ECへ送信しなければならない。</td><td><a class="fnlink" href="#detail-FNC-003" data-detail="FNC-003">FNC-003</a></td><td><a class="ref ref-link" href="#design-interface-EVT-001">interface:EVT-001</a> <a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a></td><td><a class="ref ref-link" href="#verification-VER-003">VER-003</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>必須fieldを持つ状態変更eventとOutbox配送を定義する</td></tr>
+<tr><th scope="row" class="c" id="source-FR-021"><a class="ref ref-link" href="#source-FR-021">FR-021</a></th><td>機能要件</td><td>イベント送信失敗時はClarificationsの間隔で最大3回再送し、全結果を記録しなければならない。</td><td><a class="fnlink" href="#detail-FNC-003" data-detail="FNC-003">FNC-003</a></td><td><a class="ref ref-link" href="#design-interface-EVT-001">interface:EVT-001</a> <a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a></td><td><a class="ref ref-link" href="#verification-VER-003">VER-003</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>段階的自動再送と全attempt記録を定義する。総試行数の不整合はQ-001でブロックする</td></tr>
+<tr><th scope="row" class="c" id="source-FR-022"><a class="ref ref-link" href="#source-FR-022">FR-022</a></th><td>機能要件</td><td>再送上限到達後はイベントを隔離し、5分以内に運用担当へ通知し、同じイベントIDによる手動再送で解消できなければならない。</td><td><a class="fnlink" href="#detail-FNC-003" data-detail="FNC-003">FNC-003</a> <a class="fnlink" href="#detail-FNC-004" data-detail="FNC-004">FNC-004</a></td><td><a class="ref ref-link" href="#design-interface-EVT-001">interface:EVT-001</a> <a class="ref ref-link" href="#design-interface-API-003">interface:API-003</a> <a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a></td><td><a class="ref ref-link" href="#verification-VER-003">VER-003</a> <a class="ref ref-link" href="#verification-VER-004">VER-004</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>隔離、5分以内alert、同一event ID手動復旧を定義する</td></tr>
+<tr><th scope="row" class="c" id="source-FR-030"><a class="ref ref-link" href="#source-FR-030">FR-030</a></th><td>機能要件</td><td>システムは毎日02:00 Asia/Tokyoに外部ECの前日注文件数と内部注文件数を照合し、不一致または照合不能を運用担当者へ通知しなければならない。</td><td><a class="fnlink" href="#detail-FNC-005" data-detail="FNC-005">FNC-005</a></td><td><a class="ref ref-link" href="#design-interface-EXT-001">interface:EXT-001</a> <a class="ref ref-link" href="#design-interface-BAT-001">interface:BAT-001</a> <a class="ref ref-link" href="#design-workflow-WF-003">workflow:WF-003</a></td><td><a class="ref ref-link" href="#verification-VER-006">VER-006</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>JST schedule、前日範囲、重複防止、不一致・不能通知を定義する</td></tr>
+<tr><th scope="row" class="c" id="source-FR-040"><a class="ref ref-link" href="#source-FR-040">FR-040</a></th><td>機能要件</td><td>【将来対応】注文変更履歴を外部ECから検索できるAPIを提供すべきである。</td><td><span class="muted">—</span></td><td><span class="muted">—</span></td><td><span class="muted">—</span></td><td class="c"><span class="coverage coverage-future">future</span></td><td>検索方式・保持期間を決めず、将来versionへ明示的に延期する</td></tr>
+<tr><th scope="row" class="c" id="source-SC-001"><a class="ref ref-link" href="#source-SC-001">SC-001</a></th><td>成功基準</td><td>注文APIの95パーセンタイル応答時間は2秒以内である。</td><td><span class="muted">—</span></td><td><a class="ref ref-link" href="#design-quality-scenario-QS-001">quality-scenario:QS-001</a></td><td><a class="ref ref-link" href="#verification-VER-001">VER-001</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>通常負荷のk6でp95 2秒以内を測定する</td></tr>
+<tr><th scope="row" class="c" id="source-SC-002"><a class="ref ref-link" href="#source-SC-002">SC-002</a></th><td>成功基準</td><td>同一冪等キーによる重複注文は0件である。</td><td><a class="fnlink" href="#detail-FNC-001" data-detail="FNC-001">FNC-001</a></td><td><a class="ref ref-link" href="#design-workflow-WF-001">workflow:WF-001</a> <a class="ref ref-link" href="#design-quality-scenario-QS-002">quality-scenario:QS-002</a></td><td><a class="ref ref-link" href="#verification-VER-002">VER-002</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>並行冪等E2Eで重複注文0件を検証する</td></tr>
+<tr><th scope="row" class="c" id="source-SC-003"><a class="ref ref-link" href="#source-SC-003">SC-003</a></th><td>成功基準</td><td>状態変更イベントの未解決送信漏れは0件である。</td><td><a class="fnlink" href="#detail-FNC-003" data-detail="FNC-003">FNC-003</a> <a class="fnlink" href="#detail-FNC-004" data-detail="FNC-004">FNC-004</a></td><td><a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a> <a class="ref ref-link" href="#design-quality-scenario-QS-003">quality-scenario:QS-003</a></td><td><a class="ref ref-link" href="#verification-VER-003">VER-003</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>自動再送から手動復旧までE2Eし未解決送信漏れ0件を確認する</td></tr>
+<tr><th scope="row" class="c" id="source-SC-004"><a class="ref ref-link" href="#source-SC-004">SC-004</a></th><td>成功基準</td><td>再送上限到達から運用担当への通知まで5分以内である。</td><td><a class="fnlink" href="#detail-FNC-003" data-detail="FNC-003">FNC-003</a></td><td><a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a> <a class="ref ref-link" href="#design-quality-scenario-QS-004">quality-scenario:QS-004</a></td><td><a class="ref ref-link" href="#verification-VER-004">VER-004</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>test clockとalert sinkでdead-letterから5分以内を測る</td></tr>
+<tr><th scope="row" class="c" id="source-ASM-001"><a class="ref ref-link" href="#source-ASM-001">ASM-001</a></th><td>前提</td><td>外部ECは注文ごとに一意な冪等キーを生成する。</td><td><a class="fnlink" href="#detail-FNC-001" data-detail="FNC-001">FNC-001</a></td><td><a class="ref ref-link" href="#design-workflow-WF-001">workflow:WF-001</a></td><td><a class="ref ref-link" href="#verification-VER-002">VER-002</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>外部EC発行の冪等キーをclient単位の一意制約へ接続する</td></tr>
+<tr><th scope="row" class="c" id="source-ASM-002"><a class="ref ref-link" href="#source-ASM-002">ASM-002</a></th><td>前提</td><td>外部ECはイベントIDで受信イベントを重複排除する。</td><td><a class="fnlink" href="#detail-FNC-003" data-detail="FNC-003">FNC-003</a></td><td><a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a></td><td><a class="ref ref-link" href="#verification-VER-003">VER-003</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>at-least-onceと同一event ID再送、外部重複排除の責任を明示する</td></tr>
+<tr><th scope="row" class="c" id="source-ASM-003"><a class="ref ref-link" href="#source-ASM-003">ASM-003</a></th><td>前提</td><td>日次照合用の件数取得APIは外部ECから提供される。</td><td><a class="fnlink" href="#detail-FNC-005" data-detail="FNC-005">FNC-005</a></td><td><a class="ref ref-link" href="#design-interface-EXT-001">interface:EXT-001</a> <a class="ref ref-link" href="#design-workflow-WF-003">workflow:WF-003</a></td><td><a class="ref ref-link" href="#verification-VER-006">VER-006</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>外部件数APIを日次照合の入力境界として定義する</td></tr>
+<tr><th scope="row" class="c" id="source-ASM-004"><a class="ref ref-link" href="#source-ASM-004">ASM-004</a></th><td>前提</td><td>運用担当者は既存の監視通知チャネルを利用できる。</td><td><a class="fnlink" href="#detail-FNC-003" data-detail="FNC-003">FNC-003</a> <a class="fnlink" href="#detail-FNC-004" data-detail="FNC-004">FNC-004</a> <a class="fnlink" href="#detail-FNC-005" data-detail="FNC-005">FNC-005</a></td><td><a class="ref ref-link" href="#design-workflow-WF-002">workflow:WF-002</a> <a class="ref ref-link" href="#design-workflow-WF-003">workflow:WF-003</a></td><td><a class="ref ref-link" href="#verification-VER-003">VER-003</a> <a class="ref ref-link" href="#verification-VER-006">VER-006</a></td><td class="c"><span class="coverage coverage-covered">covered</span></td><td>既存alert channelを状態通知復旧と照合異常の受信境界にする</td></tr>
+<tr><th scope="row" class="c" id="source-OOS-001"><a class="ref ref-link" href="#source-OOS-001">OOS-001</a></th><td>対象外</td><td>決済処理と返金処理は本機能の対象外とする。</td><td><span class="muted">—</span></td><td><span class="muted">—</span></td><td><span class="muted">—</span></td><td class="c"><span class="coverage coverage-out-of-scope">out-of-scope</span></td><td>決済・返金は設計要素を持たせず対象外として維持する</td></tr>
+<tr><th scope="row" class="c" id="source-OOS-002"><a class="ref ref-link" href="#source-OOS-002">OOS-002</a></th><td>対象外</td><td>注文変更履歴API（FR-040）は将来バージョンで提供する。</td><td><span class="muted">—</span></td><td><span class="muted">—</span></td><td><span class="muted">—</span></td><td class="c"><span class="coverage coverage-future">future</span></td><td>FR-040の注文変更履歴APIは現行設計へ含めない</td></tr>
+<tr><th scope="row" class="c" id="source-OOS-003"><a class="ref ref-link" href="#source-OOS-003">OOS-003</a></th><td>対象外</td><td>外部EC内部のイベント処理方式は対象外とする。</td><td><span class="muted">—</span></td><td><span class="muted">—</span></td><td><span class="muted">—</span></td><td class="c"><span class="coverage coverage-out-of-scope">out-of-scope</span></td><td>外部EC内部のevent処理方式は外部責任として対象外に保つ</td></tr>
+</tbody></table>
+</section>
+<section class="panel" id="panel-delivery" role="tabpanel" aria-labelledby="tab-delivery">
+<h2 id="delivery">実装計画要約</h2>
+<p class="notice">tasks.md等の正本を読み取り専用で要約しています。見積り・担当・日程の正本ではありません。</p>
+<p><strong>根拠:</strong> <span class="ref">tasks:*</span></p>
+<table class="aux"><caption>実装フェーズ</caption>
+<thead><tr><th scope="col">順序</th><th scope="col">フェーズ</th><th scope="col">状態</th><th scope="col">完了</th><th scope="col">総数</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row">1</th><td>Phase 1 - Foundation</td><td></td><td>2</td><td>4</td><td></td></tr>
+<tr><th scope="row">2</th><td>Phase 2 - Order Acceptance and State</td><td></td><td>0</td><td>5</td><td></td></tr>
+<tr><th scope="row">3</th><td>Phase 3 - Event Delivery and Recovery</td><td></td><td>0</td><td>5</td><td></td></tr>
+<tr><th scope="row">4</th><td>Phase 4 - Daily Reconciliation</td><td></td><td>0</td><td>3</td><td></td></tr>
+<tr><th scope="row">5</th><td>Phase 5 - Verification and Release Readiness</td><td></td><td>0</td><td>5</td><td></td></tr>
+</tbody></table>
+<table class="aux"><caption>フェーズ・作業依存関係</caption>
+<thead><tr><th scope="col">依存元</th><th scope="col">依存先</th><th scope="col">内容</th><th scope="col">根拠</th></tr></thead><tbody>
+<tr><th scope="row"></th><td></td><td>Phase 1 → Phase 2 → Phase 3</td><td></td></tr>
+<tr><th scope="row"></th><td></td><td>Phase 1 → Phase 4</td><td></td></tr>
+<tr><th scope="row"></th><td></td><td>Phase 2 → Phase 5</td><td></td></tr>
+<tr><th scope="row"></th><td></td><td>Phase 3 → Phase 5</td><td></td></tr>
+<tr><th scope="row"></th><td></td><td>Phase 4 → Phase 5</td><td></td></tr>
+</tbody></table>
+<p class="delivery-progress"><strong>完了状況:</strong> 2 / 22</p>
+</section>
+<script>
+(function(){
+  var tabs=[].slice.call(document.querySelectorAll('[role="tab"]'));
+  var panels=[].slice.call(document.querySelectorAll('[role="tabpanel"]'));
+  function show(id,focus){panels.forEach(function(p){p.classList.toggle('active',p.id===id);});tabs.forEach(function(t){var on=t.getAttribute('aria-controls')===id;t.classList.toggle('active',on);t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;});if(focus){var tab=tabs.find(function(t){return t.getAttribute('aria-controls')===id;});if(tab){tab.focus();}}}
+  function revealHash(scroll){if(!window.location.hash)return;var id=decodeURIComponent(window.location.hash.slice(1));var target=document.getElementById(id);if(!target)return;var panel=target.closest('[role="tabpanel"]');if(panel)show(panel.id);if(scroll)setTimeout(function(){target.scrollIntoView();},0);}
+  tabs.forEach(function(t,i){t.addEventListener('click',function(){show(t.getAttribute('aria-controls'));});t.addEventListener('keydown',function(e){var n=i;if(e.key==='ArrowRight')n=(i+1)%tabs.length;else if(e.key==='ArrowLeft')n=(i-1+tabs.length)%tabs.length;else if(e.key==='Home')n=0;else if(e.key==='End')n=tabs.length-1;else return;e.preventDefault();show(tabs[n].getAttribute('aria-controls'),true);});});
+  document.querySelectorAll('[data-detail]').forEach(function(a){a.addEventListener('click',function(){show('panel-details');setTimeout(function(){var el=document.getElementById('detail-'+a.dataset.detail);if(el)el.scrollIntoView();},0);});});
+  document.querySelectorAll('a.ref-link').forEach(function(a){a.addEventListener('click',function(){setTimeout(function(){revealHash(true);},0);});});
+  window.addEventListener('hashchange',function(){revealHash(true);});
+  var query=document.getElementById('filter-query'),status=document.getElementById('filter-status'),execution=document.getElementById('filter-execution');function filter(){var q=(query.value||'').toLowerCase();document.querySelectorAll('#function-body tr').forEach(function(row){var ok=(!q||row.dataset.search.indexOf(q)>=0)&&(!status.value||row.dataset.status===status.value)&&(!execution.value||row.dataset.execution===execution.value);row.hidden=!ok;});}[query,status,execution].forEach(function(el){el.addEventListener('input',filter);});
+  revealHash(false);
+})();
+</script>
+</body>
+</html>

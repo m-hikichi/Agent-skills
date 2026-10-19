@@ -1,0 +1,23 @@
+{
+  "tool_calls": 55,
+  "steps": 14,
+  "errors": 8,
+  "remaining_errors": 0,
+  "validation_errors": 0,
+  "validation_warnings": 0,
+  "normative_elements": 38,
+  "functions": {
+    "current": 6,
+    "future": 1,
+    "total": 7
+  },
+  "interfaces": 8,
+  "coverage_percent": 100.0,
+  "output_files": [
+    "注文連携API_基本設計_機能一覧.design.json",
+    "注文連携API_基本設計_機能一覧.html",
+    "transcript.md",
+    "metrics.json"
+  ],
+  "notes": "tool_calls and steps are approximate. errors counts transient environment/command failures encountered during execution; the final design validation has zero errors."
+}

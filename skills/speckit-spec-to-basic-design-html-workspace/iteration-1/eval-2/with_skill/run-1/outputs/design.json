@@ -1,0 +1,4640 @@
+{
+  "schema_version": 3,
+  "document_level": "implementation-ready",
+  "title": "注文連携API 基本設計",
+  "source": {
+    "artifacts": [
+      {
+        "type": "spec",
+        "path": "spec.md",
+        "locator": "*",
+        "fingerprint": "fdc8aa361f999271cdc13d50cee8cc9c931b6d7f8833ad2d4e864965bef3a00b"
+      },
+      {
+        "type": "plan",
+        "path": "plan.md",
+        "locator": "*",
+        "fingerprint": "ccb93ed5d9dde6b37e88afbce1d97edc53758b64d18984d63814668142133fac"
+      },
+      {
+        "type": "research",
+        "path": "research.md",
+        "locator": "*",
+        "fingerprint": "7469ef841ab78bce1de915259c3bba9f5403a79bf672ab256e7b529c3ef0da99"
+      },
+      {
+        "type": "data-model",
+        "path": "data-model.md",
+        "locator": "*",
+        "fingerprint": "f35d4f7745e9db2eb9bf2eb5f37f9bd3b46268f83e9f5fc5846eb881f878ce21"
+      },
+      {
+        "type": "contract",
+        "path": "contracts/openapi.yaml",
+        "locator": "*",
+        "fingerprint": "8ce441831a60d4257c884c9e25baf0313fc62cf8c843d447ee665d70e0de4bc4"
+      },
+      {
+        "type": "quickstart",
+        "path": "quickstart.md",
+        "locator": "*",
+        "fingerprint": "0bcf632f69463bd9861c4bb03dd91e325e2d6054dc5aa66d32037cab19be8740"
+      },
+      {
+        "type": "tasks",
+        "path": "tasks.md",
+        "locator": "*",
+        "fingerprint": "602901c2639d4c2bff651ecd6b370aeb370cfa8c908673a9da7d7ba87af68734"
+      }
+    ]
+  },
+  "meta": {
+    "created_on": "2026-07-18",
+    "updated_on": "2026-07-18",
+    "audience": [
+      "開発者",
+      "プログラマー",
+      "マネージャー"
+    ]
+  },
+  "function_list": [
+    {
+      "name": "注文連携",
+      "children": [
+        {
+          "name": "注文処理",
+          "children": [
+            {
+              "name": "注文受付",
+              "rows": [
+                {
+                  "id": "FNC-001",
+                  "name": "注文の冪等受付",
+                  "priority": {
+                    "value": "P1",
+                    "basis": "specified",
+                    "source_refs": [
+                      "US-001"
+                    ]
+                  },
+                  "summary": "外部ECから注文を受け付け、同一client・冪等キーでは注文を重複作成せず初回結果を返す。",
+                  "actors": {
+                    "initiators": [
+                      "外部EC"
+                    ],
+                    "processors": [
+                      "Order API"
+                    ],
+                    "recipients": [
+                      "外部EC"
+                    ],
+                    "operators": []
+                  },
+                  "trigger": {
+                    "text": "外部ECが注文登録APIを呼び出す",
+                    "basis": "specified",
+                    "source_refs": [
+                      "US-001",
+                      "spec:FR-001"
+                    ]
+                  },
+                  "execution": {
+                    "type": "api",
+                    "refs": [
+                      "API-001"
+                    ]
+                  },
+                  "inputs": [
+                    {
+                      "name": "Idempotency-Key",
+                      "type": "string(1..128)",
+                      "required": true,
+                      "description": "clientごとに30日間保持する冪等キー",
+                      "basis": "specified",
+                      "source_refs": [
+                        "contract:/components/parameters/IdempotencyKey"
+                      ]
+                    },
+                    {
+                      "name": "CreateOrderRequest",
+                      "type": "object",
+                      "required": true,
+                      "description": "注文番号、1件以上の商品明細、配送先",
+                      "basis": "specified",
+                      "source_refs": [
+                        "contract:/components/schemas/CreateOrderRequest"
+                      ]
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "name": "OrderAccepted",
+                      "type": "object",
+                      "required": true,
+                      "description": "orderId、accepted状態、acceptedAtを含む受付結果",
+                      "basis": "specified",
+                      "source_refs": [
+                        "contract:/components/schemas/OrderAccepted"
+                      ]
+                    }
+                  ],
+                  "preconditions": [
+                    {
+                      "text": "OAuth 2.0 client credentialsで認証され、orders.write scopeを持つ",
+                      "basis": "specified",
+                      "source_refs": [
+                        "contract:/paths/~1orders/post/security"
+                      ]
+                    }
+                  ],
+                  "postconditions": [
+                    {
+                      "text": "初回受付ではOrder、OrderLine、IdempotencyResultが1transactionで保存され、注文状態はacceptedとなる",
+                      "basis": "specified",
+                      "source_refs": [
+                        "plan:注文登録",
+                        "data-model:Transaction Boundaries"
+                      ]
+                    }
+                  ],
+                  "business_rules": [
+                    {
+                      "id": "BR-001-01",
+                      "text": "client_idと冪等キーの組が同じでpayloadも同じ再送には、注文を追加せず初回の注文IDを返す",
+                      "basis": "specified",
+                      "source_refs": [
+                        "FR-002",
+                        "AC-001-02",
+                        "CL-20260621-01"
+                      ]
+                    },
+                    {
+                      "id": "BR-001-02",
+                      "text": "初回は201、同一key・同一payloadの再送は200で同じ注文IDを返す",
+                      "basis": "specified",
+                      "source_refs": [
+                        "FR-002",
+                        "AC-001-02"
+                      ]
+                    }
+                  ],
+                  "exceptions": [
+                    {
+                      "condition": "request schemaが不正",
+                      "behavior": "400 InvalidRequestを返し、注文を保存しない",
+                      "basis": "specified",
+                      "source_refs": [
+                        "FR-001"
+                      ]
+                    },
+                    {
+                      "condition": "同じ冪等キーでpayloadが異なる",
+                      "behavior": "409 IDEMPOTENCY_CONFLICTを返し、既存注文を受付結果として返さない",
+                      "basis": "specified",
+                      "source_refs": [
+                        "FR-002",
+                        "CL-20260621-01"
+                      ]
+                    }
+                  ],
+                  "data_entities": [
+                    "ENT-ORDER",
+                    "ENT-ORDER-LINE",
+                    "ENT-IDEMPOTENCY-RESULT"
+                  ],
+                  "source_refs": [
+                    "US-001",
+                    "AC-001-01",
+                    "AC-001-02",
+                    "FR-001",
+                    "FR-002",
+                    "CL-20260621-01",
+                    "SC-002",
+                    "ASM-001"
+                  ],
+                  "status": "current"
+                }
+              ]
+            },
+            {
+              "name": "状態管理",
+              "rows": [
+                {
+                  "id": "FNC-002",
+                  "name": "注文状態の整合的変更",
+                  "priority": {
+                    "value": "P1",
+                    "basis": "derived",
+                    "rationale": "P1の注文状態通知を成立させる前提機能",
+                    "source_refs": [
+                      "US-002",
+                      "FR-010"
+                    ]
+                  },
+                  "summary": "許可遷移とversionを検証し、注文・履歴・通知Outboxを一体で更新する。",
+                  "actors": {
+                    "initiators": [
+                      "注文状態変更APIのOAuth client（主体名は正本未記載）"
+                    ],
+                    "processors": [
+                      "Order API"
+                    ],
+                    "recipients": [
+                      "注文状態変更APIのOAuth client"
+                    ],
+                    "operators": []
+                  },
+                  "trigger": {
+                    "text": "注文状態変更APIがtargetStatus、version、triggerRefを受信する",
+                    "basis": "specified",
+                    "source_refs": [
+                      "contract:/paths/~1orders~1{orderId}~1transitions/post"
+                    ]
+                  },
+                  "execution": {
+                    "type": "api",
+                    "refs": [
+                      "API-002"
+                    ]
+                  },
+                  "inputs": [
+                    {
+                      "name": "TransitionOrderRequest",
+                      "type": "object",
+                      "required": true,
+                      "description": "targetStatus、version、triggerRef",
+                      "basis": "specified",
+                      "source_refs": [
+                        "contract:/components/schemas/TransitionOrderRequest"
+                      ]
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "name": "OrderState",
+                      "type": "object",
+                      "required": true,
+                      "description": "orderId、status、version、changedAt",
+                      "basis": "specified",
+                      "source_refs": [
+                        "contract:/components/schemas/OrderState"
+                      ]
+                    }
+                  ],
+                  "preconditions": [
+                    {
+                      "text": "対象Orderが存在し、要求versionが保存済みversionと一致する",
+                      "basis": "specified",
+                      "source_refs": [
+                        "data-model:Order State Transitions",
+                        "plan:状態変更と通知"
+                      ]
+                    }
+                  ],
+                  "postconditions": [
+                    {
+                      "text": "許可遷移ではOrder、OrderStateHistory、OutboxEventが同一transactionで保存される",
+                      "basis": "specified",
+                      "source_refs": [
+                        "data-model:Transaction Boundaries",
+                        "research:Decision 2"
+                      ]
+                    }
+                  ],
+                  "business_rules": [
+                    {
+                      "id": "BR-002-01",
+                      "text": "accepted→shipping、accepted→cancelled、shipping→deliveredだけを許可する",
+                      "basis": "confirmed",
+                      "confirmation": "CL-20260624-01",
+                      "source_refs": [
+                        "FR-010",
+                        "CL-20260624-01"
+                      ]
+                    },
+                    {
+                      "id": "BR-002-02",
+                      "text": "表にない遷移は状態・履歴・Outboxを変えず拒否する",
+                      "basis": "confirmed",
+                      "confirmation": "CL-20260624-01",
+                      "source_refs": [
+                        "FR-011",
+                        "CL-20260624-01",
+                        "EC-001"
+                      ]
+                    }
+                  ],
+                  "exceptions": [
+                    {
+                      "condition": "許可表にない遷移（配送済みから取消を含む）",
+                      "behavior": "409 INVALID_STATE_TRANSITIONを返し、注文・履歴・Outboxを変更しない",
+                      "basis": "specified",
+                      "source_refs": [
+                        "FR-011",
+                        "EC-001",
+                        "CL-20260621-02"
+                      ]
+                    },
+                    {
+                      "condition": "要求versionが競合する",
+                      "behavior": "409 VERSION_CONFLICTを返し、更新しない",
+                      "basis": "specified",
+                      "source_refs": [
+                        "FR-010"
+                      ]
+                    }
+                  ],
+                  "data_entities": [
+                    "ENT-ORDER",
+                    "ENT-ORDER-STATE-HISTORY",
+                    "ENT-OUTBOX-EVENT"
+                  ],
+                  "source_refs": [
+                    "FR-010",
+                    "FR-011",
+                    "EC-001",
+                    "CL-20260621-02",
+                    "CL-20260624-01"
+                  ],
+                  "status": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "外部連携・運用",
+          "children": [
+            {
+              "name": "状態通知",
+              "rows": [
+                {
+                  "id": "FNC-003",
+                  "name": "状態変更イベントの配送",
+                  "priority": {
+                    "value": "P1",
+                    "basis": "specified",
+                    "source_refs": [
+                      "US-002"
+                    ]
+                  },
+                  "summary": "Outboxから状態変更イベントをclaimし、同一event IDで外部ECへat-least-once配送する。",
+                  "actors": {
+                    "initiators": [
+                      "Delivery Worker"
+                    ],
+                    "processors": [
+                      "Delivery Worker"
+                    ],
+                    "recipients": [
+                      "外部EC"
+                    ],
+                    "operators": [
+                      "運用担当者"
+                    ]
+                  },
+                  "trigger": {
+                    "text": "Delivery Workerが送信待ちOutboxEventをclaimする",
+                    "basis": "specified",
+                    "source_refs": [
+                      "plan:状態変更と通知"
+                    ]
+                  },
+                  "execution": {
+                    "type": "event",
+                    "refs": [
+                      "EVT-001"
+                    ]
+                  },
+                  "inputs": [
+                    {
+                      "name": "OutboxEvent",
+                      "type": "order.status.changed.v1",
+                      "required": true,
+                      "description": "状態変更transactionで作成された送信待ちevent",
+                      "basis": "specified",
+                      "source_refs": [
+                        "data-model:OutboxEvent"
+                      ]
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "name": "OrderStatusChangedEvent",
+                      "type": "webhook payload",
+                      "required": true,
+                      "description": "eventId、orderId、previousStatus、currentStatus、changedAt",
+                      "basis": "specified",
+                      "source_refs": [
+                        "contract:/components/schemas/OrderStatusChangedEvent"
+                      ]
+                    }
+                  ],
+                  "preconditions": [
+                    {
+                      "text": "状態変更transactionがcommitされ、OutboxEventがpendingである",
+                      "basis": "specified",
+                      "source_refs": [
+                        "research:Decision 2",
+                        "data-model:OutboxEvent"
+                      ]
+                    }
+                  ],
+                  "postconditions": [
+                    {
+                      "text": "成功時はeventをdeliveredとしDeliveryAttemptを記録する。上限到達時はdead_letterとする",
+                      "basis": "specified",
+                      "source_refs": [
+                        "data-model:OutboxEvent",
+                        "data-model:DeliveryAttempt"
+                      ]
+                    }
+                  ],
+                  "business_rules": [
+                    {
+                      "id": "BR-003-01",
+                      "text": "event IDは全再送で不変とし、外部ECはevent IDで重複排除する",
+                      "basis": "specified",
+                      "source_refs": [
+                        "FR-020",
+                        "EC-003",
+                        "ASM-002"
+                      ]
+                    },
+                    {
+                      "id": "BR-003-02",
+                      "text": "失敗後は1分、5分、15分の間隔で最大3回自動再送し、全結果を記録する",
+                      "basis": "confirmed",
+                      "confirmation": "CL-20260624-03",
+                      "source_refs": [
+                        "FR-021",
+                        "CL-20260624-03"
+                      ]
+                    }
+                  ],
+                  "exceptions": [
+                    {
+                      "condition": "自動再送上限へ到達する",
+                      "behavior": "eventをdead_letterへ隔離し、5分以内のalert対象にする",
+                      "basis": "confirmed",
+                      "confirmation": "CL-20260624-02",
+                      "source_refs": [
+                        "FR-022",
+                        "EC-002",
+                        "CL-20260624-02"
+                      ]
+                    }
+                  ],
+                  "data_entities": [
+                    "ENT-OUTBOX-EVENT",
+                    "ENT-DELIVERY-ATTEMPT"
+                  ],
+                  "source_refs": [
+                    "US-002",
+                    "AC-002-01",
+                    "FR-020",
+                    "FR-021",
+                    "FR-022",
+                    "EC-002",
+                    "EC-003",
+                    "CL-20260624-02",
+                    "CL-20260624-03",
+                    "SC-003",
+                    "SC-004",
+                    "ASM-002",
+                    "ASM-004"
+                  ],
+                  "status": "current"
+                },
+                {
+                  "id": "FNC-004",
+                  "name": "隔離イベントの手動復旧",
+                  "priority": {
+                    "value": "P1",
+                    "basis": "specified",
+                    "source_refs": [
+                      "US-002"
+                    ]
+                  },
+                  "summary": "運用担当者が原因解消後に操作理由を記録し、同じevent IDをpendingへ戻して未解決状態を解消する。",
+                  "actors": {
+                    "initiators": [
+                      "運用担当者"
+                    ],
+                    "processors": [
+                      "Order API",
+                      "Delivery Worker"
+                    ],
+                    "recipients": [
+                      "外部EC",
+                      "運用担当者"
+                    ],
+                    "operators": [
+                      "運用担当者"
+                    ]
+                  },
+                  "trigger": {
+                    "text": "運用担当者が外部EC復旧を確認し、event IDと操作理由を指定して手動再送APIを呼ぶ",
+                    "basis": "specified",
+                    "source_refs": [
+                      "plan:Recovery",
+                      "contract:/paths/~1operations~1events~1{eventId}~1replay/post"
+                    ]
+                  },
+                  "execution": {
+                    "type": "api",
+                    "refs": [
+                      "API-003"
+                    ]
+                  },
+                  "inputs": [
+                    {
+                      "name": "eventId / reason",
+                      "type": "UUID / string(1..512)",
+                      "required": true,
+                      "description": "隔離イベントIDと操作理由",
+                      "basis": "specified",
+                      "source_refs": [
+                        "contract:/paths/~1operations~1events~1{eventId}~1replay/post"
+                      ]
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "name": "ReplayAccepted",
+                      "type": "object",
+                      "required": true,
+                      "description": "同じeventIdとpending状態",
+                      "basis": "specified",
+                      "source_refs": [
+                        "contract:/components/schemas/ReplayAccepted"
+                      ]
+                    }
+                  ],
+                  "preconditions": [
+                    {
+                      "text": "対象eventがdead_letterで、運用者scope events.replayを持ち、原因が解消済みである",
+                      "basis": "specified",
+                      "source_refs": [
+                        "plan:Security",
+                        "plan:Recovery"
+                      ]
+                    }
+                  ],
+                  "postconditions": [
+                    {
+                      "text": "同じevent IDが再配送され、成功時にincidentを解消し未解決dead-letterを0件へ戻す",
+                      "basis": "specified",
+                      "source_refs": [
+                        "plan:状態変更と通知",
+                        "quickstart:Scenario 3"
+                      ]
+                    }
+                  ],
+                  "business_rules": [
+                    {
+                      "id": "BR-004-01",
+                      "text": "手動再送は新しいeventを作らず同じevent IDを使い、操作理由を監査記録へ残す",
+                      "basis": "confirmed",
+                      "confirmation": "CL-20260624-02",
+                      "source_refs": [
+                        "FR-022",
+                        "CL-20260624-02"
+                      ]
+                    }
+                  ],
+                  "exceptions": [
+                    {
+                      "condition": "eventがdead_letterでない、または既に再送中",
+                      "behavior": "409を返して再送状態を変更しない",
+                      "basis": "specified",
+                      "source_refs": [
+                        "FR-022"
+                      ]
+                    }
+                  ],
+                  "data_entities": [
+                    "ENT-OUTBOX-EVENT",
+                    "ENT-DELIVERY-ATTEMPT"
+                  ],
+                  "source_refs": [
+                    "US-002",
+                    "AC-002-02",
+                    "FR-022",
+                    "EC-002",
+                    "CL-20260624-02",
+                    "SC-003",
+                    "ASM-004"
+                  ],
+                  "status": "current"
+                }
+              ]
+            },
+            {
+              "name": "日次照合",
+              "rows": [
+                {
+                  "id": "FNC-005",
+                  "name": "前日注文件数の日次照合",
+                  "priority": {
+                    "value": "P2",
+                    "basis": "specified",
+                    "source_refs": [
+                      "US-003"
+                    ]
+                  },
+                  "summary": "毎日02:00 Asia/Tokyoに外部・内部の前日件数を照合し、不一致または取得不能を記録・通知する。",
+                  "actors": {
+                    "initiators": [
+                      "Reconciliation Scheduler"
+                    ],
+                    "processors": [
+                      "Reconciliation Scheduler"
+                    ],
+                    "recipients": [
+                      "運用担当者"
+                    ],
+                    "operators": [
+                      "運用担当者"
+                    ]
+                  },
+                  "trigger": {
+                    "text": "CronJob相当のschedulerが0 2 * * *、Asia/Tokyoで起動する",
+                    "basis": "confirmed",
+                    "confirmation": "CL-20260624-04",
+                    "source_refs": [
+                      "FR-030",
+                      "CL-20260624-04"
+                    ]
+                  },
+                  "execution": {
+                    "type": "batch",
+                    "refs": [
+                      "BAT-001"
+                    ]
+                  },
+                  "inputs": [
+                    {
+                      "name": "前日注文件数",
+                      "type": "external integer / internal integer",
+                      "required": true,
+                      "description": "前日JSTの外部EC件数と内部database件数",
+                      "basis": "specified",
+                      "source_refs": [
+                        "plan:日次照合",
+                        "contract:/x-external-operations/dailyOrderCount"
+                      ]
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "name": "DailyReconciliation / 監視通知",
+                      "type": "record / alert",
+                      "required": true,
+                      "description": "matched、mismatched、unavailableの結果と不一致・照合不能通知",
+                      "basis": "specified",
+                      "source_refs": [
+                        "data-model:DailyReconciliation",
+                        "plan:日次照合"
+                      ]
+                    }
+                  ],
+                  "preconditions": [
+                    {
+                      "text": "外部ECが件数取得APIを提供し、既存監視通知チャネルを利用できる",
+                      "basis": "specified",
+                      "source_refs": [
+                        "ASM-003",
+                        "ASM-004"
+                      ]
+                    }
+                  ],
+                  "postconditions": [
+                    {
+                      "text": "対象日につきDailyReconciliationを1件だけ記録し、不一致または取得不能なら運用担当へ通知する",
+                      "basis": "specified",
+                      "source_refs": [
+                        "plan:日次照合",
+                        "data-model:DailyReconciliation"
+                      ]
+                    }
+                  ],
+                  "business_rules": [
+                    {
+                      "id": "BR-005-01",
+                      "text": "前日のJST日付範囲をUTCへ変換して照合する",
+                      "basis": "specified",
+                      "source_refs": [
+                        "FR-030",
+                        "CL-20260624-04"
+                      ]
+                    },
+                    {
+                      "id": "BR-005-02",
+                      "text": "同じtarget_dateは一意制約とadvisory lockで重複実行しない",
+                      "basis": "specified",
+                      "source_refs": [
+                        "FR-030"
+                      ]
+                    }
+                  ],
+                  "exceptions": [
+                    {
+                      "condition": "外部EC件数取得APIを利用できない",
+                      "behavior": "結果を確定せずunavailableとして記録し、照合不能を運用担当へ通知する",
+                      "basis": "specified",
+                      "source_refs": [
+                        "FR-030",
+                        "EC-004"
+                      ]
+                    }
+                  ],
+                  "data_entities": [
+                    "ENT-DAILY-RECONCILIATION",
+                    "ENT-ORDER"
+                  ],
+                  "source_refs": [
+                    "US-003",
+                    "AC-003-01",
+                    "FR-030",
+                    "EC-004",
+                    "CL-20260624-04",
+                    "ASM-003",
+                    "ASM-004"
+                  ],
+                  "status": "current"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "interfaces": [
+    {
+      "id": "API-001",
+      "type": "api",
+      "name": "注文登録API",
+      "summary": "外部ECから注文を冪等に受け付ける",
+      "actors": [
+        "外部EC",
+        "Order API"
+      ],
+      "status": "current",
+      "contract": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "auth": {
+          "scheme": "oauth2-client-credentials",
+          "scopes": [
+            "orders.write"
+          ]
+        },
+        "request": {
+          "headers": [
+            {
+              "name": "Idempotency-Key",
+              "type": "string",
+              "required": true,
+              "minLength": 1,
+              "maxLength": 128
+            }
+          ],
+          "body_schema_ref": "#/components/schemas/CreateOrderRequest"
+        },
+        "responses": [
+          {
+            "status": 201,
+            "condition": "初回受付",
+            "schema_ref": "#/components/schemas/OrderAccepted"
+          },
+          {
+            "status": 200,
+            "condition": "同じkey・同じpayload",
+            "schema_ref": "#/components/schemas/OrderAccepted"
+          }
+        ],
+        "errors": [
+          {
+            "code": "INVALID_REQUEST",
+            "status": 400,
+            "condition": "request schema違反"
+          },
+          {
+            "code": "IDEMPOTENCY_CONFLICT",
+            "status": 409,
+            "condition": "同じkeyでpayloadが異なる"
+          },
+          {
+            "code": "UNAUTHORIZED",
+            "status": 401,
+            "condition": "認証またはscope不足"
+          }
+        ],
+        "idempotency": {
+          "key": "Idempotency-Key",
+          "scope": "client_id",
+          "duplicate_behavior": "同一payloadなら初回結果を返し、異なるpayloadなら409",
+          "retention": "30日"
+        },
+        "transaction": {
+          "boundary": "Order、OrderLine、IdempotencyResultを1transactionでcommit",
+          "rollback_behavior": "競合・入力不正時は新規注文を残さない"
+        },
+        "concurrency": {
+          "conflict_detection": "UNIQUE(client_id, idempotency_key)とrequest_hash",
+          "response": "競合transaction完了後、同一payloadは保存済み初回結果、異なるpayloadは409"
+        },
+        "basis": "specified",
+        "source_refs": [
+          "contract:/paths/~1orders/post",
+          "plan:注文登録",
+          "data-model:IdempotencyResult",
+          "spec:FR-001",
+          "spec:FR-002",
+          "AC-001-01",
+          "AC-001-02"
+        ]
+      }
+    },
+    {
+      "id": "API-002",
+      "type": "api",
+      "name": "注文状態変更API",
+      "summary": "versionと許可遷移を検証して注文状態を変更する",
+      "actors": [
+        "注文状態変更APIのOAuth client",
+        "Order API"
+      ],
+      "status": "current",
+      "contract": {
+        "method": "POST",
+        "path": "/v1/orders/{orderId}/transitions",
+        "auth": {
+          "scheme": "oauth2-client-credentials",
+          "scopes": [
+            "orders.transition"
+          ]
+        },
+        "request": {
+          "path_parameters": [
+            {
+              "name": "orderId",
+              "type": "string(uuid)",
+              "required": true
+            }
+          ],
+          "body_schema_ref": "#/components/schemas/TransitionOrderRequest"
+        },
+        "responses": [
+          {
+            "status": 200,
+            "schema_ref": "#/components/schemas/OrderState"
+          }
+        ],
+        "errors": [
+          {
+            "code": "INVALID_STATE_TRANSITION",
+            "status": 409,
+            "condition": "禁止遷移"
+          },
+          {
+            "code": "VERSION_CONFLICT",
+            "status": 409,
+            "condition": "version競合"
+          },
+          {
+            "code": "NOT_FOUND",
+            "status": 404,
+            "condition": "対象注文なし"
+          }
+        ],
+        "idempotency": {
+          "key": "none",
+          "scope": "not-applicable",
+          "duplicate_behavior": "状態とversionに基づき、既適用・禁止・競合要求は409",
+          "retention": "none"
+        },
+        "transaction": {
+          "boundary": "Order row lock、OrderStateHistory、OutboxEventを1transactionでcommit",
+          "rollback_behavior": "禁止遷移・version競合時はOrder、History、Outboxを変更しない"
+        },
+        "concurrency": {
+          "conflict_detection": "Order row lockとversion一致",
+          "response": "version競合は409 VERSION_CONFLICT"
+        },
+        "basis": "specified",
+        "source_refs": [
+          "contract:/paths/~1orders~1{orderId}~1transitions/post",
+          "plan:状態変更と通知",
+          "data-model:Order State Transitions",
+          "spec:FR-010",
+          "spec:FR-011",
+          "EC-001"
+        ]
+      }
+    },
+    {
+      "id": "EVT-001",
+      "type": "event",
+      "name": "注文状態変更webhook",
+      "summary": "状態変更イベントを外部ECへat-least-once配送する",
+      "actors": [
+        "Delivery Worker",
+        "外部EC",
+        "運用担当者"
+      ],
+      "status": "current",
+      "contract": {
+        "producer": "Delivery Worker",
+        "consumers": [
+          "外部EC"
+        ],
+        "trigger": "状態変更transactionで作成されたpending OutboxEventをclaim",
+        "endpoint_or_channel": "OpenAPI webhook orderStatusChanged（具体的な配送先URLは正本未定義）",
+        "auth": "外向きwebhookの認証方式は正本未定義",
+        "payload": {
+          "header": {
+            "X-Event-Id": "string(uuid), required"
+          },
+          "schema_ref": "#/components/schemas/OrderStatusChangedEvent",
+          "event_type": "order.status.changed.v1"
+        },
+        "schema": "#/components/schemas/OrderStatusChangedEvent",
+        "schema_version": "v1",
+        "delivery": "at-least-once",
+        "ordering": "正本未定義",
+        "deduplication": "全再送で同じevent IDを使用し、外部ECがevent IDで重複排除",
+        "retry": {
+          "max_attempts": "自動再送3回（初回送信を含む総試行数は正本間で要分析）",
+          "interval": [
+            "初回失敗から1分後",
+            "5分後",
+            "15分後"
+          ],
+          "retry_on": [
+            429,
+            500,
+            "一時的失敗"
+          ],
+          "on_exhaustion": "dead_letterへ隔離し、alert対象時刻を記録"
+        },
+        "recovery": {
+          "alert": "dead-letter移行から5分以内に既存alert channelへ通知",
+          "manual_recovery": "runbookに従い原因解消後、同じevent IDと理由で手動再送し、成功まで未解決管理"
+        },
+        "transaction": {
+          "claim": "FOR UPDATE SKIP LOCKEDでclaim更新だけを短いtransactionにし、外部HTTP中は保持しない",
+          "result": "OutboxEventとDeliveryAttemptを1transactionで更新"
+        },
+        "concurrency": "FOR UPDATE SKIP LOCKEDとlease timeoutで同時claimを防止（timeout値は正本未定義）",
+        "basis": "specified",
+        "source_refs": [
+          "contract:/webhooks/orderStatusChanged/post",
+          "plan:状態変更と通知",
+          "research:Decision 3",
+          "research:Decision 4",
+          "data-model:OutboxEvent",
+          "spec:FR-020",
+          "spec:FR-021",
+          "spec:FR-022",
+          "EC-002",
+          "EC-003",
+          "CL-20260624-02",
+          "CL-20260624-03"
+        ]
+      }
+    },
+    {
+      "id": "API-003",
+      "type": "api",
+      "name": "隔離イベント手動再送API",
+      "summary": "運用担当者が隔離eventを同じevent IDでpendingへ戻す",
+      "actors": [
+        "運用担当者",
+        "Order API",
+        "Delivery Worker"
+      ],
+      "status": "current",
+      "contract": {
+        "method": "POST",
+        "path": "/v1/operations/events/{eventId}/replay",
+        "auth": {
+          "scheme": "oauth2-client-credentials",
+          "scopes": [
+            "events.replay"
+          ]
+        },
+        "request": {
+          "path_parameters": [
+            {
+              "name": "eventId",
+              "type": "string(uuid)",
+              "required": true
+            }
+          ],
+          "body": {
+            "reason": "string(1..512), required"
+          }
+        },
+        "responses": [
+          {
+            "status": 202,
+            "schema_ref": "#/components/schemas/ReplayAccepted"
+          }
+        ],
+        "errors": [
+          {
+            "code": "CONFLICT",
+            "status": 409,
+            "condition": "dead-letterでない、または既に再送中"
+          },
+          {
+            "code": "NOT_FOUND",
+            "status": 404,
+            "condition": "対象eventなし"
+          }
+        ],
+        "idempotency": {
+          "key": "eventId and delivery_status",
+          "scope": "隔離event",
+          "duplicate_behavior": "dead-letter以外または既に再送中なら409",
+          "retention": "OutboxEvent保持90日。ただし未解決dead-letterは解決後90日まで保持"
+        },
+        "transaction": {
+          "boundary": "statusをpendingへ戻し監査記録を追加するが、両者のtransaction境界は正本未定義",
+          "rollback_behavior": "409/404では再送状態を受理しない"
+        },
+        "concurrency": {
+          "conflict_detection": "dead-letter状態または再送中かを判定",
+          "response": "競合時409"
+        },
+        "basis": "specified",
+        "source_refs": [
+          "contract:/paths/~1operations~1events~1{eventId}~1replay/post",
+          "plan:Recovery",
+          "data-model:OutboxEvent",
+          "spec:FR-022",
+          "AC-002-02",
+          "CL-20260624-02"
+        ]
+      }
+    },
+    {
+      "id": "EXT-001",
+      "type": "external-interface",
+      "name": "外部EC日次注文件数取得",
+      "summary": "前日JSTの外部EC注文件数を取得する",
+      "actors": [
+        "Reconciliation Scheduler",
+        "外部EC"
+      ],
+      "status": "current",
+      "contract": {
+        "direction": "outbound",
+        "protocol": "HTTP GET（base endpointおよびTLS要件は正本未定義）",
+        "endpoint_or_channel": "/v1/reconciliation/orders/count",
+        "auth": {
+          "scheme": "oauth2-client-credentials",
+          "scope": "reconciliation.read"
+        },
+        "payload": {
+          "query": {
+            "targetDate": "string(date), Asia/Tokyo"
+          },
+          "success": {
+            "status": 200,
+            "required": [
+              "targetDate",
+              "count"
+            ],
+            "count": "integer >= 0"
+          }
+        },
+        "timeout": "正本未定義",
+        "delivery": "同期request/response",
+        "retry": {
+          "max_attempts": 1,
+          "interval": "1回のみのため間隔なし",
+          "retry_on": [
+            429,
+            500,
+            502,
+            503,
+            504
+          ],
+          "on_exhaustion": "unavailableとして記録し運用担当へ通知"
+        },
+        "recovery": {
+          "alert": "照合不能として運用担当へ通知",
+          "manual_recovery": "手動再照合・再取得手順は正本未定義"
+        },
+        "basis": "specified",
+        "source_refs": [
+          "contract:/x-external-operations/dailyOrderCount",
+          "plan:日次照合",
+          "spec:FR-030",
+          "EC-004",
+          "ASM-003"
+        ]
+      }
+    },
+    {
+      "id": "BAT-001",
+      "type": "batch",
+      "name": "日次注文件数照合job",
+      "summary": "前日JSTの外部・内部件数を照合し結果を記録・通知する",
+      "actors": [
+        "Reconciliation Scheduler",
+        "外部EC",
+        "運用担当者"
+      ],
+      "status": "current",
+      "contract": {
+        "schedule": "0 2 * * *",
+        "timezone": "Asia/Tokyo",
+        "initiator": "Kubernetes CronJob相当のscheduler",
+        "inputs": [
+          "前日JSTのtarget_date",
+          "外部EC件数",
+          "内部database件数"
+        ],
+        "outputs": [
+          "DailyReconciliation",
+          "mismatched/unavailable時の通知"
+        ],
+        "target_range": "前日のJST日付範囲をUTCへ変換",
+        "overlap_policy": "target_date一意制約とadvisory lockで重複実行しない",
+        "transaction": "対象日のadvisory lockを取得しDailyReconciliationをupsert",
+        "retry": {
+          "max_attempts": "job自身の再試行回数は正本未定義",
+          "interval": "job自身の再試行間隔は正本未定義",
+          "on_exhaustion": "日次job未完了alertの対象。再開・手動再実行手順は正本未定義",
+          "external_count_attempts": 1
+        },
+        "recovery": {
+          "resume": "job再開・手動再実行手順は正本未定義",
+          "evidence": "DailyReconciliation、構造化log、日次job未完了alert"
+        },
+        "monitoring": "reconciliation mismatchと日次job未完了を検知",
+        "basis": "specified",
+        "source_refs": [
+          "plan:日次照合",
+          "plan:Operational Design",
+          "data-model:DailyReconciliation",
+          "quickstart:Scenario 4",
+          "contract:/x-external-operations/dailyOrderCount",
+          "spec:FR-030",
+          "AC-003-01",
+          "CL-20260624-04"
+        ]
+      }
+    }
+  ],
+  "architecture": {
+    "context": {
+      "title": "注文連携API System Context",
+      "elements": [
+        {
+          "id": "EXTSYS-EC",
+          "name": "外部EC",
+          "type": "external-system",
+          "description": "注文登録、状態通知受信、日次件数提供を行う外部システム",
+          "basis": "specified",
+          "source_refs": [
+            "plan:System Context"
+          ]
+        },
+        {
+          "id": "SYS-ORDER",
+          "name": "注文連携システム",
+          "type": "system",
+          "description": "注文受付・状態管理・状態通知・日次照合を担う",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Summary",
+            "plan:System Context"
+          ]
+        },
+        {
+          "id": "PERSON-OPS",
+          "name": "運用担当者",
+          "type": "person",
+          "description": "alertを受け、隔離eventの原因調査と手動再送を行う",
+          "basis": "specified",
+          "source_refs": [
+            "plan:System Context",
+            "plan:Recovery"
+          ]
+        }
+      ],
+      "relationships": [
+        {
+          "id": "REL-CTX-001",
+          "from": "EXTSYS-EC",
+          "to": "SYS-ORDER",
+          "label": "OAuth 2.0で注文登録APIを呼ぶ",
+          "basis": "specified",
+          "source_refs": [
+            "plan:System Context",
+            "contract:/paths/~1orders/post"
+          ]
+        },
+        {
+          "id": "REL-CTX-002",
+          "from": "SYS-ORDER",
+          "to": "EXTSYS-EC",
+          "label": "状態変更webhookを送信する",
+          "basis": "specified",
+          "source_refs": [
+            "plan:System Context",
+            "contract:/webhooks/orderStatusChanged/post"
+          ]
+        },
+        {
+          "id": "REL-CTX-003",
+          "from": "SYS-ORDER",
+          "to": "EXTSYS-EC",
+          "label": "日次件数取得APIを呼ぶ",
+          "basis": "specified",
+          "source_refs": [
+            "plan:System Context",
+            "contract:/x-external-operations/dailyOrderCount"
+          ]
+        },
+        {
+          "id": "REL-CTX-004",
+          "from": "SYS-ORDER",
+          "to": "PERSON-OPS",
+          "label": "dead-letter・照合異常・job異常を通知する",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Operational Design"
+          ]
+        },
+        {
+          "id": "REL-CTX-005",
+          "from": "PERSON-OPS",
+          "to": "SYS-ORDER",
+          "label": "原因解消後にevent IDと理由で手動再送する",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Recovery"
+          ]
+        }
+      ]
+    },
+    "containers": {
+      "title": "注文連携API Containers",
+      "elements": [
+        {
+          "id": "CTR-API",
+          "name": "Order API",
+          "type": "application",
+          "description": "注文登録、冪等応答、状態変更要求、手動再送受付",
+          "technology": "Fastify 5 / TypeScript 5.9 / Node.js 22",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Containers",
+            "plan:Technical Context"
+          ]
+        },
+        {
+          "id": "CTR-DELIVERY",
+          "name": "Delivery Worker",
+          "type": "worker",
+          "description": "Outbox配送、自動再送、隔離",
+          "technology": "TypeScript worker / Node.js 22",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Containers",
+            "plan:Technical Context"
+          ]
+        },
+        {
+          "id": "CTR-RECON",
+          "name": "Reconciliation Scheduler",
+          "type": "worker",
+          "description": "日次件数照合と照合不能通知",
+          "technology": "TypeScript worker / Kubernetes CronJob相当",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Containers",
+            "plan:日次照合"
+          ]
+        },
+        {
+          "id": "CTR-DB",
+          "name": "Order Database",
+          "type": "database",
+          "description": "注文、冪等結果、状態履歴、Outbox、照合結果を保持",
+          "technology": "PostgreSQL 17",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Containers"
+          ]
+        },
+        {
+          "id": "CTR-OBS",
+          "name": "Observability",
+          "type": "application",
+          "description": "metric、trace、構造化log、既存alert channel連携",
+          "technology": "OpenTelemetry + 既存監視",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Containers",
+            "plan:Observability"
+          ]
+        },
+        {
+          "id": "EXTSYS-EC-C",
+          "name": "外部EC",
+          "type": "external-system",
+          "description": "webhook受信と日次件数APIを提供",
+          "basis": "specified",
+          "source_refs": [
+            "plan:System Context"
+          ]
+        }
+      ],
+      "relationships": [
+        {
+          "id": "REL-CTR-001",
+          "from": "CTR-API",
+          "to": "CTR-DB",
+          "label": "注文・状態・冪等結果・Outboxをtransaction保存",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Request and Transaction Flow"
+          ]
+        },
+        {
+          "id": "REL-CTR-002",
+          "from": "CTR-DELIVERY",
+          "to": "CTR-DB",
+          "label": "Outboxをclaimし配送結果・attemptを記録",
+          "basis": "specified",
+          "source_refs": [
+            "plan:状態変更と通知",
+            "data-model:Transaction Boundaries"
+          ]
+        },
+        {
+          "id": "REL-CTR-003",
+          "from": "CTR-DELIVERY",
+          "to": "EXTSYS-EC-C",
+          "label": "状態変更webhookを配送",
+          "basis": "specified",
+          "source_refs": [
+            "plan:状態変更と通知"
+          ]
+        },
+        {
+          "id": "REL-CTR-004",
+          "from": "CTR-RECON",
+          "to": "EXTSYS-EC-C",
+          "label": "前日注文件数を取得",
+          "basis": "specified",
+          "source_refs": [
+            "plan:日次照合"
+          ]
+        },
+        {
+          "id": "REL-CTR-005",
+          "from": "CTR-RECON",
+          "to": "CTR-DB",
+          "label": "内部件数を照会し照合結果をupsert",
+          "basis": "specified",
+          "source_refs": [
+            "plan:日次照合",
+            "data-model:Transaction Boundaries"
+          ]
+        },
+        {
+          "id": "REL-CTR-006",
+          "from": "CTR-API",
+          "to": "CTR-OBS",
+          "label": "API trace・metric・構造化log",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Operational Design"
+          ]
+        },
+        {
+          "id": "REL-CTR-007",
+          "from": "CTR-DELIVERY",
+          "to": "CTR-OBS",
+          "label": "Outbox・delivery・dead-letter metricとalert",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Operational Design"
+          ]
+        },
+        {
+          "id": "REL-CTR-008",
+          "from": "CTR-RECON",
+          "to": "CTR-OBS",
+          "label": "照合不一致・job未完了metricとalert",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Operational Design"
+          ]
+        }
+      ]
+    },
+    "decisions": [
+      {
+        "id": "ADR-001",
+        "title": "一意制約による冪等受付",
+        "decision": "(client_id, idempotency_key)のPostgreSQL一意制約とrequest hashで冪等性を保証する",
+        "alternatives": [
+          "process内cache",
+          "Redis lockのみ"
+        ],
+        "consequences": [
+          "競合transaction完了を待ち保存済み結果を返す",
+          "冪等結果を30日保持する"
+        ],
+        "basis": "specified",
+        "source_refs": [
+          "research:Decision 1"
+        ]
+      },
+      {
+        "id": "ADR-002",
+        "title": "Transactional Outbox",
+        "decision": "注文状態、状態履歴、Outbox eventを同じPostgreSQL transactionでcommitする",
+        "alternatives": [
+          "transaction中の同期webhook",
+          "database CDC"
+        ],
+        "consequences": [
+          "Delivery Workerによる非同期配送・監視・復旧が必要"
+        ],
+        "basis": "specified",
+        "source_refs": [
+          "research:Decision 2"
+        ]
+      },
+      {
+        "id": "ADR-003",
+        "title": "at-least-once配送とevent ID重複排除",
+        "decision": "webhookはat-least-onceで配送し、全再送で同じevent IDを使う",
+        "alternatives": [
+          "exactly-once transport"
+        ],
+        "consequences": [
+          "外部ECがevent IDで重複排除する"
+        ],
+        "basis": "specified",
+        "source_refs": [
+          "research:Decision 3"
+        ]
+      },
+      {
+        "id": "ADR-004",
+        "title": "段階的再送とdead-letter復旧",
+        "decision": "1分、5分、15分の自動再送後に隔離し、5分以内alertと同一event IDの手動再送で復旧する",
+        "alternatives": [
+          "無期限再送",
+          "3回失敗で破棄"
+        ],
+        "consequences": [
+          "dead-letter、alert、runbook、監査記録の運用が必要"
+        ],
+        "basis": "specified",
+        "source_refs": [
+          "research:Decision 4"
+        ]
+      },
+      {
+        "id": "ADR-005",
+        "title": "JST scheduleと対象日一意制約",
+        "decision": "0 2 * * *、Asia/Tokyoで前日JSTを対象にし、target_dateへ一意制約を置く",
+        "alternatives": [
+          "host timezone依存",
+          "重複実行を許容"
+        ],
+        "consequences": [
+          "scheduleへtimezoneを明示しadvisory lockを併用する"
+        ],
+        "basis": "specified",
+        "source_refs": [
+          "research:Decision 5"
+        ]
+      }
+    ],
+    "deployment": {
+      "text": "同一artifactをOrder API、Delivery Worker、Reconciliation SchedulerとしてKubernetesへ配置し、scheduleにAsia/Tokyoを明示する。secretはKubernetes Secret providerから注入する。",
+      "basis": "specified",
+      "source_refs": [
+        "plan:Technical Context",
+        "plan:Security"
+      ]
+    },
+    "observability": {
+      "text": "OpenTelemetry trace/metrics、構造化logでAPI latency、idempotency conflict、Outbox age、delivery failure、dead-letter count、reconciliation mismatchを観測し、dead-letter作成から5分、Outbox最古30分、日次job未完了をalertする。配送先PII・token・secretはlogへ出さない。",
+      "basis": "specified",
+      "source_refs": [
+        "plan:Operational Design",
+        "plan:Security"
+      ]
+    },
+    "recovery": {
+      "text": "runbookに従い外部EC復旧を確認し、event IDと理由を指定して同じevent IDを手動再送する。migrationは後方互換を先に適用し、rollback時もdatabase migrationを削除しない。",
+      "basis": "specified",
+      "source_refs": [
+        "plan:Recovery",
+        "plan:Migration",
+        "plan:Rollback"
+      ]
+    }
+  },
+  "workflows": [
+    {
+      "id": "WF-001",
+      "name": "注文の初回受付と冪等再送",
+      "type": "sequence",
+      "participants": [
+        {
+          "id": "P-EC",
+          "name": "外部EC",
+          "role": "initiator",
+          "basis": "specified",
+          "source_refs": [
+            "plan:System Context"
+          ]
+        },
+        {
+          "id": "P-API",
+          "name": "Order API",
+          "role": "processor",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Containers"
+          ]
+        },
+        {
+          "id": "P-DB",
+          "name": "Order Database",
+          "role": "processor",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Containers"
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "id": "STEP-001-01",
+          "from": "P-EC",
+          "to": "P-API",
+          "action": "Idempotency-KeyとCreateOrderRequestでPOST /v1/ordersを呼ぶ",
+          "next": "STEP-001-02",
+          "status": "normal",
+          "function_ids": [
+            "FNC-001"
+          ],
+          "interface_refs": [
+            "API-001"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "US-001",
+            "spec:FR-001",
+            "contract:/paths/~1orders/post"
+          ]
+        },
+        {
+          "id": "STEP-001-02",
+          "from": "P-API",
+          "to": "P-DB",
+          "action": "client_idとIdempotency-Keyで既存受付結果を検索する",
+          "next": [
+            {
+              "id": "STEP-001-03",
+              "condition": "未登録"
+            },
+            {
+              "id": "STEP-001-05",
+              "condition": "登録済み"
+            }
+          ],
+          "status": "normal",
+          "function_ids": [
+            "FNC-001"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "plan:注文登録",
+            "spec:FR-002"
+          ]
+        },
+        {
+          "id": "STEP-001-03",
+          "from": "P-API",
+          "to": "P-DB",
+          "action": "Order、OrderLine、IdempotencyResultを1transactionで保存する",
+          "next": "STEP-001-04",
+          "condition": "新規keyでrequestが有効",
+          "status": "normal",
+          "function_ids": [
+            "FNC-001"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "plan:注文登録",
+            "data-model:Transaction Boundaries",
+            "AC-001-01"
+          ]
+        },
+        {
+          "id": "STEP-001-04",
+          "from": "P-API",
+          "to": "P-EC",
+          "action": "201とOrderAcceptedを返す",
+          "status": "normal",
+          "function_ids": [
+            "FNC-001"
+          ],
+          "interface_refs": [
+            "API-001"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "contract:/paths/~1orders/post/responses/201",
+            "AC-001-01"
+          ]
+        },
+        {
+          "id": "STEP-001-05",
+          "from": "P-DB",
+          "to": "P-API",
+          "action": "保存済みrequest hashと初回受付結果を返す",
+          "next": "STEP-001-06",
+          "status": "normal",
+          "function_ids": [
+            "FNC-001"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "research:Decision 1",
+            "CL-20260621-01"
+          ]
+        },
+        {
+          "id": "STEP-001-06",
+          "from": "P-API",
+          "to": "P-EC",
+          "action": "同一payloadは200で初回結果を返し、異なるpayloadは409 IDEMPOTENCY_CONFLICTを返す",
+          "condition": "同じ冪等キーの再送",
+          "status": "exception",
+          "function_ids": [
+            "FNC-001"
+          ],
+          "interface_refs": [
+            "API-001"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "AC-001-02",
+            "spec:FR-002",
+            "contract:/paths/~1orders/post/responses/409"
+          ]
+        }
+      ],
+      "basis": "specified",
+      "source_refs": [
+        "US-001",
+        "AC-001-01",
+        "AC-001-02",
+        "spec:FR-001",
+        "spec:FR-002",
+        "CL-20260621-01",
+        "spec:SC-002",
+        "ASM-001"
+      ]
+    },
+    {
+      "id": "WF-002",
+      "name": "状態変更から通知・隔離・手動復旧まで",
+      "type": "sequence",
+      "participants": [
+        {
+          "id": "P-STATE-CLIENT",
+          "name": "状態変更API client（主体名は正本未記載）",
+          "role": "initiator",
+          "basis": "specified",
+          "source_refs": [
+            "contract:/paths/~1orders~1{orderId}~1transitions/post"
+          ]
+        },
+        {
+          "id": "P-ORDER-API",
+          "name": "Order API",
+          "role": "processor",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Containers"
+          ]
+        },
+        {
+          "id": "P-ORDER-DB",
+          "name": "Order Database",
+          "role": "processor",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Containers"
+          ]
+        },
+        {
+          "id": "P-WORKER",
+          "name": "Delivery Worker",
+          "role": "processor",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Containers"
+          ]
+        },
+        {
+          "id": "P-EXTERNAL-EC",
+          "name": "外部EC",
+          "role": "recipient",
+          "basis": "specified",
+          "source_refs": [
+            "plan:System Context"
+          ]
+        },
+        {
+          "id": "P-OPS",
+          "name": "運用担当者",
+          "role": "operator",
+          "basis": "specified",
+          "source_refs": [
+            "plan:System Context"
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "id": "STEP-002-01",
+          "from": "P-STATE-CLIENT",
+          "to": "P-ORDER-API",
+          "action": "targetStatus、version、triggerRefを指定して状態変更を要求する",
+          "next": "STEP-002-02",
+          "status": "normal",
+          "function_ids": [
+            "FNC-002"
+          ],
+          "interface_refs": [
+            "API-002"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "spec:FR-010",
+            "contract:/paths/~1orders~1{orderId}~1transitions/post"
+          ]
+        },
+        {
+          "id": "STEP-002-02",
+          "from": "P-ORDER-API",
+          "to": "P-ORDER-DB",
+          "action": "row lockとversion、許可遷移を検証し、Order・History・Outboxを1transactionで保存する",
+          "next": [
+            {
+              "id": "STEP-002-03",
+              "condition": "許可遷移かつversion一致"
+            },
+            {
+              "id": "STEP-002-12",
+              "condition": "禁止遷移またはversion競合"
+            }
+          ],
+          "status": "normal",
+          "function_ids": [
+            "FNC-002"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "spec:FR-010",
+            "spec:FR-011",
+            "CL-20260624-01",
+            "research:Decision 2"
+          ]
+        },
+        {
+          "id": "STEP-002-03",
+          "from": "P-ORDER-DB",
+          "to": "P-WORKER",
+          "action": "commit済みのpending OutboxEventをworkerがclaimする",
+          "next": "STEP-002-04",
+          "status": "normal",
+          "function_ids": [
+            "FNC-003"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "plan:状態変更と通知",
+            "spec:FR-020"
+          ]
+        },
+        {
+          "id": "STEP-002-04",
+          "from": "P-WORKER",
+          "to": "P-EXTERNAL-EC",
+          "action": "X-Event-IdとOrderStatusChangedEventをwebhook送信する",
+          "next": [
+            {
+              "id": "STEP-002-05",
+              "condition": "204"
+            },
+            {
+              "id": "STEP-002-06",
+              "condition": "再送対象の失敗"
+            }
+          ],
+          "status": "normal",
+          "function_ids": [
+            "FNC-003"
+          ],
+          "interface_refs": [
+            "EVT-001"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "spec:FR-020",
+            "contract:/webhooks/orderStatusChanged/post"
+          ]
+        },
+        {
+          "id": "STEP-002-05",
+          "from": "P-WORKER",
+          "to": "P-ORDER-DB",
+          "action": "eventをdeliveredとし成功attemptを記録する",
+          "status": "normal",
+          "function_ids": [
+            "FNC-003"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Transaction Boundaries",
+            "spec:SC-003"
+          ]
+        },
+        {
+          "id": "STEP-002-06",
+          "from": "P-WORKER",
+          "to": "P-ORDER-DB",
+          "action": "失敗attemptを記録し、1分・5分・15分の次回送信を設定する",
+          "next": [
+            {
+              "id": "STEP-002-04",
+              "condition": "自動再送上限未到達"
+            },
+            {
+              "id": "STEP-002-07",
+              "condition": "自動再送上限到達"
+            }
+          ],
+          "status": "exception",
+          "function_ids": [
+            "FNC-003"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "spec:FR-021",
+            "CL-20260624-03",
+            "plan:状態変更と通知"
+          ]
+        },
+        {
+          "id": "STEP-002-07",
+          "from": "P-WORKER",
+          "to": "P-OPS",
+          "action": "eventをdead_letterへ隔離し、移行から5分以内にalertする",
+          "next": "STEP-002-08",
+          "status": "exception",
+          "function_ids": [
+            "FNC-003",
+            "FNC-004"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "spec:FR-022",
+            "EC-002",
+            "CL-20260624-02",
+            "spec:SC-004"
+          ]
+        },
+        {
+          "id": "STEP-002-08",
+          "from": "P-OPS",
+          "to": "P-ORDER-API",
+          "action": "原因解消後、event IDと操作理由で手動再送を要求する",
+          "next": "STEP-002-09",
+          "status": "recovery",
+          "function_ids": [
+            "FNC-004"
+          ],
+          "interface_refs": [
+            "API-003"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "AC-002-02",
+            "spec:FR-022",
+            "plan:Recovery"
+          ]
+        },
+        {
+          "id": "STEP-002-09",
+          "from": "P-ORDER-API",
+          "to": "P-ORDER-DB",
+          "action": "同じevent IDをpendingへ戻し操作理由を監査記録へ残す",
+          "next": "STEP-002-10",
+          "status": "recovery",
+          "function_ids": [
+            "FNC-004"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "CL-20260624-02",
+            "data-model:OutboxEvent"
+          ]
+        },
+        {
+          "id": "STEP-002-10",
+          "from": "P-WORKER",
+          "to": "P-EXTERNAL-EC",
+          "action": "同じevent IDでwebhookを再送する",
+          "next": "STEP-002-11",
+          "status": "recovery",
+          "function_ids": [
+            "FNC-003",
+            "FNC-004"
+          ],
+          "interface_refs": [
+            "EVT-001"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "AC-002-02",
+            "EC-003",
+            "research:Decision 3"
+          ]
+        },
+        {
+          "id": "STEP-002-11",
+          "from": "P-WORKER",
+          "to": "P-OPS",
+          "action": "成功を記録しincidentを解消して未解決dead-letterを0件にする",
+          "status": "recovery",
+          "function_ids": [
+            "FNC-004"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "AC-002-02",
+            "spec:SC-003",
+            "quickstart:Scenario 3"
+          ]
+        },
+        {
+          "id": "STEP-002-12",
+          "from": "P-ORDER-API",
+          "to": "P-STATE-CLIENT",
+          "action": "409 INVALID_STATE_TRANSITIONまたはVERSION_CONFLICTを返し、Order・History・Outboxを変更しない",
+          "status": "exception",
+          "function_ids": [
+            "FNC-002"
+          ],
+          "interface_refs": [
+            "API-002"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "spec:FR-011",
+            "EC-001",
+            "CL-20260621-02"
+          ]
+        }
+      ],
+      "basis": "specified",
+      "source_refs": [
+        "US-002",
+        "AC-002-01",
+        "AC-002-02",
+        "spec:FR-010",
+        "spec:FR-011",
+        "spec:FR-020",
+        "spec:FR-021",
+        "spec:FR-022",
+        "EC-001",
+        "EC-002",
+        "EC-003",
+        "CL-20260621-02",
+        "CL-20260624-01",
+        "CL-20260624-02",
+        "CL-20260624-03",
+        "spec:SC-003",
+        "spec:SC-004",
+        "ASM-002",
+        "ASM-004"
+      ]
+    },
+    {
+      "id": "WF-003",
+      "name": "日次件数照合と異常通知",
+      "type": "sequence",
+      "participants": [
+        {
+          "id": "P-SCHED",
+          "name": "Reconciliation Scheduler",
+          "role": "initiator",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Containers"
+          ]
+        },
+        {
+          "id": "P-EC-COUNT",
+          "name": "外部EC件数API",
+          "role": "processor",
+          "basis": "specified",
+          "source_refs": [
+            "contract:/x-external-operations/dailyOrderCount"
+          ]
+        },
+        {
+          "id": "P-DB-RECON",
+          "name": "Order Database",
+          "role": "processor",
+          "basis": "specified",
+          "source_refs": [
+            "plan:Containers"
+          ]
+        },
+        {
+          "id": "P-OPS-RECON",
+          "name": "運用担当者",
+          "role": "recipient",
+          "basis": "specified",
+          "source_refs": [
+            "plan:System Context"
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "id": "STEP-003-01",
+          "from": "P-SCHED",
+          "to": "P-SCHED",
+          "action": "02:00 Asia/Tokyoに起動し、前日JST日付範囲をUTCへ変換する",
+          "next": "STEP-003-02",
+          "status": "normal",
+          "function_ids": [
+            "FNC-005"
+          ],
+          "interface_refs": [
+            "BAT-001"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "spec:FR-030",
+            "CL-20260624-04",
+            "plan:日次照合"
+          ]
+        },
+        {
+          "id": "STEP-003-02",
+          "from": "P-SCHED",
+          "to": "P-EC-COUNT",
+          "action": "targetDateで外部ECの注文件数を取得する",
+          "next": "STEP-003-03",
+          "status": "normal",
+          "function_ids": [
+            "FNC-005"
+          ],
+          "interface_refs": [
+            "EXT-001"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "ASM-003",
+            "contract:/x-external-operations/dailyOrderCount"
+          ]
+        },
+        {
+          "id": "STEP-003-03",
+          "from": "P-SCHED",
+          "to": "P-DB-RECON",
+          "action": "対象日lockを取得し、内部件数を照会してDailyReconciliationをupsertする",
+          "next": "STEP-003-04",
+          "status": "normal",
+          "function_ids": [
+            "FNC-005"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "plan:日次照合",
+            "spec:FR-030"
+          ]
+        },
+        {
+          "id": "STEP-003-04",
+          "from": "P-SCHED",
+          "to": "P-OPS-RECON",
+          "action": "件数不一致は差分と対象日を、外部取得失敗は照合不能を通知する",
+          "condition": "mismatchedまたはunavailable",
+          "status": "exception",
+          "function_ids": [
+            "FNC-005"
+          ],
+          "basis": "specified",
+          "source_refs": [
+            "AC-003-01",
+            "EC-004",
+            "spec:FR-030"
+          ]
+        }
+      ],
+      "basis": "specified",
+      "source_refs": [
+        "US-003",
+        "AC-003-01",
+        "spec:FR-030",
+        "EC-004",
+        "CL-20260624-04",
+        "ASM-003",
+        "ASM-004"
+      ]
+    }
+  ],
+  "state_models": [
+    {
+      "id": "STM-001",
+      "name": "注文状態",
+      "entity": "ENT-ORDER",
+      "states": [
+        {
+          "id": "accepted",
+          "name": "受付済み",
+          "initial": true,
+          "terminal": false,
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Order State Transitions"
+          ]
+        },
+        {
+          "id": "shipping",
+          "name": "配送中",
+          "initial": false,
+          "terminal": false,
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Order State Transitions"
+          ]
+        },
+        {
+          "id": "delivered",
+          "name": "配送済み",
+          "initial": false,
+          "terminal": true,
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Order State Transitions"
+          ]
+        },
+        {
+          "id": "cancelled",
+          "name": "取消",
+          "initial": false,
+          "terminal": true,
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Order State Transitions"
+          ]
+        }
+      ],
+      "transitions": [
+        {
+          "from": "accepted",
+          "to": "shipping",
+          "trigger": "出荷完了",
+          "condition": "version一致",
+          "action": "Order、OrderStateHistory、OutboxEventを同一transactionで保存する",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Order State Transitions",
+            "spec:FR-010"
+          ]
+        },
+        {
+          "from": "accepted",
+          "to": "cancelled",
+          "trigger": "取消承認",
+          "condition": "version一致",
+          "action": "Order、OrderStateHistory、OutboxEventを同一transactionで保存する",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Order State Transitions",
+            "spec:FR-010"
+          ]
+        },
+        {
+          "from": "shipping",
+          "to": "delivered",
+          "trigger": "配送完了",
+          "condition": "version一致",
+          "action": "Order、OrderStateHistory、OutboxEventを同一transactionで保存する",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Order State Transitions",
+            "spec:FR-010"
+          ]
+        }
+      ],
+      "unlisted_transitions": "409 INVALID_STATE_TRANSITIONで拒否し、Order、OrderStateHistory、OutboxEventを変更しない",
+      "basis": "specified",
+      "source_refs": [
+        "spec:FR-010",
+        "spec:FR-011",
+        "EC-001",
+        "CL-20260621-02",
+        "CL-20260624-01",
+        "data-model:Order State Transitions"
+      ]
+    }
+  ],
+  "applicability": {
+    "workflows": {
+      "status": "required"
+    },
+    "state_models": {
+      "status": "required"
+    }
+  },
+  "entities": [
+    {
+      "id": "ENT-ORDER",
+      "name": "Order",
+      "description": "注文の集約root",
+      "basis": "specified",
+      "source_refs": [
+        "data-model:Order"
+      ],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "required": true,
+          "description": "primary key",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Order"
+          ]
+        },
+        {
+          "name": "client_id",
+          "type": "varchar(64)",
+          "required": true,
+          "description": "OAuth client identifier",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Order"
+          ]
+        },
+        {
+          "name": "external_order_number",
+          "type": "varchar(64)",
+          "required": true,
+          "description": "client内で一意",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Order"
+          ]
+        },
+        {
+          "name": "idempotency_key",
+          "type": "varchar(128)",
+          "required": true,
+          "description": "client_idとの複合一意",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Order"
+          ]
+        },
+        {
+          "name": "request_hash",
+          "type": "char(64)",
+          "required": true,
+          "description": "正規化requestのSHA-256",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Order"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "order_status",
+          "required": true,
+          "description": "accepted/shipping/delivered/cancelled",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Order"
+          ]
+        },
+        {
+          "name": "destination",
+          "type": "jsonb",
+          "required": true,
+          "description": "配送先。application logへ内容を出さない",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Order"
+          ]
+        },
+        {
+          "name": "accepted_at",
+          "type": "timestamptz",
+          "required": true,
+          "description": "API受付時刻",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Order"
+          ]
+        },
+        {
+          "name": "version",
+          "type": "bigint",
+          "required": true,
+          "description": "0から始まる楽観lock version",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Order"
+          ]
+        }
+      ],
+      "relationships": [
+        {
+          "to": "ENT-ORDER-LINE",
+          "type": "one-to-many",
+          "label": "1件以上の商品明細を持つ",
+          "text": "Order 1件はOrderLineを1件以上持つ",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Relationships"
+          ]
+        },
+        {
+          "to": "ENT-ORDER-STATE-HISTORY",
+          "type": "one-to-many",
+          "label": "状態履歴を持つ",
+          "text": "Order 1件はOrderStateHistoryを複数持つ",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Relationships"
+          ]
+        },
+        {
+          "to": "ENT-IDEMPOTENCY-RESULT",
+          "type": "one-to-one",
+          "label": "初回受付結果を持つ",
+          "text": "Order 1件はIdempotencyResultを1件持つ",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Relationships"
+          ]
+        },
+        {
+          "to": "ENT-OUTBOX-EVENT",
+          "type": "one-to-many",
+          "label": "状態変更eventを持つ",
+          "text": "Order 1件はOutboxEventを複数持つ",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Relationships"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "text": "UNIQUE(client_id, idempotency_key)",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Constraints"
+          ]
+        },
+        {
+          "text": "UNIQUE(client_id, external_order_number)",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Constraints"
+          ]
+        },
+        {
+          "text": "同じidempotency keyでrequest hashが異なる場合はconflict",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Constraints"
+          ]
+        },
+        {
+          "text": "Order、OrderLine、OrderStateHistoryの保持期間は7年",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Retention"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ENT-ORDER-LINE",
+      "name": "OrderLine",
+      "description": "注文の商品明細",
+      "basis": "specified",
+      "source_refs": [
+        "data-model:OrderLine"
+      ],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "required": true,
+          "description": "primary key",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OrderLine"
+          ]
+        },
+        {
+          "name": "order_id",
+          "type": "UUID",
+          "required": true,
+          "description": "Order.id、delete restrict",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OrderLine"
+          ]
+        },
+        {
+          "name": "sku",
+          "type": "varchar(64)",
+          "required": true,
+          "description": "空文字不可",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OrderLine"
+          ]
+        },
+        {
+          "name": "quantity",
+          "type": "integer",
+          "required": true,
+          "description": "1以上",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OrderLine"
+          ]
+        }
+      ],
+      "relationships": [
+        {
+          "to": "ENT-ORDER",
+          "type": "reference",
+          "label": "親Order",
+          "text": "order_idでOrderを参照しdelete restrict",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OrderLine"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "text": "skuは空文字不可",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OrderLine"
+          ]
+        },
+        {
+          "text": "quantityは1以上",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OrderLine"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ENT-ORDER-STATE-HISTORY",
+      "name": "OrderStateHistory",
+      "description": "注文状態の変更履歴",
+      "basis": "specified",
+      "source_refs": [
+        "data-model:OrderStateHistory"
+      ],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "required": true,
+          "description": "primary key",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OrderStateHistory"
+          ]
+        },
+        {
+          "name": "order_id",
+          "type": "UUID",
+          "required": true,
+          "description": "Order.id",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OrderStateHistory"
+          ]
+        },
+        {
+          "name": "from_status",
+          "type": "order_status",
+          "required": false,
+          "description": "初回受付だけnull",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OrderStateHistory"
+          ]
+        },
+        {
+          "name": "to_status",
+          "type": "order_status",
+          "required": true,
+          "description": "変更後状態",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OrderStateHistory"
+          ]
+        },
+        {
+          "name": "changed_at",
+          "type": "timestamptz",
+          "required": true,
+          "description": "状態変更時刻",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OrderStateHistory"
+          ]
+        },
+        {
+          "name": "trigger_ref",
+          "type": "varchar(128)",
+          "required": true,
+          "description": "出荷・配送・取消処理の参照ID",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OrderStateHistory"
+          ]
+        }
+      ],
+      "relationships": [
+        {
+          "to": "ENT-ORDER",
+          "type": "reference",
+          "label": "対象Order",
+          "text": "order_idでOrderを参照する",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OrderStateHistory"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "text": "初回受付履歴だけfrom_statusをnullとする",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OrderStateHistory"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ENT-IDEMPOTENCY-RESULT",
+      "name": "IdempotencyResult",
+      "description": "冪等キーごとの初回受付結果",
+      "basis": "specified",
+      "source_refs": [
+        "data-model:IdempotencyResult"
+      ],
+      "attributes": [
+        {
+          "name": "client_id",
+          "type": "varchar(64)",
+          "required": true,
+          "description": "primary key part 1",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:IdempotencyResult"
+          ]
+        },
+        {
+          "name": "idempotency_key",
+          "type": "varchar(128)",
+          "required": true,
+          "description": "primary key part 2",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:IdempotencyResult"
+          ]
+        },
+        {
+          "name": "request_hash",
+          "type": "char(64)",
+          "required": true,
+          "description": "request一致判定",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:IdempotencyResult"
+          ]
+        },
+        {
+          "name": "order_id",
+          "type": "UUID",
+          "required": true,
+          "description": "Order.id",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:IdempotencyResult"
+          ]
+        },
+        {
+          "name": "response_status",
+          "type": "integer",
+          "required": true,
+          "description": "初回status",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:IdempotencyResult"
+          ]
+        },
+        {
+          "name": "response_body",
+          "type": "jsonb",
+          "required": true,
+          "description": "初回受付結果",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:IdempotencyResult"
+          ]
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "required": true,
+          "description": "保存時刻",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:IdempotencyResult"
+          ]
+        }
+      ],
+      "relationships": [
+        {
+          "to": "ENT-ORDER",
+          "type": "reference",
+          "label": "受付済みOrder",
+          "text": "order_idでOrderを参照する",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:IdempotencyResult"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "text": "client_idとidempotency_keyの複合primary key",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:IdempotencyResult"
+          ]
+        },
+        {
+          "text": "保持期間は30日。経過後の同じkeyは新規要求として扱う",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Retention"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ENT-OUTBOX-EVENT",
+      "name": "OutboxEvent",
+      "description": "状態変更と同一transactionで保存する配送event",
+      "basis": "specified",
+      "source_refs": [
+        "data-model:OutboxEvent"
+      ],
+      "attributes": [
+        {
+          "name": "event_id",
+          "type": "UUID",
+          "required": true,
+          "description": "primary key、全再送で不変",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OutboxEvent"
+          ]
+        },
+        {
+          "name": "order_id",
+          "type": "UUID",
+          "required": true,
+          "description": "Order.id",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OutboxEvent"
+          ]
+        },
+        {
+          "name": "event_type",
+          "type": "varchar(64)",
+          "required": true,
+          "description": "order.status.changed.v1",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OutboxEvent"
+          ]
+        },
+        {
+          "name": "payload",
+          "type": "jsonb",
+          "required": true,
+          "description": "contract schemaに一致",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OutboxEvent"
+          ]
+        },
+        {
+          "name": "delivery_status",
+          "type": "delivery_status",
+          "required": true,
+          "description": "pending/sending/delivered/dead_letter",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OutboxEvent"
+          ]
+        },
+        {
+          "name": "attempt_count",
+          "type": "integer",
+          "required": true,
+          "description": "0..3",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OutboxEvent"
+          ]
+        },
+        {
+          "name": "next_attempt_at",
+          "type": "timestamptz",
+          "required": false,
+          "description": "pending時に指定",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OutboxEvent"
+          ]
+        },
+        {
+          "name": "last_error_code",
+          "type": "varchar(64)",
+          "required": false,
+          "description": "秘密・個人情報を含めない",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OutboxEvent"
+          ]
+        },
+        {
+          "name": "delivered_at",
+          "type": "timestamptz",
+          "required": false,
+          "description": "成功時刻",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OutboxEvent"
+          ]
+        },
+        {
+          "name": "locked_at",
+          "type": "timestamptz",
+          "required": false,
+          "description": "worker lease開始",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OutboxEvent"
+          ]
+        },
+        {
+          "name": "locked_by",
+          "type": "varchar(128)",
+          "required": false,
+          "description": "worker instance ID",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OutboxEvent"
+          ]
+        }
+      ],
+      "relationships": [
+        {
+          "to": "ENT-ORDER",
+          "type": "reference",
+          "label": "対象Order",
+          "text": "order_idでOrderを参照する",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Relationships"
+          ]
+        },
+        {
+          "to": "ENT-DELIVERY-ATTEMPT",
+          "type": "one-to-many",
+          "label": "配送試行",
+          "text": "OutboxEvent 1件はDeliveryAttemptを複数持つ",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Relationships"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "text": "attempt_countは自動送信試行だけを数え3を超えない",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OutboxEvent"
+          ]
+        },
+        {
+          "text": "3回目失敗transactionでdead_letterへ変更しalert対象時刻を記録",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OutboxEvent"
+          ]
+        },
+        {
+          "text": "手動再送は同じevent_idをpendingへ戻し監査記録を追加し、新eventを作らない",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OutboxEvent"
+          ]
+        },
+        {
+          "text": "FOR UPDATE SKIP LOCKEDとlease timeoutで同時claimを防ぐ",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:OutboxEvent"
+          ]
+        },
+        {
+          "text": "通常は90日保持し、未解決dead-letterは解決後90日まで削除しない",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Retention"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ENT-DELIVERY-ATTEMPT",
+      "name": "DeliveryAttempt",
+      "description": "eventの初回・自動・手動配送試行の証跡",
+      "basis": "specified",
+      "source_refs": [
+        "data-model:DeliveryAttempt"
+      ],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "required": true,
+          "description": "primary key",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:DeliveryAttempt"
+          ]
+        },
+        {
+          "name": "event_id",
+          "type": "UUID",
+          "required": true,
+          "description": "OutboxEvent.event_id",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:DeliveryAttempt"
+          ]
+        },
+        {
+          "name": "attempt_kind",
+          "type": "attempt_kind",
+          "required": true,
+          "description": "initial/automatic/manual",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:DeliveryAttempt"
+          ]
+        },
+        {
+          "name": "attempted_at",
+          "type": "timestamptz",
+          "required": true,
+          "description": "開始時刻",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:DeliveryAttempt"
+          ]
+        },
+        {
+          "name": "result",
+          "type": "delivery_result",
+          "required": true,
+          "description": "succeeded/failed",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:DeliveryAttempt"
+          ]
+        },
+        {
+          "name": "response_status",
+          "type": "integer",
+          "required": false,
+          "description": "HTTP responseがある場合",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:DeliveryAttempt"
+          ]
+        },
+        {
+          "name": "error_code",
+          "type": "varchar(64)",
+          "required": false,
+          "description": "秘密・個人情報を含めない",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:DeliveryAttempt"
+          ]
+        },
+        {
+          "name": "operator_reason",
+          "type": "varchar(512)",
+          "required": false,
+          "description": "manual時に必須",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:DeliveryAttempt"
+          ]
+        }
+      ],
+      "relationships": [
+        {
+          "to": "ENT-OUTBOX-EVENT",
+          "type": "reference",
+          "label": "対象event",
+          "text": "event_idでOutboxEventを参照する",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:DeliveryAttempt"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "text": "manual試行ではoperator_reasonが必須",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:DeliveryAttempt"
+          ]
+        },
+        {
+          "text": "通常は90日保持し、未解決dead-letter関連は解決後90日まで保持",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Retention"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ENT-DAILY-RECONCILIATION",
+      "name": "DailyReconciliation",
+      "description": "日次件数照合の結果と通知時刻",
+      "basis": "specified",
+      "source_refs": [
+        "data-model:DailyReconciliation"
+      ],
+      "attributes": [
+        {
+          "name": "target_date",
+          "type": "date",
+          "required": true,
+          "description": "primary key、Asia/Tokyoの業務日",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:DailyReconciliation"
+          ]
+        },
+        {
+          "name": "external_count",
+          "type": "integer",
+          "required": false,
+          "description": "取得不能時null",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:DailyReconciliation"
+          ]
+        },
+        {
+          "name": "internal_count",
+          "type": "integer",
+          "required": true,
+          "description": "0以上",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:DailyReconciliation"
+          ]
+        },
+        {
+          "name": "result",
+          "type": "reconciliation_result",
+          "required": true,
+          "description": "matched/mismatched/unavailable",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:DailyReconciliation"
+          ]
+        },
+        {
+          "name": "executed_at",
+          "type": "timestamptz",
+          "required": true,
+          "description": "実行時刻",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:DailyReconciliation"
+          ]
+        },
+        {
+          "name": "notified_at",
+          "type": "timestamptz",
+          "required": false,
+          "description": "mismatched/unavailable時",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:DailyReconciliation"
+          ]
+        }
+      ],
+      "relationships": [],
+      "constraints": [
+        {
+          "text": "target_dateを一意にし同日の重複実行を防ぐ",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:DailyReconciliation",
+            "research:Decision 5"
+          ]
+        },
+        {
+          "text": "保持期間は2年",
+          "basis": "specified",
+          "source_refs": [
+            "data-model:Retention"
+          ]
+        }
+      ]
+    }
+  ],
+  "quality_scenarios": [
+    {
+      "id": "QS-001",
+      "category": "performance",
+      "scenario": "通常想定負荷で外部ECが注文登録APIを呼ぶ",
+      "environment": "k6 profile orders-normal-loadを10分実行",
+      "response": "Order APIが受付結果を返す",
+      "measure": "createOrderの95パーセンタイル応答時間が2秒以内",
+      "basis": "specified",
+      "source_refs": [
+        "spec:SC-001",
+        "plan:Quality Goals",
+        "quickstart:Scenario 5"
+      ]
+    },
+    {
+      "id": "QS-002",
+      "category": "reliability",
+      "scenario": "同一client・Idempotency-Keyの同一注文を並行送信する",
+      "environment": "複数API processを含むcontract/E2E test",
+      "response": "一意制約で競合を直列化し、同じ注文IDの初回結果を返す",
+      "measure": "同一冪等キーによる重複注文0件",
+      "basis": "specified",
+      "source_refs": [
+        "spec:SC-002",
+        "plan:Quality Goals",
+        "quickstart:Scenario 1"
+      ]
+    },
+    {
+      "id": "QS-003",
+      "category": "reliability",
+      "scenario": "外部EC webhookが失敗し、自動再送上限へ到達した後に復旧する",
+      "environment": "外部EC stubを500から204へ切り替えるE2E",
+      "response": "eventを隔離・通知し、同じevent IDの手動再送でdeliveredへ戻す",
+      "measure": "状態変更eventの未解決送信漏れ0件",
+      "basis": "specified",
+      "source_refs": [
+        "spec:SC-003",
+        "plan:Quality Goals",
+        "quickstart:Scenario 3"
+      ]
+    },
+    {
+      "id": "QS-004",
+      "category": "operability",
+      "scenario": "状態変更eventが自動再送上限へ到達してdead-letterになる",
+      "environment": "既存監視とin-memory alert sinkを用いるintegration/E2E",
+      "response": "event IDとrunbook linkを運用担当へ通知する",
+      "measure": "dead-letter移行からalert発火まで5分以内",
+      "basis": "specified",
+      "source_refs": [
+        "spec:SC-004",
+        "plan:Quality Goals",
+        "quickstart:Scenario 3"
+      ]
+    },
+    {
+      "id": "QS-005",
+      "category": "security",
+      "scenario": "注文登録・状態配送・手動再送を実行してlogとsecret注入を確認する",
+      "environment": "localまたはephemeral CI test stackおよびstaging",
+      "response": "scopeで認可し、配送先PII・token・secretをlogへ出さない",
+      "measure": "log検査で配送先、token、secretの検出0件",
+      "basis": "specified",
+      "source_refs": [
+        "plan:Security",
+        "quickstart:Scenario 5"
+      ]
+    },
+    {
+      "id": "QS-006",
+      "category": "operability",
+      "scenario": "日次照合の外部件数取得が失敗する、またはjobが完了しない",
+      "environment": "外部EC stubを503にし、日次schedule clockを固定したE2E/staging",
+      "response": "unavailableを記録して照合不能を通知し、job未完了をalertする",
+      "measure": "DailyReconciliationがunavailableとなり通知証跡が残る。job未完了はalert対象となる",
+      "basis": "specified",
+      "source_refs": [
+        "plan:Operational Design",
+        "quickstart:Scenario 4"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "id": "RSK-001",
+      "title": "API replica間競合による重複注文",
+      "impact": "high",
+      "probability": "medium",
+      "mitigation": "(client_id, idempotency_key)一意制約、request hash、競合transaction完了後の初回結果再利用",
+      "owner": "undetermined（正本に担当記載なし）",
+      "status": "mitigated",
+      "basis": "specified",
+      "source_refs": [
+        "research:Decision 1",
+        "plan:注文登録"
+      ]
+    },
+    {
+      "id": "RSK-002",
+      "title": "外部EC停止による状態通知の滞留",
+      "impact": "high",
+      "probability": "medium",
+      "mitigation": "段階的再送、dead-letter、5分以内alert、runbookと同一event IDの手動再送",
+      "owner": "運用担当者",
+      "status": "mitigated",
+      "basis": "specified",
+      "source_refs": [
+        "research:Decision 4",
+        "plan:Operational Design",
+        "plan:Recovery"
+      ]
+    },
+    {
+      "id": "RSK-003",
+      "title": "外部件数API停止による照合不能",
+      "impact": "medium",
+      "probability": "medium",
+      "mitigation": "結果をunavailableとして記録し運用担当へ通知する",
+      "owner": "運用担当者",
+      "status": "mitigated",
+      "basis": "specified",
+      "source_refs": [
+        "contract:/x-external-operations/dailyOrderCount",
+        "plan:日次照合"
+      ]
+    },
+    {
+      "id": "RSK-004",
+      "title": "schema変更とapplication rollbackの非互換",
+      "impact": "high",
+      "probability": "low",
+      "mitigation": "後方互換migrationを先に適用し並行稼働後に制約を有効化する。rollback時もdatabase migrationを削除しない",
+      "owner": "undetermined（正本に担当記載なし）",
+      "status": "mitigated",
+      "basis": "specified",
+      "source_refs": [
+        "plan:Migration",
+        "plan:Rollback"
+      ]
+    },
+    {
+      "id": "RSK-005",
+      "title": "外向き連携設定・復旧手順の未定義",
+      "impact": "high",
+      "probability": "high",
+      "mitigation": "Q-002〜Q-005をplan/contractへ反映してから実装開始判定を再実行する",
+      "owner": "undetermined（正本に担当記載なし）",
+      "status": "open",
+      "basis": "derived",
+      "rationale": "webhook配送先・認証、件数APIのbase endpoint・timeout、job再実行、手動再送transaction境界が正本にないため実装判断が分岐する",
+      "source_refs": [
+        "contract:/webhooks/orderStatusChanged/post",
+        "contract:/x-external-operations/dailyOrderCount",
+        "plan:Operational Design"
+      ]
+    }
+  ],
+  "verification": [
+    {
+      "id": "VER-001",
+      "source_id": "SC-001",
+      "quality_scenario_ids": [
+        "QS-001"
+      ],
+      "method": "k6 profile orders-normal-loadを10分実行しcreateOrder latency分布を測定する",
+      "level": "performance",
+      "expected_result": "注文登録APIのp95が2秒以内",
+      "status": "planned",
+      "basis": "specified",
+      "source_refs": [
+        "quickstart:Scenario 5",
+        "spec:SC-001"
+      ]
+    },
+    {
+      "id": "VER-002",
+      "source_id": "SC-002",
+      "quality_scenario_ids": [
+        "QS-002"
+      ],
+      "method": "同じIdempotency-Keyとrequestを2回並行送信し、database件数とresponseを確認する",
+      "level": "e2e",
+      "expected_result": "2応答のorderIdが同じでOrder、OrderLine、IdempotencyResultが各1組、異なるpayloadは409",
+      "status": "planned",
+      "basis": "specified",
+      "source_refs": [
+        "quickstart:Scenario 1",
+        "spec:SC-002",
+        "spec:FR-001",
+        "spec:FR-002"
+      ]
+    },
+    {
+      "id": "VER-003",
+      "source_id": "SC-003",
+      "quality_scenario_ids": [
+        "QS-003"
+      ],
+      "method": "外部EC stubを500にし、規定間隔を進めて隔離後、204へ戻して同じevent IDを手動再送する",
+      "level": "e2e",
+      "expected_result": "全attemptが記録され、同じevent IDがdelivered、未解決dead-letterが0件、重複反映がない",
+      "status": "planned",
+      "basis": "specified",
+      "source_refs": [
+        "quickstart:Scenario 3",
+        "spec:SC-003",
+        "spec:FR-020",
+        "spec:FR-021",
+        "spec:FR-022"
+      ]
+    },
+    {
+      "id": "VER-004",
+      "source_id": "SC-004",
+      "quality_scenario_ids": [
+        "QS-004"
+      ],
+      "method": "3回目失敗後にtest clockを5分未満進め、alert sinkのevent IDとrunbook linkを確認する",
+      "level": "integration",
+      "expected_result": "dead-letterからalert発火まで5分以内",
+      "status": "planned",
+      "basis": "specified",
+      "source_refs": [
+        "quickstart:Scenario 3",
+        "spec:SC-004",
+        "spec:FR-022"
+      ]
+    },
+    {
+      "id": "VER-005",
+      "source_id": "FR-010",
+      "method": "許可・禁止状態遷移とversion競合をparameterized E2Eで実行し、Order・History・Outboxを照合する",
+      "level": "e2e",
+      "expected_result": "許可3遷移だけ成功し、全禁止遷移とversion競合は409で3 entityに変更がない",
+      "status": "planned",
+      "basis": "specified",
+      "source_refs": [
+        "quickstart:Scenario 2",
+        "spec:FR-010",
+        "spec:FR-011",
+        "CL-20260624-01"
+      ]
+    },
+    {
+      "id": "VER-006",
+      "source_id": "FR-030",
+      "quality_scenario_ids": [
+        "QS-006"
+      ],
+      "method": "clockを02:00 Asia/Tokyoへ固定し、不一致・同日並行実行・外部503をE2Eで実行する",
+      "level": "e2e",
+      "expected_result": "前日target_dateのmismatched/unavailableが1件だけ記録され、対応通知が残る",
+      "status": "planned",
+      "basis": "specified",
+      "source_refs": [
+        "quickstart:Scenario 4",
+        "spec:FR-030"
+      ]
+    },
+    {
+      "id": "VER-007",
+      "source_id": "plan-security",
+      "quality_scenario_ids": [
+        "QS-005"
+      ],
+      "method": "主要scenario後の構造化logを走査し、配送先、token、secretの混入を確認する",
+      "level": "security",
+      "expected_result": "配送先PII、token、secretの検出0件",
+      "status": "planned",
+      "basis": "specified",
+      "source_refs": [
+        "quickstart:Scenario 5",
+        "plan:Security"
+      ]
+    }
+  ],
+  "traceability": [
+    {
+      "source_id": "US-001",
+      "function_ids": [
+        "FNC-001"
+      ],
+      "design_refs": [
+        "workflow:WF-001"
+      ],
+      "verification_ids": [
+        "VER-002"
+      ],
+      "coverage": "covered",
+      "rationale": "注文の初回受付と冪等再送をFNC-001、API-001、WF-001、E2Eで具体化する"
+    },
+    {
+      "source_id": "AC-001-01",
+      "function_ids": [
+        "FNC-001"
+      ],
+      "design_refs": [
+        "interface:API-001",
+        "workflow:WF-001"
+      ],
+      "verification_ids": [
+        "VER-002"
+      ],
+      "coverage": "covered",
+      "rationale": "正常注文を201でacceptedとして返す流れと契約を定義する"
+    },
+    {
+      "source_id": "AC-001-02",
+      "function_ids": [
+        "FNC-001"
+      ],
+      "design_refs": [
+        "interface:API-001",
+        "workflow:WF-001"
+      ],
+      "verification_ids": [
+        "VER-002"
+      ],
+      "coverage": "covered",
+      "rationale": "同一keyの既存結果再利用と並行E2Eを定義する"
+    },
+    {
+      "source_id": "US-002",
+      "function_ids": [
+        "FNC-003",
+        "FNC-004"
+      ],
+      "design_refs": [
+        "workflow:WF-002"
+      ],
+      "verification_ids": [
+        "VER-003"
+      ],
+      "coverage": "covered",
+      "rationale": "状態通知から隔離・手動復旧までを一つの重要フローとして定義する"
+    },
+    {
+      "source_id": "AC-002-01",
+      "function_ids": [
+        "FNC-003"
+      ],
+      "design_refs": [
+        "workflow:WF-002"
+      ],
+      "verification_ids": [
+        "VER-003",
+        "VER-005"
+      ],
+      "coverage": "covered",
+      "rationale": "acceptedからshippingへの状態更新とOutbox配送を定義する"
+    },
+    {
+      "source_id": "AC-002-02",
+      "function_ids": [
+        "FNC-004"
+      ],
+      "design_refs": [
+        "interface:API-003",
+        "workflow:WF-002"
+      ],
+      "verification_ids": [
+        "VER-003"
+      ],
+      "coverage": "covered",
+      "rationale": "同一event IDの手動再送と未解決0件確認を定義する"
+    },
+    {
+      "source_id": "US-003",
+      "function_ids": [
+        "FNC-005"
+      ],
+      "design_refs": [
+        "workflow:WF-003"
+      ],
+      "verification_ids": [
+        "VER-006"
+      ],
+      "coverage": "covered",
+      "rationale": "前日件数照合と運用通知を日次batchとして定義する"
+    },
+    {
+      "source_id": "AC-003-01",
+      "function_ids": [
+        "FNC-005"
+      ],
+      "design_refs": [
+        "interface:BAT-001",
+        "workflow:WF-003"
+      ],
+      "verification_ids": [
+        "VER-006"
+      ],
+      "coverage": "covered",
+      "rationale": "JST 02:00実行、不一致記録、対象日通知を定義する"
+    },
+    {
+      "source_id": "EC-001",
+      "function_ids": [
+        "FNC-002"
+      ],
+      "design_refs": [
+        "interface:API-002",
+        "workflow:WF-002",
+        "state-model:STM-001"
+      ],
+      "verification_ids": [
+        "VER-005"
+      ],
+      "coverage": "covered",
+      "rationale": "配送済みから取消を含む未定義遷移を409で拒否し副作用なしとする"
+    },
+    {
+      "source_id": "EC-002",
+      "function_ids": [
+        "FNC-003",
+        "FNC-004"
+      ],
+      "design_refs": [
+        "interface:EVT-001",
+        "workflow:WF-002"
+      ],
+      "verification_ids": [
+        "VER-003",
+        "VER-004"
+      ],
+      "coverage": "covered",
+      "rationale": "再送上限後の隔離、alert、手動復旧を定義する"
+    },
+    {
+      "source_id": "EC-003",
+      "function_ids": [
+        "FNC-003"
+      ],
+      "design_refs": [
+        "interface:EVT-001",
+        "workflow:WF-002"
+      ],
+      "verification_ids": [
+        "VER-003"
+      ],
+      "coverage": "covered",
+      "rationale": "event ID不変と外部EC重複排除を契約・E2Eへ反映する"
+    },
+    {
+      "source_id": "EC-004",
+      "function_ids": [
+        "FNC-005"
+      ],
+      "design_refs": [
+        "interface:EXT-001",
+        "workflow:WF-003"
+      ],
+      "verification_ids": [
+        "VER-006"
+      ],
+      "coverage": "covered",
+      "rationale": "外部取得失敗をunavailableとして記録・通知する"
+    },
+    {
+      "source_id": "CL-20260621-01",
+      "function_ids": [
+        "FNC-001"
+      ],
+      "design_refs": [
+        "workflow:WF-001"
+      ],
+      "verification_ids": [
+        "VER-002"
+      ],
+      "coverage": "covered",
+      "rationale": "同じ冪等キーでは初回結果を返す回答を機能・フローへ反映する"
+    },
+    {
+      "source_id": "CL-20260621-02",
+      "function_ids": [
+        "FNC-002"
+      ],
+      "design_refs": [
+        "workflow:WF-002",
+        "state-model:STM-001"
+      ],
+      "verification_ids": [
+        "VER-005"
+      ],
+      "coverage": "covered",
+      "rationale": "配送済みから取消へ戻さない回答を禁止遷移へ反映する"
+    },
+    {
+      "source_id": "CL-20260624-01",
+      "function_ids": [
+        "FNC-002"
+      ],
+      "design_refs": [
+        "workflow:WF-002",
+        "state-model:STM-001"
+      ],
+      "verification_ids": [
+        "VER-005"
+      ],
+      "coverage": "covered",
+      "rationale": "許可3遷移と表外拒否を完全な状態モデルへ反映する"
+    },
+    {
+      "source_id": "CL-20260624-02",
+      "function_ids": [
+        "FNC-003",
+        "FNC-004"
+      ],
+      "design_refs": [
+        "interface:EVT-001",
+        "interface:API-003",
+        "workflow:WF-002"
+      ],
+      "verification_ids": [
+        "VER-003",
+        "VER-004"
+      ],
+      "coverage": "covered",
+      "rationale": "隔離、5分以内通知、同一event ID手動再送、未解決管理へ反映する"
+    },
+    {
+      "source_id": "CL-20260624-03",
+      "function_ids": [
+        "FNC-003"
+      ],
+      "design_refs": [
+        "interface:EVT-001",
+        "workflow:WF-002"
+      ],
+      "verification_ids": [
+        "VER-003"
+      ],
+      "coverage": "covered",
+      "rationale": "1分、5分、15分の再送間隔をevent契約とフローへ反映する"
+    },
+    {
+      "source_id": "CL-20260624-04",
+      "function_ids": [
+        "FNC-005"
+      ],
+      "design_refs": [
+        "interface:BAT-001",
+        "workflow:WF-003"
+      ],
+      "verification_ids": [
+        "VER-006"
+      ],
+      "coverage": "covered",
+      "rationale": "02:00 scheduleのtimezoneをAsia/Tokyoとして反映する"
+    },
+    {
+      "source_id": "FR-001",
+      "function_ids": [
+        "FNC-001"
+      ],
+      "design_refs": [
+        "interface:API-001",
+        "workflow:WF-001"
+      ],
+      "verification_ids": [
+        "VER-002"
+      ],
+      "coverage": "covered",
+      "rationale": "注文番号、明細、配送先、冪等キーの型付き受付契約を定義する"
+    },
+    {
+      "source_id": "FR-002",
+      "function_ids": [
+        "FNC-001"
+      ],
+      "design_refs": [
+        "interface:API-001",
+        "workflow:WF-001"
+      ],
+      "verification_ids": [
+        "VER-002"
+      ],
+      "coverage": "covered",
+      "rationale": "冪等競合処理、初回結果再利用、重複0件検証を定義する"
+    },
+    {
+      "source_id": "FR-010",
+      "function_ids": [
+        "FNC-002"
+      ],
+      "design_refs": [
+        "interface:API-002",
+        "workflow:WF-002",
+        "state-model:STM-001"
+      ],
+      "verification_ids": [
+        "VER-005"
+      ],
+      "coverage": "covered",
+      "rationale": "許可状態遷移とtransactionを状態モデル・APIへ反映する"
+    },
+    {
+      "source_id": "FR-011",
+      "function_ids": [
+        "FNC-002"
+      ],
+      "design_refs": [
+        "interface:API-002",
+        "workflow:WF-002",
+        "state-model:STM-001"
+      ],
+      "verification_ids": [
+        "VER-005"
+      ],
+      "coverage": "covered",
+      "rationale": "表外遷移の409拒否と副作用なしを定義する"
+    },
+    {
+      "source_id": "FR-020",
+      "function_ids": [
+        "FNC-003"
+      ],
+      "design_refs": [
+        "interface:EVT-001",
+        "workflow:WF-002"
+      ],
+      "verification_ids": [
+        "VER-003"
+      ],
+      "coverage": "covered",
+      "rationale": "必須fieldを持つ状態変更eventとOutbox配送を定義する"
+    },
+    {
+      "source_id": "FR-021",
+      "function_ids": [
+        "FNC-003"
+      ],
+      "design_refs": [
+        "interface:EVT-001",
+        "workflow:WF-002"
+      ],
+      "verification_ids": [
+        "VER-003"
+      ],
+      "coverage": "covered",
+      "rationale": "段階的自動再送と全attempt記録を定義する。総試行数の不整合はQ-001でブロックする"
+    },
+    {
+      "source_id": "FR-022",
+      "function_ids": [
+        "FNC-003",
+        "FNC-004"
+      ],
+      "design_refs": [
+        "interface:EVT-001",
+        "interface:API-003",
+        "workflow:WF-002"
+      ],
+      "verification_ids": [
+        "VER-003",
+        "VER-004"
+      ],
+      "coverage": "covered",
+      "rationale": "隔離、5分以内alert、同一event ID手動復旧を定義する"
+    },
+    {
+      "source_id": "FR-030",
+      "function_ids": [
+        "FNC-005"
+      ],
+      "design_refs": [
+        "interface:EXT-001",
+        "interface:BAT-001",
+        "workflow:WF-003"
+      ],
+      "verification_ids": [
+        "VER-006"
+      ],
+      "coverage": "covered",
+      "rationale": "JST schedule、前日範囲、重複防止、不一致・不能通知を定義する"
+    },
+    {
+      "source_id": "FR-040",
+      "function_ids": [],
+      "design_refs": [],
+      "verification_ids": [],
+      "coverage": "future",
+      "rationale": "検索方式・保持期間を決めず、将来versionへ明示的に延期する"
+    },
+    {
+      "source_id": "SC-001",
+      "function_ids": [],
+      "design_refs": [
+        "quality-scenario:QS-001"
+      ],
+      "verification_ids": [
+        "VER-001"
+      ],
+      "coverage": "covered",
+      "rationale": "通常負荷のk6でp95 2秒以内を測定する"
+    },
+    {
+      "source_id": "SC-002",
+      "function_ids": [
+        "FNC-001"
+      ],
+      "design_refs": [
+        "workflow:WF-001",
+        "quality-scenario:QS-002"
+      ],
+      "verification_ids": [
+        "VER-002"
+      ],
+      "coverage": "covered",
+      "rationale": "並行冪等E2Eで重複注文0件を検証する"
+    },
+    {
+      "source_id": "SC-003",
+      "function_ids": [
+        "FNC-003",
+        "FNC-004"
+      ],
+      "design_refs": [
+        "workflow:WF-002",
+        "quality-scenario:QS-003"
+      ],
+      "verification_ids": [
+        "VER-003"
+      ],
+      "coverage": "covered",
+      "rationale": "自動再送から手動復旧までE2Eし未解決送信漏れ0件を確認する"
+    },
+    {
+      "source_id": "SC-004",
+      "function_ids": [
+        "FNC-003"
+      ],
+      "design_refs": [
+        "workflow:WF-002",
+        "quality-scenario:QS-004"
+      ],
+      "verification_ids": [
+        "VER-004"
+      ],
+      "coverage": "covered",
+      "rationale": "test clockとalert sinkでdead-letterから5分以内を測る"
+    },
+    {
+      "source_id": "ASM-001",
+      "function_ids": [
+        "FNC-001"
+      ],
+      "design_refs": [
+        "workflow:WF-001"
+      ],
+      "verification_ids": [
+        "VER-002"
+      ],
+      "coverage": "covered",
+      "rationale": "外部EC発行の冪等キーをclient単位の一意制約へ接続する"
+    },
+    {
+      "source_id": "ASM-002",
+      "function_ids": [
+        "FNC-003"
+      ],
+      "design_refs": [
+        "workflow:WF-002"
+      ],
+      "verification_ids": [
+        "VER-003"
+      ],
+      "coverage": "covered",
+      "rationale": "at-least-onceと同一event ID再送、外部重複排除の責任を明示する"
+    },
+    {
+      "source_id": "ASM-003",
+      "function_ids": [
+        "FNC-005"
+      ],
+      "design_refs": [
+        "interface:EXT-001",
+        "workflow:WF-003"
+      ],
+      "verification_ids": [
+        "VER-006"
+      ],
+      "coverage": "covered",
+      "rationale": "外部件数APIを日次照合の入力境界として定義する"
+    },
+    {
+      "source_id": "ASM-004",
+      "function_ids": [
+        "FNC-003",
+        "FNC-004",
+        "FNC-005"
+      ],
+      "design_refs": [
+        "workflow:WF-002",
+        "workflow:WF-003"
+      ],
+      "verification_ids": [
+        "VER-003",
+        "VER-006"
+      ],
+      "coverage": "covered",
+      "rationale": "既存alert channelを状態通知復旧と照合異常の受信境界にする"
+    },
+    {
+      "source_id": "OOS-001",
+      "function_ids": [],
+      "design_refs": [],
+      "verification_ids": [],
+      "coverage": "out-of-scope",
+      "rationale": "決済・返金は設計要素を持たせず対象外として維持する"
+    },
+    {
+      "source_id": "OOS-002",
+      "function_ids": [],
+      "design_refs": [],
+      "verification_ids": [],
+      "coverage": "future",
+      "rationale": "FR-040の注文変更履歴APIは現行設計へ含めない"
+    },
+    {
+      "source_id": "OOS-003",
+      "function_ids": [],
+      "design_refs": [],
+      "verification_ids": [],
+      "coverage": "out-of-scope",
+      "rationale": "外部EC内部のevent処理方式は外部責任として対象外に保つ"
+    }
+  ],
+  "source_catalog": [
+    {
+      "id": "CL-20260621-01",
+      "type": "clarification",
+      "text": "Q: 同じ冪等キーの注文を再送した場合は？ → A: 最初の受付結果を返し、注文を重複作成しない。",
+      "fingerprint": "04b9a93b3635",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Clarifications > Session 2026-06-21"
+    },
+    {
+      "id": "CL-20260621-02",
+      "type": "clarification",
+      "text": "Q: 配送済みから取消へ戻せるか？ → A: 戻せない。取消要求を拒否する。",
+      "fingerprint": "d71b35cf8a14",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Clarifications > Session 2026-06-21"
+    },
+    {
+      "id": "CL-20260624-01",
+      "type": "clarification",
+      "text": "Q: 注文で許可する状態遷移は？ → A: 受付済み→配送中、受付済み→取消、配送中→配送済みだけを許可し、表にない遷移は状態を変えず拒否する。",
+      "fingerprint": "d7f7ce1c9ff8",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Clarifications > Session 2026-06-24"
+    },
+    {
+      "id": "CL-20260624-02",
+      "type": "clarification",
+      "text": "Q: 状態通知が3回失敗した後は？ → A: 失敗イベントを隔離し、5分以内に運用担当へ通知する。運用担当は原因解消後に同じイベントIDで手動再送し、成功まで未解決として管理する。",
+      "fingerprint": "8ce5ea89d8f4",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Clarifications > Session 2026-06-24"
+    },
+    {
+      "id": "CL-20260624-03",
+      "type": "clarification",
+      "text": "Q: 再送間隔は？ → A: 初回失敗から1分、5分、15分後に再送する。",
+      "fingerprint": "b1f7019c602f",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Clarifications > Session 2026-06-24"
+    },
+    {
+      "id": "CL-20260624-04",
+      "type": "clarification",
+      "text": "Q: 日次02:00のタイムゾーンは？ → A: Asia/Tokyoとする。",
+      "fingerprint": "9a1edb831e84",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Clarifications > Session 2026-06-24"
+    },
+    {
+      "id": "US-001",
+      "type": "user-story",
+      "text": "User Story 1 - 外部ECから注文を登録する (Priority: P1)",
+      "fingerprint": "560fa1d00c60",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > User Scenarios & Testing > User Story 1 - 外部ECから注文を登録する (Priority: P1)"
+    },
+    {
+      "id": "AC-001-01",
+      "type": "acceptance-scenario",
+      "text": "Given 正常な注文、When 注文APIを呼ぶ、Then 注文は受付済みとなり注文IDが返る。",
+      "fingerprint": "0ac9f121b20a",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > User Scenarios & Testing > User Story 1 - 外部ECから注文を登録する (Priority: P1)"
+    },
+    {
+      "id": "AC-001-02",
+      "type": "acceptance-scenario",
+      "text": "Given 受付済みと同じ冪等キー、When 再送する、Then 新しい注文を作らず既存の受付結果を返す。",
+      "fingerprint": "1dd42cf44eb1",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > User Scenarios & Testing > User Story 1 - 外部ECから注文を登録する (Priority: P1)"
+    },
+    {
+      "id": "US-002",
+      "type": "user-story",
+      "text": "User Story 2 - 注文状態を外部ECへ通知する (Priority: P1)",
+      "fingerprint": "7e8eb65ae815",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > User Scenarios & Testing > User Story 2 - 注文状態を外部ECへ通知する (Priority: P1)"
+    },
+    {
+      "id": "AC-002-01",
+      "type": "acceptance-scenario",
+      "text": "Given 受付済みの注文、When 出荷処理が完了する、Then 配送中イベントが1回発行される。",
+      "fingerprint": "0215ca6fdb0d",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > User Scenarios & Testing > User Story 2 - 注文状態を外部ECへ通知する (Priority: P1)"
+    },
+    {
+      "id": "AC-002-02",
+      "type": "acceptance-scenario",
+      "text": "Given 3回の自動再送に失敗したイベント、When 原因解消後に運用担当が再送する、Then 同じイベントIDで送信され未解決件数が0になる。",
+      "fingerprint": "9218e946a2e9",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > User Scenarios & Testing > User Story 2 - 注文状態を外部ECへ通知する (Priority: P1)"
+    },
+    {
+      "id": "US-003",
+      "type": "user-story",
+      "text": "User Story 3 - 注文件数を日次照合する (Priority: P2)",
+      "fingerprint": "388f50ea90ac",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > User Scenarios & Testing > User Story 3 - 注文件数を日次照合する (Priority: P2)"
+    },
+    {
+      "id": "AC-003-01",
+      "type": "acceptance-scenario",
+      "text": "Given 前日の件数が異なる、When Asia/Tokyoの02:00に照合する、Then 差分と対象日が運用担当へ通知される。",
+      "fingerprint": "33a4154b8be1",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > User Scenarios & Testing > User Story 3 - 注文件数を日次照合する (Priority: P2)"
+    },
+    {
+      "id": "EC-001",
+      "type": "edge-case",
+      "text": "配送済み注文への取消要求は拒否し、状態を変更しない。",
+      "fingerprint": "b3f6b6f278f5",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > User Scenarios & Testing > Edge Cases"
+    },
+    {
+      "id": "EC-002",
+      "type": "edge-case",
+      "text": "外部ECへのイベント送信に3回失敗した場合は隔離し、通知後の手動再送で復旧する。",
+      "fingerprint": "b742fdd5d1e6",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > User Scenarios & Testing > Edge Cases"
+    },
+    {
+      "id": "EC-003",
+      "type": "edge-case",
+      "text": "同じ状態変更イベントを外部ECが複数回受信しても、イベントIDにより業務結果を重複反映しない。",
+      "fingerprint": "dff272080c9b",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > User Scenarios & Testing > Edge Cases"
+    },
+    {
+      "id": "EC-004",
+      "type": "edge-case",
+      "text": "外部ECの件数取得APIが利用できない場合は照合結果を確定せず、照合不能として通知する。",
+      "fingerprint": "9732c4ce2ae0",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > User Scenarios & Testing > Edge Cases"
+    },
+    {
+      "id": "FR-001",
+      "type": "functional-requirement",
+      "text": "外部ECは注文番号、商品明細、配送先、冪等キーを指定して注文を登録できなければならない。",
+      "fingerprint": "91d854b61b2c",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Requirements > 注文受付API"
+    },
+    {
+      "id": "FR-002",
+      "type": "functional-requirement",
+      "text": "同一の冪等キーを再受信した場合、注文を重複作成せず最初の受付結果を返さなければならない。",
+      "fingerprint": "b8c74da7fd67",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Requirements > 注文受付API"
+    },
+    {
+      "id": "FR-010",
+      "type": "functional-requirement",
+      "text": "注文状態はClarificationsに定義した許可遷移だけに従って変更されなければならない。",
+      "fingerprint": "24fe415c1c15",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Requirements > 状態遷移"
+    },
+    {
+      "id": "FR-011",
+      "type": "functional-requirement",
+      "text": "許可表にない遷移要求を拒否し、現在状態を維持しなければならない。",
+      "fingerprint": "36425d1557ae",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Requirements > 状態遷移"
+    },
+    {
+      "id": "FR-020",
+      "type": "functional-requirement",
+      "text": "注文状態が変わった場合、イベントID、注文ID、変更前後の状態、変更日時を含むイベントを外部ECへ送信しなければならない。",
+      "fingerprint": "e84a5f750f01",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Requirements > イベント連携"
+    },
+    {
+      "id": "FR-021",
+      "type": "functional-requirement",
+      "text": "イベント送信失敗時はClarificationsの間隔で最大3回再送し、全結果を記録しなければならない。",
+      "fingerprint": "f49879d6f780",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Requirements > イベント連携"
+    },
+    {
+      "id": "FR-022",
+      "type": "functional-requirement",
+      "text": "再送上限到達後はイベントを隔離し、5分以内に運用担当へ通知し、同じイベントIDによる手動再送で解消できなければならない。",
+      "fingerprint": "5ed60eeac53f",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Requirements > イベント連携"
+    },
+    {
+      "id": "FR-030",
+      "type": "functional-requirement",
+      "text": "システムは毎日02:00 Asia/Tokyoに外部ECの前日注文件数と内部注文件数を照合し、不一致または照合不能を運用担当者へ通知しなければならない。",
+      "fingerprint": "b5ce5220eae4",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Requirements > 日次照合"
+    },
+    {
+      "id": "FR-040",
+      "type": "functional-requirement",
+      "text": "【将来対応】注文変更履歴を外部ECから検索できるAPIを提供すべきである。",
+      "fingerprint": "11f4502b13cf",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Requirements > 将来対応"
+    },
+    {
+      "id": "SC-001",
+      "type": "success-criterion",
+      "text": "注文APIの95パーセンタイル応答時間は2秒以内である。",
+      "fingerprint": "528e7895663b",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Success Criteria"
+    },
+    {
+      "id": "SC-002",
+      "type": "success-criterion",
+      "text": "同一冪等キーによる重複注文は0件である。",
+      "fingerprint": "ba89f39da206",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Success Criteria"
+    },
+    {
+      "id": "SC-003",
+      "type": "success-criterion",
+      "text": "状態変更イベントの未解決送信漏れは0件である。",
+      "fingerprint": "31eaed03818a",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Success Criteria"
+    },
+    {
+      "id": "SC-004",
+      "type": "success-criterion",
+      "text": "再送上限到達から運用担当への通知まで5分以内である。",
+      "fingerprint": "8951182b4597",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Success Criteria"
+    },
+    {
+      "id": "ASM-001",
+      "type": "assumption",
+      "text": "外部ECは注文ごとに一意な冪等キーを生成する。",
+      "fingerprint": "b752598c0ef2",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Assumptions"
+    },
+    {
+      "id": "ASM-002",
+      "type": "assumption",
+      "text": "外部ECはイベントIDで受信イベントを重複排除する。",
+      "fingerprint": "e7983f866cb8",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Assumptions"
+    },
+    {
+      "id": "ASM-003",
+      "type": "assumption",
+      "text": "日次照合用の件数取得APIは外部ECから提供される。",
+      "fingerprint": "084a78a02e61",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Assumptions"
+    },
+    {
+      "id": "ASM-004",
+      "type": "assumption",
+      "text": "運用担当者は既存の監視通知チャネルを利用できる。",
+      "fingerprint": "b860991ffb57",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Assumptions"
+    },
+    {
+      "id": "OOS-001",
+      "type": "out-of-scope",
+      "text": "決済処理と返金処理は本機能の対象外とする。",
+      "fingerprint": "abf169979f54",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Out of Scope"
+    },
+    {
+      "id": "OOS-002",
+      "type": "out-of-scope",
+      "text": "注文変更履歴API（FR-040）は将来バージョンで提供する。",
+      "fingerprint": "ae90d79924fe",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Out of Scope"
+    },
+    {
+      "id": "OOS-003",
+      "type": "out-of-scope",
+      "text": "外部EC内部のイベント処理方式は対象外とする。",
+      "fingerprint": "eebc7cb6c6c6",
+      "locator_key": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Out of Scope"
+    }
+  ],
+  "requirement_decisions": [
+    {
+      "id": "CL-20260621-01",
+      "question": "同じ冪等キーの注文を再送した場合は？",
+      "answer": "最初の受付結果を返し、注文を重複作成しない。",
+      "source_locator": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Clarifications > Session 2026-06-21 (L10)"
+    },
+    {
+      "id": "CL-20260621-02",
+      "question": "配送済みから取消へ戻せるか？",
+      "answer": "戻せない。取消要求を拒否する。",
+      "source_locator": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Clarifications > Session 2026-06-21 (L11)"
+    },
+    {
+      "id": "CL-20260624-01",
+      "question": "注文で許可する状態遷移は？",
+      "answer": "受付済み→配送中、受付済み→取消、配送中→配送済みだけを許可し、表にない遷移は状態を変えず拒否する。",
+      "source_locator": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Clarifications > Session 2026-06-24 (L15)"
+    },
+    {
+      "id": "CL-20260624-02",
+      "question": "状態通知が3回失敗した後は？",
+      "answer": "失敗イベントを隔離し、5分以内に運用担当へ通知する。運用担当は原因解消後に同じイベントIDで手動再送し、成功まで未解決として管理する。",
+      "source_locator": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Clarifications > Session 2026-06-24 (L16)"
+    },
+    {
+      "id": "CL-20260624-03",
+      "question": "再送間隔は？",
+      "answer": "初回失敗から1分、5分、15分後に再送する。",
+      "source_locator": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Clarifications > Session 2026-06-24 (L17)"
+    },
+    {
+      "id": "CL-20260624-04",
+      "question": "日次02:00のタイムゾーンは？",
+      "answer": "Asia/Tokyoとする。",
+      "source_locator": "Feature Specification: 注文連携API — 受付・状態通知・日次照合 > Clarifications > Session 2026-06-24 (L18)"
+    }
+  ],
+  "decisions": [],
+  "open_questions": [
+    {
+      "id": "Q-001",
+      "severity": "blocking",
+      "status": "open",
+      "question": "初回送信を含む総試行数を確定してください。spec/researchは『最大3回再送』、plan/data-model/quickstartは『3回目失敗でdead-letter』と読め、合計3回か初回+3回かが不一致です。",
+      "source_refs": [
+        "spec:FR-021",
+        "research:Decision 4",
+        "plan:状態変更と通知",
+        "data-model:OutboxEvent",
+        "quickstart:Scenario 3"
+      ],
+      "affected_refs": [
+        "FNC-003",
+        "EVT-001",
+        "WF-002",
+        "VER-003"
+      ],
+      "return_to": "/speckit.analyze"
+    },
+    {
+      "id": "Q-002",
+      "severity": "blocking",
+      "status": "open",
+      "question": "外部EC webhookの配送先URL（設定単位を含む）と外向き認証方式、credential更新・失効時の扱いを確定してください。",
+      "source_refs": [
+        "contract:/webhooks/orderStatusChanged/post",
+        "plan:System Context",
+        "plan:Security"
+      ],
+      "affected_refs": [
+        "FNC-003",
+        "EVT-001",
+        "WF-002",
+        "RSK-005"
+      ],
+      "return_to": "/speckit.plan"
+    },
+    {
+      "id": "Q-003",
+      "severity": "blocking",
+      "status": "open",
+      "question": "外部EC件数取得APIのbase endpoint、TLS要件、接続・応答timeout、およびretry.attempts=1が総試行1回か初回後1回再送かを確定してください。",
+      "source_refs": [
+        "contract:/x-external-operations/dailyOrderCount",
+        "plan:日次照合"
+      ],
+      "affected_refs": [
+        "FNC-005",
+        "EXT-001",
+        "BAT-001",
+        "WF-003",
+        "RSK-005"
+      ],
+      "return_to": "/speckit.plan"
+    },
+    {
+      "id": "Q-004",
+      "severity": "blocking",
+      "status": "open",
+      "question": "日次jobが途中停止・未完了となった場合の検知期限、再開／手動再実行手順、承認、証跡、通知解消条件を確定してください。",
+      "source_refs": [
+        "plan:Operational Design",
+        "data-model:DailyReconciliation",
+        "quickstart:Scenario 4"
+      ],
+      "affected_refs": [
+        "FNC-005",
+        "BAT-001",
+        "VER-006",
+        "RSK-005"
+      ],
+      "return_to": "/speckit.plan"
+    },
+    {
+      "id": "Q-005",
+      "severity": "blocking",
+      "status": "open",
+      "question": "手動再送でOutboxEventをpendingへ戻す更新と操作理由の監査記録を同一transactionにするか、失敗時rollbackを含めて確定してください。",
+      "source_refs": [
+        "data-model:OutboxEvent",
+        "plan:Recovery",
+        "contract:/paths/~1operations~1events~1{eventId}~1replay/post"
+      ],
+      "affected_refs": [
+        "FNC-004",
+        "API-003",
+        "WF-002",
+        "RSK-005"
+      ],
+      "return_to": "/speckit.plan"
+    },
+    {
+      "id": "Q-006",
+      "severity": "blocking",
+      "status": "open",
+      "question": "orders.transition scopeで注文状態変更APIを呼ぶ業務主体／外部・内部システムを確定してください。",
+      "source_refs": [
+        "contract:/paths/~1orders~1{orderId}~1transitions/post",
+        "plan:System Context"
+      ],
+      "affected_refs": [
+        "FNC-002",
+        "API-002",
+        "WF-002"
+      ],
+      "return_to": "/speckit.clarify"
+    },
+    {
+      "id": "Q-007",
+      "severity": "blocking",
+      "status": "open",
+      "question": "注文状態変更eventの順序保証単位（注文単位・client単位・保証なし）と、順序逆転時の扱いを確定してください。",
+      "source_refs": [
+        "contract:/webhooks/orderStatusChanged/post",
+        "research:Decision 3"
+      ],
+      "affected_refs": [
+        "FNC-003",
+        "EVT-001",
+        "WF-002",
+        "RSK-002"
+      ],
+      "return_to": "/speckit.plan"
+    },
+    {
+      "id": "Q-008",
+      "severity": "blocking",
+      "status": "open",
+      "question": "Delivery Workerのlease timeout値、worker停止時のlease回収条件、再claim時のattempt扱いを確定してください。",
+      "source_refs": [
+        "data-model:OutboxEvent",
+        "plan:状態変更と通知"
+      ],
+      "affected_refs": [
+        "FNC-003",
+        "ENT-OUTBOX-EVENT",
+        "EVT-001",
+        "WF-002",
+        "RSK-002"
+      ],
+      "return_to": "/speckit.plan"
+    },
+    {
+      "id": "Q-009",
+      "severity": "blocking",
+      "status": "open",
+      "question": "webhookの400（恒久schema違反）と401（認証失敗）を即時隔離するか、alert・再送・手動復旧へどう接続するかを確定してください。",
+      "source_refs": [
+        "contract:/webhooks/orderStatusChanged/post/responses/400",
+        "contract:/webhooks/orderStatusChanged/post/responses/401",
+        "plan:状態変更と通知"
+      ],
+      "affected_refs": [
+        "FNC-003",
+        "EVT-001",
+        "WF-002",
+        "RSK-002"
+      ],
+      "return_to": "/speckit.plan"
+    },
+    {
+      "id": "Q-010",
+      "severity": "blocking",
+      "status": "open",
+      "question": "data-modelの『alert対象時刻を記録』に対応する属性がOutboxEvent表にないため、保存先・属性・transaction境界を整合させてください。",
+      "source_refs": [
+        "data-model:OutboxEvent",
+        "plan:Operational Design"
+      ],
+      "affected_refs": [
+        "FNC-003",
+        "ENT-OUTBOX-EVENT",
+        "EVT-001",
+        "WF-002",
+        "QS-004"
+      ],
+      "return_to": "/speckit.analyze"
+    },
+    {
+      "id": "Q-011",
+      "severity": "blocking",
+      "status": "open",
+      "question": "x-external-operationsが要求するreconciliation.read scopeがOAuth security schemeのscopesに存在しないため、認可契約を整合させてください。",
+      "source_refs": [
+        "contract:/x-external-operations/dailyOrderCount/auth",
+        "contract:/components/securitySchemes/oauth2ClientCredentials/flows/clientCredentials/scopes"
+      ],
+      "affected_refs": [
+        "FNC-005",
+        "EXT-001",
+        "BAT-001",
+        "WF-003"
+      ],
+      "return_to": "/speckit.analyze"
+    },
+    {
+      "id": "Q-012",
+      "severity": "blocking",
+      "status": "open",
+      "question": "data-modelではexternal_order_number重複を検知しますが、注文登録API契約に対応するerror code・409条件がないため整合させてください。",
+      "source_refs": [
+        "data-model:Constraints",
+        "contract:/paths/~1orders/post/responses/409"
+      ],
+      "affected_refs": [
+        "FNC-001",
+        "ENT-ORDER",
+        "API-001",
+        "WF-001"
+      ],
+      "return_to": "/speckit.analyze"
+    },
+    {
+      "id": "Q-013",
+      "severity": "blocking",
+      "status": "open",
+      "question": "SC-001の『通常想定負荷』について、request rate／同時数、traffic mix、payload条件を確定し、k6 profile orders-normal-loadの合格条件を再現可能にしてください。",
+      "source_refs": [
+        "spec:SC-001",
+        "plan:Quality Goals",
+        "quickstart:Scenario 5"
+      ],
+      "affected_refs": [
+        "API-001",
+        "QS-001",
+        "VER-001"
+      ],
+      "return_to": "/speckit.clarify"
+    }
+  ],
+  "delivery_summary": {
+    "phases": [
+      {
+        "name": "Phase 1 - Foundation",
+        "completed": 2,
+        "total": 4
+      },
+      {
+        "name": "Phase 2 - Order Acceptance and State",
+        "completed": 0,
+        "total": 5
+      },
+      {
+        "name": "Phase 3 - Event Delivery and Recovery",
+        "completed": 0,
+        "total": 5
+      },
+      {
+        "name": "Phase 4 - Daily Reconciliation",
+        "completed": 0,
+        "total": 3
+      },
+      {
+        "name": "Phase 5 - Verification and Release Readiness",
+        "completed": 0,
+        "total": 5
+      }
+    ],
+    "dependencies": [
+      "Phase 1 → Phase 2 → Phase 3",
+      "Phase 1 → Phase 4",
+      "Phase 2 → Phase 5",
+      "Phase 3 → Phase 5",
+      "Phase 4 → Phase 5"
+    ],
+    "completed": 2,
+    "total": 22,
+    "note": "tasks.mdの現行Markdown checkboxを読み取り専用で要約。DeferredのT900は除外し、日程・見積り・担当を補完しない。",
+    "basis": "specified",
+    "source_refs": [
+      "tasks:*"
+    ]
+  },
+  "report": {
+    "status": "failed",
+    "blocking_error_count": 1,
+    "warning_count": 0,
+    "unresolved_count": 0,
+    "unsubstantiated_count": 0,
+    "coverage": {
+      "acceptance-scenario": {
+        "total": 5,
+        "resolved": 5,
+        "percent": 100.0
+      },
+      "assumption": {
+        "total": 4,
+        "resolved": 4,
+        "percent": 100.0
+      },
+      "clarification": {
+        "total": 6,
+        "resolved": 6,
+        "percent": 100.0
+      },
+      "edge-case": {
+        "total": 4,
+        "resolved": 4,
+        "percent": 100.0
+      },
+      "functional-requirement": {
+        "total": 9,
+        "resolved": 9,
+        "percent": 100.0
+      },
+      "out-of-scope": {
+        "total": 3,
+        "resolved": 3,
+        "percent": 100.0
+      },
+      "success-criterion": {
+        "total": 4,
+        "resolved": 4,
+        "percent": 100.0
+      },
+      "user-story": {
+        "total": 3,
+        "resolved": 3,
+        "percent": 100.0
+      }
+    },
+    "errors": [
+      "ユーザー確認が必要な未解決事項が13件あります"
+    ],
+    "warnings": [],
+    "document_level": "implementation-ready",
+    "document_status": "blocked",
+    "readiness": {
+      "requirements_coverage": {
+        "status": "passed",
+        "blocking_error_count": 0,
+        "warning_count": 0,
+        "errors": [],
+        "warnings": [],
+        "metrics": {
+          "normative_total": 38,
+          "covered": 38,
+          "percent": 100.0
+        }
+      },
+      "functional_design": {
+        "status": "failed",
+        "blocking_error_count": 1,
+        "warning_count": 0,
+        "errors": [
+          "ユーザー確認が必要な未解決事項が13件あります"
+        ],
+        "warnings": [],
+        "metrics": {
+          "functions": 5,
+          "workflows": 3,
+          "state_models": 1
+        }
+      },
+      "implementation_contracts": {
+        "status": "passed",
+        "blocking_error_count": 0,
+        "warning_count": 0,
+        "errors": [],
+        "warnings": [],
+        "metrics": {
+          "interfaces": 6,
+          "complete_contracts": 6
+        }
+      },
+      "operational_readiness": {
+        "status": "passed",
+        "blocking_error_count": 0,
+        "warning_count": 0,
+        "errors": [],
+        "warnings": [],
+        "metrics": {
+          "quality_scenarios": 6,
+          "risks": 5,
+          "verifications": 7
+        }
+      }
+    }
+  }
+}

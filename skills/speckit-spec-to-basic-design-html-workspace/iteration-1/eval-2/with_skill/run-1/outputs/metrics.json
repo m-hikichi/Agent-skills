@@ -1,0 +1,36 @@
+{
+  "approximate": true,
+  "tool_calls": 78,
+  "steps": 21,
+  "errors": 18,
+  "checker_runs": 11,
+  "builder_runs": 2,
+  "design_counts": {
+    "normative_items": 38,
+    "functions": 5,
+    "interfaces": 6,
+    "workflows": 3,
+    "state_models": 1,
+    "entities": 7,
+    "quality_scenarios": 6,
+    "risks": 5,
+    "verifications": 7,
+    "open_questions": 13,
+    "delivery_tasks_completed": 2,
+    "delivery_tasks_total": 22
+  },
+  "validation": {
+    "exit_code": 1,
+    "exact_result": "ERROR: ユーザー確認が必要な未解決事項が13件あります",
+    "document_status": "blocked",
+    "warnings": 0,
+    "unexpected_errors": 0
+  },
+  "output_files": [
+    "design.json",
+    "design.html",
+    "transcript.md",
+    "metrics.json"
+  ],
+  "error_notes": "Approximate count includes unavailable-interpreter discovery failures, one rejected network escalation, expected non-zero checker runs while blockers remained, iterative schema diagnostics, and one failed patch context. The final checker has no unexpected error."
+}
