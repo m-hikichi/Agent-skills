@@ -1,0 +1,192 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-17T16:04:27.041Z",
+  "artifact_fingerprint": "9d3b70a654f19835d47a7103e2be0c68b8fa62d6fa6f4b958d6b6acd759d35da",
+  "render_iteration": 2,
+  "improvements": [
+    {
+      "iteration": 2,
+      "description": "スモークテスト専用の再レンダー検証。目視レビュー・実際の改善・完成承認の証跡として使用不可。",
+      "slides": [
+        1
+      ]
+    }
+  ],
+  "slide_count": 8,
+  "source": {
+    "path": "slides/presentation.md",
+    "sha256": "aba199679630ec68ccc6a5b82b091890447a69636c0ed3072144bf506f2212be"
+  },
+  "request": {
+    "path": ".slide-work/request.yaml",
+    "sha256": "0b00a372e777e5cb32beccc6221169e55de90673a83fb9491e22d4bdd0a2a71d"
+  },
+  "theme": {
+    "path": "slides/theme.css",
+    "sha256": "02eea092aff517ba330d04b1d841bacba7f0780fde44c91b15e96ff94790760b"
+  },
+  "assets": [
+    {
+      "path": "slides/assets/sources/technical-decision-tree.mmd",
+      "sha256": "318571a2486ba52e655bfe80a29a81c1139450291e552d4cd3ea7a0e68037d71"
+    },
+    {
+      "path": "slides/assets/sources/technical-first-15-flow.mmd",
+      "sha256": "570e40d99b0bbd4102011410a8e12621a4410ed9a15d07e33b6a87099d3e747a"
+    },
+    {
+      "path": "slides/assets/sources/technical-latency-chart.csv",
+      "sha256": "a0a5f4f6a9c7eb21235f476ceb058e5d1328ce38c1aa29573571aa5d762119aa"
+    },
+    {
+      "path": "slides/assets/sources/technical-latency-chart.vl.json",
+      "sha256": "efba24aa5f1bbb03b7d899e2b6a959812fd7ffb88ba07ee2ac79002e8cf451a2"
+    },
+    {
+      "path": "slides/assets/technical-console.svg",
+      "sha256": "ca7bb8e39bff94d93a03d22f0ca48e929a4650e05a05926b98a6aa5754ef808e"
+    },
+    {
+      "path": "slides/assets/technical-decision-tree.svg",
+      "sha256": "21ca2eb4e39a6e1dfa325436eeb54345d0a3333424614525eb0c37a3ba3015af"
+    },
+    {
+      "path": "slides/assets/technical-first-15-flow.svg",
+      "sha256": "9bcc1a39fae8455fb0ed30f18dc9c044c06726017da3d321e9e1798c6e510743"
+    },
+    {
+      "path": "slides/assets/technical-latency-chart.svg",
+      "sha256": "951b30edfc7c22b8cfb0308d2cb870f3dd4a5dfa77c0c8384adbcf43fda0d0fc"
+    }
+  ],
+  "formats": [
+    "pdf",
+    "png",
+    "notes"
+  ],
+  "outputs": [
+    {
+      "format": "pdf",
+      "path": ".slide-work/presentation.pdf",
+      "sha256": "1084a014e1d4d2eb7d3b92fe7a01205971224200ee587bd3e297dd9db7981d88"
+    },
+    {
+      "format": "notes",
+      "path": ".slide-work/presentation-notes.txt",
+      "sha256": "b8751fdca13b7a23d2ef0fbda5b0c94cbb1964d0af6c28ac669a1c97042a5846"
+    }
+  ],
+  "page_images": [
+    {
+      "slide": 1,
+      "path": ".slide-work/rendered-pages/page-001.png",
+      "sha256": "90e31453a027b3553cbde79cd00a41364b0b6ea84293cfb4d0a3fd543b569a5f",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "slide": 2,
+      "path": ".slide-work/rendered-pages/page-002.png",
+      "sha256": "6ee0a2ff633af45803bada54199601a5296f3c0d42855e7c11a24da4f10b7aa9",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "slide": 3,
+      "path": ".slide-work/rendered-pages/page-003.png",
+      "sha256": "5b172053e47ed7a6b786e839b701923df6d0d4c3e3bb58196b470fa3167459f3",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "slide": 4,
+      "path": ".slide-work/rendered-pages/page-004.png",
+      "sha256": "53f801e49ac6f6298a9a06e72b0a3a395acb5af40c6207c14db8929a968c076a",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "slide": 5,
+      "path": ".slide-work/rendered-pages/page-005.png",
+      "sha256": "13c73d18bcabe581c3398c81461ee37b1543440ef9c0791990bc81d042371898",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "slide": 6,
+      "path": ".slide-work/rendered-pages/page-006.png",
+      "sha256": "79f21cb28829d09413d9f75faf993e2b0691e5cf5a794871cb8f35dabd002046",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "slide": 7,
+      "path": ".slide-work/rendered-pages/page-007.png",
+      "sha256": "3acb097a62845ce097ff1967e8ce01baaab74f943e8e26f739d8f064c49216e8",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "slide": 8,
+      "path": ".slide-work/rendered-pages/page-008.png",
+      "sha256": "f57c5a97a1629c14798273295dfe9f0e35da14ac0977d55bfdb3c10dc134f522",
+      "width": 2560,
+      "height": 1440
+    }
+  ],
+  "contact_sheet": {
+    "path": ".slide-work/contact-sheet.png",
+    "sha256": "9cfe98c09a9cd4ef6bc60bf326d67495d3d7cad25a26ea0e18d634a43ecfd05f",
+    "width": 1048,
+    "height": 712
+  },
+  "environment": {
+    "marp_cli": "4.4.0",
+    "marp_core": "4.3.0",
+    "chromium": "Chromium 150.0.7871.100 built on Debian GNU/Linux 12 (bookworm)",
+    "node": "v20.19.4",
+    "platform": "linux-x64",
+    "fonts": [
+      {
+        "name": "BIZ UDPGothic Regular",
+        "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/bizudpgothic/BIZUDPGothic-Regular.ttf",
+        "sha256": "258d7156c165f2ff774b6efee637c22c3b950de0d8a10e501137061bc8085d01"
+      },
+      {
+        "name": "BIZ UDPGothic Bold",
+        "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/bizudpgothic/BIZUDPGothic-Bold.ttf",
+        "sha256": "30eba52fc837e8b62c97d4b82e6706583149fb7294e3712dd71a655eaea80a90"
+      },
+      {
+        "name": "Source Code Pro Variable",
+        "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/sourcecodepro/SourceCodePro%5Bwght%5D.ttf",
+        "sha256": "b400fc584e10aff25d0e775ce181b4fc1c5ea1b5dc37b81aeb2084375b945790"
+      },
+      {
+        "name": "Source Code Pro Italic Variable",
+        "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/sourcecodepro/SourceCodePro-Italic%5Bwght%5D.ttf",
+        "sha256": "6db77d25aa7b30eff449305b5c998e475694c74d398421127ea5a60f536413cd"
+      },
+      {
+        "name": "Noto Sans CJK Regular TTC",
+        "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1",
+        "sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a"
+      },
+      {
+        "name": "Noto Sans CJK Bold TTC",
+        "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1",
+        "sha256": "faa5f3656a78b2e2d450d27fe8382c778bc2b6bb5ea29c986664a6a435056ceb"
+      },
+      {
+        "name": "Noto Serif CJK Regular TTC",
+        "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1",
+        "sha256": "a04178ec485dffdff7cc0c0c20e1fce9202d7e2160d805e8e44a4c8841c58481"
+      },
+      {
+        "name": "Noto Serif CJK Bold TTC",
+        "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1",
+        "sha256": "a5d4b046c127da3d7c72f98b46c41489cd29bf52abfdf18aba920903e920d4ac"
+      }
+    ]
+  }
+}

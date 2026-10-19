@@ -1,0 +1,48 @@
+{
+  "projectId": "json-motion-demo",
+  "projectDigest": "e3c5c14c10d8158e2c10c6818b3bfffdcee1bf0b5c9119a26c1e985ca0c242e1",
+  "lockHash": "41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6",
+  "runtime": {
+    "node": "v24.18.0",
+    "remotion": "4.0.503",
+    "ffmpeg": "ffmpeg version 5.1.9-0+deb12u1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "chrome": "Chromium 151.0.7922.71 built on Debian GNU/Linux 12 (bookworm)",
+    "font": "Noto Sans CJK JP",
+    "voicevox": "0.25.1"
+  },
+  "outputs": {
+    "video": true,
+    "captions": true,
+    "chapters": true,
+    "thumbnail": true,
+    "storyboard": true
+  },
+  "renderSettings": {
+    "codec": "h264",
+    "audioCodec": "aac",
+    "pixelFormat": "yuv420p",
+    "imageFormat": "png",
+    "colorSpace": "bt709",
+    "crf": 18,
+    "x264Preset": "medium"
+  },
+  "inspection": {
+    "mediaPath": "/workspace/demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/video.mp4",
+    "durationSeconds": 49.467,
+    "sizeBytes": 2832945,
+    "bitRate": 458155,
+    "video": {
+      "codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "pixelFormat": "yuv420p"
+    },
+    "audio": {
+      "codec": "aac",
+      "sampleRate": 48000,
+      "channels": 2
+    }
+  },
+  "warnings": []
+}

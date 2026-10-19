@@ -1,0 +1,120 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 3.06kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:24.18.0-bookworm-slim
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 226B done
+#3 DONE 0.0s
+
+#4 [build 1/7] FROM docker.io/library/node:24.18.0-bookworm-slim
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 7.90kB done
+#5 DONE 0.0s
+
+#6 [build 3/7] COPY runtime/package.json runtime/package-lock.json* ./
+#6 CACHED
+
+#7 [build 2/7] WORKDIR /app
+#7 CACHED
+
+#8 [build 4/7] RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+#8 CACHED
+
+#9 [build 5/7] COPY runtime/ ./
+#9 DONE 0.0s
+
+#10 [build 6/7] COPY schemas/ /schemas/
+#10 DONE 0.0s
+
+#11 [build 7/7] RUN npm run build
+#11 0.267 
+#11 0.267 > json-video-studio-runtime@0.1.0 build
+#11 0.267 > npm run generate:types && npm run build:web && tsc -p tsconfig.json
+#11 0.267 
+#11 0.358 
+#11 0.358 > json-video-studio-runtime@0.1.0 generate:types
+#11 0.358 > node scripts/generate-types.mjs
+#11 0.358 
+#11 0.663 
+#11 0.663 > json-video-studio-runtime@0.1.0 build:web
+#11 0.663 > vite build
+#11 0.663 
+#11 0.845 vite v7.3.6 building client environment for production...
+#11 0.905 transforming...
+#11 3.333 ✓ 110 modules transformed.
+#11 4.017 rendering chunks...
+#11 4.041 computing gzip size...
+#11 4.070 ../../dist/web/index.html                   0.46 kB │ gzip:   0.30 kB
+#11 4.070 ../../dist/web/assets/index-CQEEMSH7.css    8.27 kB │ gzip:   2.56 kB
+#11 4.070 ../../dist/web/assets/index-Q9EH93Ud.js   958.43 kB │ gzip: 276.16 kB
+#11 4.071 
+#11 4.071 (!) Some chunks are larger than 500 kB after minification. Consider:
+#11 4.071 - Using dynamic import() to code-split the application
+#11 4.071 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+#11 4.071 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+#11 4.071 ✓ built in 3.20s
+#11 DONE 7.8s
+
+#12 [runtime-base 2/3] RUN apt-get update     && apt-get install -y --no-install-recommends         ca-certificates=20230311+deb12u1         chromium=151.0.7922.71-1~deb12u1         ffmpeg=7:5.1.9-0+deb12u1         fontconfig=2.14.1-4         fonts-noto-cjk=1:20220127+repack1-1         fonts-noto-mono=20201225-1     && rm -rf /var/lib/apt/lists/*
+#12 CACHED
+
+#13 [runtime-base 3/3] WORKDIR /app
+#13 CACHED
+
+#14 [test  1/14] COPY --from=build --chown=node:node /app/dist ./dist
+#14 DONE 0.1s
+
+#15 [test  2/14] COPY --from=build --chown=node:node /app/node_modules ./node_modules
+#15 DONE 3.1s
+
+#16 [test  3/14] COPY --from=build --chown=node:node /app/package.json ./package.json
+#16 DONE 0.0s
+
+#17 [test  4/14] COPY --from=build --chown=node:node /app/tsconfig.json ./tsconfig.json
+#17 DONE 0.0s
+
+#18 [test  5/14] COPY --from=build --chown=node:node /app/vitest.config.ts ./vitest.config.ts
+#18 DONE 0.0s
+
+#19 [test  6/14] COPY --from=build --chown=node:node /app/src ./src
+#19 DONE 0.0s
+
+#20 [test  7/14] COPY --from=build --chown=node:node /app/tests ./tests
+#20 DONE 0.1s
+
+#21 [test  8/14] COPY --from=build --chown=node:node /app/scripts ./scripts
+#21 DONE 0.0s
+
+#22 [test  9/14] COPY --chown=node:node schemas ./schemas
+#22 DONE 0.0s
+
+#23 [test 10/14] COPY --chown=node:node schemas /schemas
+#23 DONE 0.0s
+
+#24 [test 11/14] COPY --chown=node:node examples /examples
+#24 DONE 0.0s
+
+#25 [test 12/14] COPY --chown=node:node runtime/playwright.config.ts ./playwright.config.ts
+#25 DONE 0.0s
+
+#26 [test 13/14] COPY --chown=node:node runtime/e2e ./e2e
+#26 DONE 0.0s
+
+#27 [test 14/14] RUN mkdir -p /app/test-results && chown -R node:node /app/test-results
+#27 DONE 0.2s
+
+#28 exporting to image
+#28 exporting layers
+#28 exporting layers 2.9s done
+#28 writing image sha256:6413c561bb5374906f9487fd324721fc71ff8acb3e8b40a1672f9e91e74fd50c done
+#28 naming to docker.io/library/json-video-studio-test:motion-20261018 0.0s done
+#28 DONE 3.0s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/dqfgky5qrsb147xqoor0a9ckp

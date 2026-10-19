@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-17T16:09:18.718Z",
+  "assets": [
+    {
+      "id": "G-001",
+      "path": "slides/assets/analytical-method.svg",
+      "pages": [
+        2
+      ],
+      "type": "diagram",
+      "source": {
+        "kind": "data",
+        "path": "slides/assets/sources/analytical-method.mmd",
+        "url": null
+      },
+      "license": null,
+      "alt": "契約・利用ログ・サポート履歴・退会回答を顧客IDで結合し、契約月別の顧客群で比較する分析手順",
+      "decorative": false,
+      "crop": null,
+      "generator": {
+        "kind": "mermaid",
+        "spec_path": "slides/assets/sources/analytical-method.mmd",
+        "model": null,
+        "prompt_sha256": null
+      },
+      "sha256": "a33b0aa91ac29b0968798f4be2cc6a53652661ee7a2fbdbcf7db7ffabe573684"
+    },
+    {
+      "id": "G-002",
+      "path": "slides/assets/analytical-cohort-chart.svg",
+      "pages": [
+        3
+      ],
+      "type": "chart",
+      "source": {
+        "kind": "data",
+        "path": "slides/assets/sources/analytical-cohort-chart.csv",
+        "url": null
+      },
+      "license": null,
+      "alt": "1月から3月の各顧客群で初週設定完了群の90日継続率が未完了群より22から27ポイント高い比較グラフ",
+      "decorative": false,
+      "crop": null,
+      "generator": {
+        "kind": "vega-lite",
+        "spec_path": "slides/assets/sources/analytical-cohort-chart.vl.json",
+        "model": null,
+        "prompt_sha256": null
+      },
+      "sha256": "d93068a653b3177d090a6400b407a068e8123d7f588ba7f1113402e1773d8ea3"
+    },
+    {
+      "id": "G-003",
+      "path": "slides/assets/analytical-segment-map.svg",
+      "pages": [
+        4
+      ],
+      "type": "chart",
+      "source": {
+        "kind": "data",
+        "path": "slides/assets/sources/analytical-segment-map.csv",
+        "url": null
+      },
+      "license": null,
+      "alt": "企業規模と初週利用回数のsegment mapで、価格理由の解約が低利用かつ設定未完了領域に集中する散布図",
+      "decorative": false,
+      "crop": null,
+      "generator": {
+        "kind": "vega-lite",
+        "spec_path": "slides/assets/sources/analytical-segment-map.vl.json",
+        "model": null,
+        "prompt_sha256": null
+      },
+      "sha256": "9d60fcc68508b36b876f241595af3627198332f0084e9e3a76d93dd461387c48"
+    },
+    {
+      "id": "G-004",
+      "path": "slides/assets/analytical-experiment.svg",
+      "pages": [
+        7
+      ],
+      "type": "diagram",
+      "source": {
+        "kind": "data",
+        "path": "slides/assets/sources/analytical-experiment.mmd",
+        "url": null
+      },
+      "license": null,
+      "alt": "新規顧客を通常導入と初週ガイド付き導入へ無作為に割り付け、設定完了率と90日継続率を比較する実験設計",
+      "decorative": false,
+      "crop": null,
+      "generator": {
+        "kind": "mermaid",
+        "spec_path": "slides/assets/sources/analytical-experiment.mmd",
+        "model": null,
+        "prompt_sha256": null
+      },
+      "sha256": "6c977c3762ca45248cfdf9c24d2f56308b94a24a845a350c82ef662c66f29d3e"
+    }
+  ]
+}

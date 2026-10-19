@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "quality-showcase",
+  "lockHash": "0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a",
+  "iteration": 2,
+  "status": "pass",
+  "reviewedAt": "2026-10-17T23:10:43.3390258Z",
+  "gates": {
+    "noOverflowOrClipping": true,
+    "noUnintendedOverlap": true,
+    "safeMargins": true,
+    "readableContrast": true,
+    "subtitleReadable": true,
+    "visualMatchesContent": true,
+    "consistentTypography": true,
+    "thumbnailReadable": true
+  },
+  "issues": [],
+  "questionsForUser": []
+}

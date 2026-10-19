@@ -1,0 +1,18 @@
+{
+  "id": "0a4ec44b-080e-49cd-bb02-ff584658f86d",
+  "kind": "resolve",
+  "projectPath": "dialogue/video-project.json",
+  "status": "succeeded",
+  "progress": 1,
+  "message": "Succeeded",
+  "createdAt": "2026-10-17T16:28:21.369Z",
+  "updatedAt": "2026-10-17T16:28:30.645Z",
+  "result": {
+    "lockPath": "dialogue/.json-video-work/voicevox-dialogue/project.lock.json",
+    "lockHash": "b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652",
+    "totalFrames": 447,
+    "captionsPath": "dialogue/.json-video-work/voicevox-dialogue/captions.srt",
+    "chaptersPath": "dialogue/.json-video-work/voicevox-dialogue/chapters.txt",
+    "creditsPath": "dialogue/.json-video-work/voicevox-dialogue/credits.txt"
+  }
+}

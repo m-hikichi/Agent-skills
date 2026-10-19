@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="720" viewBox="0 0 800 720" role="img" aria-labelledby="title desc">
+  <title id="title">初週設定から90日継続までの顧客journey</title><desc id="desc">契約、設定、初回価値、習慣化、継続の段階を層状に表す</desc>
+  <defs><linearGradient id="paper" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#252522"/><stop offset="1" stop-color="#4e493f"/></linearGradient><filter id="s"><feDropShadow dy="10" stdDeviation="14" flood-opacity=".25"/></filter></defs>
+  <rect width="800" height="720" fill="url(#paper)"/>
+  <path d="M0 575C175 490 240 650 420 560s255-50 380-126v286H0z" fill="#a6422c" opacity=".24"/>
+  <g font-family="serif" filter="url(#s)"><rect x="112" y="105" width="576" height="466" rx="10" fill="#fbfaf6"/>
+  <text x="154" y="162" font-size="21" fill="#6b675f">CUSTOMER JOURNEY / FIRST 90 DAYS</text>
+  <line x1="165" y1="338" x2="635" y2="338" stroke="#cfc6b9" stroke-width="4"/>
+  <g text-anchor="middle"><circle cx="175" cy="338" r="22" fill="#24685e"/><circle cx="290" cy="338" r="30" fill="#24685e"/><circle cx="405" cy="338" r="22" fill="#a6422c"/><circle cx="520" cy="338" r="22" fill="#a6422c"/><circle cx="635" cy="338" r="22" fill="#a6422c"/>
+  <g font-family="sans-serif" font-size="17" fill="#252522"><text x="175" y="394">契約</text><text x="290" y="394" font-weight="700">初週設定</text><text x="405" y="394">初回価値</text><text x="520" y="394">習慣化</text><text x="635" y="394">90日継続</text></g>
+  <text x="290" y="284" font-family="sans-serif" font-size="16" font-weight="700" fill="#24685e">観測された分岐点</text></g>
+  <rect x="170" y="450" width="460" height="70" rx="8" fill="#eee9df"/><text x="200" y="480" font-family="sans-serif" font-size="16" fill="#6b675f">分析の問い</text><text x="200" y="506" font-family="sans-serif" font-size="20" font-weight="700" fill="#252522">初週設定の完了は継続差とどう関連するか</text></g>
+  <text x="112" y="640" font-family="serif" font-size="24" fill="#fbfaf6">Observe the path before choosing the intervention.</text>
+</svg>

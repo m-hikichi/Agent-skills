@@ -1,0 +1,48 @@
+{
+  "projectId": "quality-showcase",
+  "projectDigest": "0a770b21fd9672e177f33dd65be14c46b8f3e37a1b160c198c80e91cbbd63139",
+  "lockHash": "0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a",
+  "runtime": {
+    "node": "v24.18.0",
+    "remotion": "4.0.503",
+    "ffmpeg": "ffmpeg version 5.1.9-0+deb12u1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "chrome": "Chromium 151.0.7922.71 built on Debian GNU/Linux 12 (bookworm)",
+    "font": "Noto Sans CJK JP",
+    "voicevox": "0.25.1"
+  },
+  "outputs": {
+    "video": true,
+    "captions": true,
+    "chapters": true,
+    "thumbnail": true,
+    "storyboard": true
+  },
+  "renderSettings": {
+    "codec": "h264",
+    "audioCodec": "aac",
+    "pixelFormat": "yuv420p",
+    "imageFormat": "png",
+    "colorSpace": "bt709",
+    "crf": 18,
+    "x264Preset": "medium"
+  },
+  "inspection": {
+    "mediaPath": "/workspace/showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/video.mp4",
+    "durationSeconds": 49.434,
+    "sizeBytes": 2870829,
+    "bitRate": 464591,
+    "video": {
+      "codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "pixelFormat": "yuv420p"
+    },
+    "audio": {
+      "codec": "aac",
+      "sampleRate": 48000,
+      "channels": 2
+    }
+  },
+  "warnings": []
+}

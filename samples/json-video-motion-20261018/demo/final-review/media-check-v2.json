@@ -1,0 +1,152 @@
+{
+  "lockHash": "41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6",
+  "decodeAllFrames": true,
+  "peak": 0.7741263508796692,
+  "clippedSampleFraction": 0,
+  "audioSourceComparison": "24kHz mono PCM; cross-correlation within +/-2 video frames of locked scene start",
+  "maxAllowedOffsetMs": 66.66666666666667,
+  "limitation": "Objective waveform/timing checks; pronunciation and subjective listening are not assessed.",
+  "scenes": [
+    {
+      "id": "intro",
+      "startSeconds": 0,
+      "durationSeconds": 6.866666666666666,
+      "midpointFrame": 103,
+      "motionOffsets": [
+        0,
+        8,
+        16,
+        24,
+        40,
+        202
+      ],
+      "audio": {
+        "correlation": 0.9921581448223158,
+        "offsetSamples": 1024,
+        "offsetMs": 42.666666666666664,
+        "sourceDurationSeconds": 6.442666666666667
+      }
+    },
+    {
+      "id": "reading",
+      "startSeconds": 6.866666666666666,
+      "durationSeconds": 7.366666666666666,
+      "midpointFrame": 316,
+      "motionOffsets": [
+        0,
+        8,
+        16,
+        24,
+        40,
+        217
+      ],
+      "audio": {
+        "correlation": 0.9902726077102303,
+        "offsetSamples": 1024,
+        "offsetMs": 42.666666666666664,
+        "sourceDurationSeconds": 6.944
+      }
+    },
+    {
+      "id": "flow-0",
+      "startSeconds": 14.233333333333333,
+      "durationSeconds": 5.9,
+      "midpointFrame": 515,
+      "motionOffsets": [
+        0,
+        8,
+        16,
+        24,
+        40,
+        173
+      ],
+      "audio": {
+        "correlation": 0.9895989810784989,
+        "offsetSamples": 1024,
+        "offsetMs": 42.666666666666664,
+        "sourceDurationSeconds": 5.376
+      }
+    },
+    {
+      "id": "flow-1",
+      "startSeconds": 20.133333333333333,
+      "durationSeconds": 7.566666666666666,
+      "midpointFrame": 717,
+      "motionOffsets": [
+        0,
+        8,
+        16,
+        24,
+        40,
+        223
+      ],
+      "audio": {
+        "correlation": 0.9903571029741122,
+        "offsetSamples": 1024,
+        "offsetMs": 42.666666666666664,
+        "sourceDurationSeconds": 7.061333333333334
+      }
+    },
+    {
+      "id": "flow-2",
+      "startSeconds": 27.7,
+      "durationSeconds": 7.233333333333333,
+      "midpointFrame": 939,
+      "motionOffsets": [
+        0,
+        8,
+        16,
+        24,
+        40,
+        213
+      ],
+      "audio": {
+        "correlation": 0.9897443727094117,
+        "offsetSamples": 1024,
+        "offsetMs": 42.666666666666664,
+        "sourceDurationSeconds": 6.730666666666667
+      }
+    },
+    {
+      "id": "flow-3",
+      "startSeconds": 34.93333333333333,
+      "durationSeconds": 7.7,
+      "midpointFrame": 1163,
+      "motionOffsets": [
+        0,
+        8,
+        16,
+        24,
+        40,
+        227
+      ],
+      "audio": {
+        "correlation": 0.992764403700762,
+        "offsetSamples": 1024,
+        "offsetMs": 42.666666666666664,
+        "sourceDurationSeconds": 7.168
+      }
+    },
+    {
+      "id": "outro",
+      "startSeconds": 42.63333333333333,
+      "durationSeconds": 6.833333333333333,
+      "midpointFrame": 1381,
+      "motionOffsets": [
+        0,
+        8,
+        16,
+        24,
+        40,
+        201
+      ],
+      "audio": {
+        "correlation": 0.9921227632807347,
+        "offsetSamples": 1024,
+        "offsetMs": 42.666666666666664,
+        "sourceDurationSeconds": 6.176
+      }
+    }
+  ],
+  "passed": true
+}

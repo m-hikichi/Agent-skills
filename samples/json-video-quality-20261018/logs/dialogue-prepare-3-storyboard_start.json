@@ -1,0 +1,24 @@
+{
+  "id": "25a44e4c-99a0-4861-88ef-4210e4f41b24",
+  "kind": "storyboard",
+  "projectPath": "dialogue/video-project.json",
+  "status": "succeeded",
+  "progress": 1,
+  "message": "Succeeded",
+  "createdAt": "2026-10-17T16:28:31.900Z",
+  "updatedAt": "2026-10-17T16:29:01.708Z",
+  "result": {
+    "outputDirectory": "dialogue/.json-video-work/voicevox-dialogue/storyboard/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652",
+    "storyboard": [
+      "dialogue/.json-video-work/voicevox-dialogue/storyboard/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/001-intro-title.png",
+      "dialogue/.json-video-work/voicevox-dialogue/storyboard/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/002-intro-steps.png",
+      "dialogue/.json-video-work/voicevox-dialogue/storyboard/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/003-ending-outro.png"
+    ],
+    "contactSheet": "dialogue/.json-video-work/voicevox-dialogue/storyboard/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/contact-sheet.png",
+    "contactSheets": [
+      "dialogue/.json-video-work/voicevox-dialogue/storyboard/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/contact-sheet.png"
+    ],
+    "thumbnailPreview": "dialogue/.json-video-work/voicevox-dialogue/storyboard/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/thumbnail-preview.png",
+    "warnings": []
+  }
+}

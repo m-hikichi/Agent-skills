@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "json-motion-demo",
+  "lockHash": "41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6",
+  "iteration": 3,
+  "status": "pass",
+  "reviewedAt": "2026-10-18T10:39:26.1080265Z",
+  "gates": {
+    "noOverflowOrClipping": true,
+    "noUnintendedOverlap": true,
+    "safeMargins": true,
+    "readableContrast": true,
+    "subtitleReadable": true,
+    "visualMatchesContent": true,
+    "consistentTypography": true,
+    "thumbnailReadable": true
+  },
+  "issues": [],
+  "questionsForUser": [],
+  "notes": "contact sheet、全7scene個別画像、thumbnailを独立再目視。flow説明を1行に短縮したことで途中改行warningは解消。8静止画ゲート合格。動き・滑らかさは静止画判定の対象外。"
+}

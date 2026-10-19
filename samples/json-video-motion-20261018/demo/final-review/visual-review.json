@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "json-motion-demo",
+  "lockHash": "41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6",
+  "videoSha256": "8709ae9c8355729bb396cdbf37b4dbe2db6dfd6c9675c7367e258f8810322b13",
+  "reviewedAt": "2026-10-18T10:43:35.8844051Z",
+  "status": "pass",
+  "method": "independent-visual-review-of-extracted-frames",
+  "listeningPerformed": false,
+  "inspectedImageCount": 15,
+  "inspectedImages": [
+    "01-intro.png",
+    "01-intro-motion.png",
+    "02-reading.png",
+    "02-reading-motion.png",
+    "03-flow-0.png",
+    "03-flow-0-motion.png",
+    "04-flow-1.png",
+    "04-flow-1-motion.png",
+    "05-flow-2.png",
+    "05-flow-2-motion.png",
+    "06-flow-3.png",
+    "06-flow-3-motion.png",
+    "07-outro.png",
+    "07-outro-motion.png",
+    "thumbnail-small.png"
+  ],
+  "evidence": [
+    {
+      "scope": "all-midpoints",
+      "observation": "全7sceneで字幕と本文が読め、文字切れ・重なり・内容の矛盾を観測しない。flow detailの途中改行は解消。"
+    },
+    {
+      "scope": "03-flow-0-motion.png",
+      "observation": "原稿カードを強調し、データが上方から入力位置へ到達する時系列変化を確認。台詞の原稿入力と対応。"
+    },
+    {
+      "scope": "04-flow-1-motion.png",
+      "observation": "データが原稿位置から音声と字幕へ右移動し、水色の線が伸長。原稿は完了、音声と字幕は処理中となり台詞と整合。"
+    },
+    {
+      "scope": "05-flow-2-motion.png",
+      "observation": "データが音声と字幕から絵コンテ確認へ移動。既完了2工程を保持し、点検中工程を強調。"
+    },
+    {
+      "scope": "06-flow-3-motion.png",
+      "observation": "データが絵コンテ確認から動画の書き出しへ移動。既完了3工程と残る処理工程が明確。"
+    },
+    {
+      "scope": "flow-scene-boundaries",
+      "observation": "前scene終端と次scene始点で4カードの位置とデータ位置が一致。flow間で図全体を消さず進行を継承。"
+    },
+    {
+      "scope": "intro-reading-outro-motion",
+      "observation": "冒頭/比較/結びはフェード主体の静止レイアウト。工程図の移動に対して視覚的に落ち着いた前後説明となっている。"
+    },
+    {
+      "scope": "thumbnail-small.png",
+      "observation": "320px幅で2行の主文を読める。"
+    },
+    {
+      "scope": "video.mp4",
+      "observation": "独立Get-FileHashで指定MP4 SHA256一致を検証。"
+    }
+  ],
+  "issues": [],
+  "limitations": [
+    "視覚判定は全scene中点と各sceneの6時点（相対frame 0,8,16,24,40,終了4frame前）の抽出画像に基づく。リアルタイム全編視聴・全フレーム目視ではなく、滑らかさや未抽出フレームの完全性は保証しない。",
+    "本サンプルの意味ある動きは工程間のデータ移動、接続線の伸長、処理中/完了の更新。音声尺へ字幕を合わせる作業自体や各工程内部の変換をアニメーションで解説するものではない。",
+    "音声の読みは別のnarration-review.jsonで全文生成かな照合済み。聴感評価は未実施。media-check-v2.jsonの波形相関/一定42.667ms遅延/クリップ0/全frame decode結果は参照資料であり、この目視レビューから発音や抑揚の良さを推論していない。"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "c97511cc-faad-45b4-ba42-f1c5570deac6",
+  "kind": "storyboard",
+  "projectPath": "demo/video-project.json",
+  "status": "succeeded",
+  "progress": 1,
+  "message": "Succeeded",
+  "createdAt": "2026-10-18T10:38:28.444Z",
+  "updatedAt": "2026-10-18T10:38:41.613Z",
+  "result": {
+    "outputDirectory": "demo/.json-video-work/json-motion-demo/storyboard/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6",
+    "storyboard": [
+      "demo/.json-video-work/json-motion-demo/storyboard/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/001-intro.png",
+      "demo/.json-video-work/json-motion-demo/storyboard/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/002-reading.png",
+      "demo/.json-video-work/json-motion-demo/storyboard/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/003-flow-0.png",
+      "demo/.json-video-work/json-motion-demo/storyboard/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/004-flow-1.png",
+      "demo/.json-video-work/json-motion-demo/storyboard/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/005-flow-2.png",
+      "demo/.json-video-work/json-motion-demo/storyboard/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/006-flow-3.png",
+      "demo/.json-video-work/json-motion-demo/storyboard/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/007-outro.png"
+    ],
+    "contactSheet": "demo/.json-video-work/json-motion-demo/storyboard/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/contact-sheet.png",
+    "contactSheets": [
+      "demo/.json-video-work/json-motion-demo/storyboard/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/contact-sheet.png"
+    ],
+    "thumbnailPreview": "demo/.json-video-work/json-motion-demo/storyboard/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/thumbnail-preview.png",
+    "warnings": []
+  }
+}

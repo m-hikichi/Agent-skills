@@ -1,0 +1,8 @@
+{
+  "projectId": "voicevox-dialogue",
+  "goal": "Docker MCPによる生成可否と映像品質の検証",
+  "audience": "プラグイン利用者",
+  "title": "JSON動画の仕組み",
+  "source": "inputs/dialogue.json",
+  "lastProjectRevision": 1
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "json-motion-demo",
+  "lockHash": "b3b9310a6dedf28dfa541ee8603bd72a8d4333d6366f1b43eb987a61f51b4375",
+  "iteration": 2,
+  "status": "pass",
+  "reviewedAt": "2026-10-18T10:38:05.9155748Z",
+  "gates": {
+    "noOverflowOrClipping": true,
+    "noUnintendedOverlap": true,
+    "safeMargins": true,
+    "readableContrast": true,
+    "subtitleReadable": true,
+    "visualMatchesContent": true,
+    "consistentTypography": true,
+    "thumbnailReadable": true
+  },
+  "issues": [
+    {
+      "severity": "warning",
+      "sceneId": "flow-0,flow-1,flow-2,flow-3",
+      "framePath": "storyboard/b3b9310a6dedf28dfa541ee8603bd72a8d4333d6366f1b43eb987a61f51b4375/003-flow-0.png",
+      "problem": "指定とレビューの途中改行は解消。steps/3/detailの指定改行が空白に潰れ、音声付／き動画と折り返される。",
+      "fix": "/sections/0/scenes/2〜5/visual/steps/3/detailを「音声付き動画へ変換」に短縮、またはrendererで明示改行を保持する。"
+    }
+  ],
+  "questionsForUser": [],
+  "notes": "contact sheet、全7scene個別画像、thumbnailを独立再目視。8静止画ゲート合格。動き・滑らかさは静止画判定の対象外。"
+}

@@ -1,0 +1,44 @@
+{
+  "outputDirectory": "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a",
+  "lock": "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/project.lock.json",
+  "video": "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/video.mp4",
+  "thumbnail": "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/thumbnail.png",
+  "captions": "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/captions.srt",
+  "chapters": "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/chapters.txt",
+  "credits": "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/credits.txt",
+  "storyboard": [
+    "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/storyboard/001-template-title.png",
+    "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/storyboard/002-template-bullets.png",
+    "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/storyboard/003-template-split.png",
+    "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/storyboard/004-template-media.png",
+    "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/storyboard/005-template-code.png",
+    "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/storyboard/006-template-quote.png",
+    "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/storyboard/007-template-metric.png",
+    "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/storyboard/008-template-outro.png"
+  ],
+  "contactSheet": "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/contact-sheet.png",
+  "contactSheets": [
+    "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/contact-sheet.png"
+  ],
+  "manifest": "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/artifact-manifest.json",
+  "report": "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/render-report.json",
+  "inspection": {
+    "mediaPath": "showcase/dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/video.mp4",
+    "durationSeconds": 49.434,
+    "sizeBytes": 2870829,
+    "bitRate": 464591,
+    "video": {
+      "codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "pixelFormat": "yuv420p"
+    },
+    "audio": {
+      "codec": "aac",
+      "sampleRate": 48000,
+      "channels": 2
+    }
+  },
+  "warnings": []
+}

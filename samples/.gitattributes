@@ -1,0 +1,4 @@
+# Preserve rendered artifact bytes and their recorded SHA-256 digests.
+json-video-motion-20261018/** -text
+json-video-quality-20261018/** -text
+marp-slide-v1.1-quality-20261018/** -text

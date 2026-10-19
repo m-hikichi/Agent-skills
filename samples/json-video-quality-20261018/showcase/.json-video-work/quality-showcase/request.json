@@ -1,0 +1,8 @@
+{
+  "projectId": "quality-showcase",
+  "goal": "Docker MCPによる生成可否と映像品質の検証",
+  "audience": "プラグイン利用者",
+  "title": "JSONから動画へ：8つの画面表現",
+  "source": "inputs/showcase.json",
+  "lastProjectRevision": 1
+}

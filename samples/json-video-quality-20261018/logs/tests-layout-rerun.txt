@@ -1,0 +1,19 @@
+
+> json-video-studio-runtime@0.1.0 test
+> vitest run tests/render-layout.test.ts --maxWorkers=1 --minWorkers=1
+
+
+ RUN  v3.2.7 /app
+
+ ✓ tests/render-layout.test.ts (15 tests) 7ms
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  23:10:53
+   Duration  230ms (transform 47ms, setup 0ms, collect 46ms, tests 7ms, environment 0ms, prepare 58ms)
+
+npm notice
+npm notice New major version of npm available! 11.16.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

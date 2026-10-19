@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "projects": {
+    "dialogue/video-project.json": {
+      "revision": 1,
+      "digest": "a8a81d31f9230af215d43d80ddf439490b3ec606e4e922e77980d4b923da30ec",
+      "updatedAt": "2026-10-17T16:28:19.817Z"
+    },
+    "showcase/video-project.json": {
+      "revision": 2,
+      "digest": "0a770b21fd9672e177f33dd65be14c46b8f3e37a1b160c198c80e91cbbd63139",
+      "updatedAt": "2026-10-17T23:09:22.226Z"
+    }
+  },
+  "history": {
+    "dialogue/video-project.json": [
+      {
+        "revision": 1,
+        "digest": "a8a81d31f9230af215d43d80ddf439490b3ec606e4e922e77980d4b923da30ec",
+        "updatedAt": "2026-10-17T16:28:19.817Z"
+      }
+    ],
+    "showcase/video-project.json": [
+      {
+        "revision": 1,
+        "digest": "0edd08cf1b169345c143a8ba70b6391806e4dc8666ab6767f5dcccf15aaa3c98",
+        "updatedAt": "2026-10-17T16:29:26.219Z"
+      },
+      {
+        "revision": 2,
+        "digest": "0a770b21fd9672e177f33dd65be14c46b8f3e37a1b160c198c80e91cbbd63139",
+        "updatedAt": "2026-10-17T23:09:22.226Z"
+      }
+    ]
+  }
+}

@@ -1,0 +1,531 @@
+{
+  "outputDirectory": "final",
+  "manifest": {
+    "manifestVersion": "1.0.0",
+    "projectId": "quality-showcase",
+    "projectDigest": "0a770b21fd9672e177f33dd65be14c46b8f3e37a1b160c198c80e91cbbd63139",
+    "lockHash": "0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a",
+    "createdAt": "2026-10-17T23:13:19.254Z",
+    "files": [
+      {
+        "path": "captions.srt",
+        "sizeBytes": 692,
+        "sha256": "22b85a560f53744b65da32c1575b2c25a42740cfd16c3408c0398c416c043af3"
+      },
+      {
+        "path": "chapters.txt",
+        "sizeBytes": 61,
+        "sha256": "b1bdf77853e46c7d743efa151bfb540ee8b80ec85942eef0d9b3fb64724417f3"
+      },
+      {
+        "path": "contact-sheet.png",
+        "sizeBytes": 182339,
+        "sha256": "d182b98f5521700448dc55167aa0d4f075453a8784ae0345f86cb4f522cecbea"
+      },
+      {
+        "path": "credits.txt",
+        "sizeBytes": 64,
+        "sha256": "0fbe6b3d8e86a4a8aaf50af880d7dfb92a12839e2c20692dbd4f7d34656e5cfd"
+      },
+      {
+        "path": "project.lock.json",
+        "sizeBytes": 15668,
+        "sha256": "3c2e4cca887f4cd467edacb3b49dea57a8a067b158cdb0229438c66065bc72c0"
+      },
+      {
+        "path": "render-report.json",
+        "sizeBytes": 1320,
+        "sha256": "f6584dd4112f0f50aa915d8ae6586edbc9133fc40391597a6bd7d255896d5a3e"
+      },
+      {
+        "path": "storyboard/001-template-title.png",
+        "sizeBytes": 115646,
+        "sha256": "f547008c70d43c1e3781b17e96aa5e1870c857864505b31f1287ce44b3bd93d4"
+      },
+      {
+        "path": "storyboard/002-template-bullets.png",
+        "sizeBytes": 145106,
+        "sha256": "b0dea77a684747bff892474b2c9fdf79a86fa15af988f0004e8fe60c34e50cd3"
+      },
+      {
+        "path": "storyboard/003-template-split.png",
+        "sizeBytes": 131758,
+        "sha256": "776e80f9f57f0dee7743786aed45d2c0c249b579d7dd7dffc80eec8440de8b7c"
+      },
+      {
+        "path": "storyboard/004-template-media.png",
+        "sizeBytes": 190485,
+        "sha256": "c7c81ed02de210008c0299b5a8891a2a516f9d3cb8e03174803b7f5a4ec1a7e1"
+      },
+      {
+        "path": "storyboard/005-template-code.png",
+        "sizeBytes": 112981,
+        "sha256": "011bf7148ee1eff4fe1d3b1b161cf8d1dc542b94a6e3808b99575595ee04a919"
+      },
+      {
+        "path": "storyboard/006-template-quote.png",
+        "sizeBytes": 155408,
+        "sha256": "a22dad19dcf85d4b755a84f33162e676c701eb90e83c137a438c3e4474c37c52"
+      },
+      {
+        "path": "storyboard/007-template-metric.png",
+        "sizeBytes": 109240,
+        "sha256": "d79b32c2a08864d2d3a26156885819613c4c28035c336921a9a711400c8ff232"
+      },
+      {
+        "path": "storyboard/008-template-outro.png",
+        "sizeBytes": 123333,
+        "sha256": "9f4720b3827dbcd63278dfeb6e4074674042602ff2366b8c16f8469e62ae8b5d"
+      },
+      {
+        "path": "storyboard/contact-sheet.png",
+        "sizeBytes": 182339,
+        "sha256": "d182b98f5521700448dc55167aa0d4f075453a8784ae0345f86cb4f522cecbea"
+      },
+      {
+        "path": "storyboard/thumbnail-preview.png",
+        "sizeBytes": 652957,
+        "sha256": "276789413e22007f1e53c5db6d25710c945df476d6e83bcd44f51309920ddb37"
+      },
+      {
+        "path": "thumbnail.png",
+        "sizeBytes": 652957,
+        "sha256": "276789413e22007f1e53c5db6d25710c945df476d6e83bcd44f51309920ddb37"
+      },
+      {
+        "path": "video.mp4",
+        "sizeBytes": 2870829,
+        "sha256": "ddc81003a49b821615da34ad29752f5ca28b7275c92c07bcc15ff204af70617f"
+      }
+    ]
+  },
+  "lock": {
+    "lockVersion": "1.0.0",
+    "projectDigest": "0a770b21fd9672e177f33dd65be14c46b8f3e37a1b160c198c80e91cbbd63139",
+    "lockHash": "0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a",
+    "generatedAt": "2026-10-17T23:09:24.626Z",
+    "runtime": {
+      "node": "v24.18.0",
+      "remotion": "4.0.503",
+      "ffmpeg": "ffmpeg version 5.1.9-0+deb12u1 Copyright (c) 2000-2026 the FFmpeg developers",
+      "chrome": "Chromium 151.0.7922.71 built on Debian GNU/Linux 12 (bookworm)",
+      "font": "Noto Sans CJK JP",
+      "voicevox": "0.25.1"
+    },
+    "assets": [
+      {
+        "id": "template-media",
+        "type": "image",
+        "sourcePath": "assets/all-templates-media.png",
+        "resolvedPath": "assets/all-templates-media.png",
+        "sha256": "a7d09a7fab5dc690919d8bfeebc1df9e57580fc3c66b6c488446143ee6e2f72e",
+        "mime": "image/png",
+        "sizeBytes": 53503,
+        "rights": {
+          "attribution": "JSON Video Studio quality verification",
+          "status": "owned",
+          "source": "Original diagram created for this local verification"
+        },
+        "width": 1400,
+        "height": 600
+      },
+      {
+        "id": "voice:template-title",
+        "type": "voice",
+        "sourcePath": "voicevox:34f55f47d35847f8cb8b8b04a70a4d0e01188e2dec24021d262d5ece52000564",
+        "resolvedPath": ".json-video-work/quality-showcase/voice/34f55f47d35847f8cb8b8b04a70a4d0e01188e2dec24021d262d5ece52000564.wav",
+        "sha256": "59bbe3f448fde4461ac2ec3e2af98af6d8034010d60c64425dccab6f795ae471",
+        "mime": "audio/wav",
+        "sizeBytes": 274988,
+        "durationMs": 5728,
+        "voice": {
+          "provider": "voicevox",
+          "engineVersion": "0.25.1",
+          "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+          "speakerName": "四国めたん",
+          "styleId": 2,
+          "styleName": "ノーマル",
+          "speedScale": 1.05,
+          "volumeScale": 1,
+          "pitchScale": 0,
+          "intonationScale": 1,
+          "cacheKey": "34f55f47d35847f8cb8b8b04a70a4d0e01188e2dec24021d262d5ece52000564",
+          "textSha256": "e93e129db6b668e1bc43f7efd0ca559dd591741634d779002a1380daf101a80c"
+        }
+      },
+      {
+        "id": "voice:template-bullets",
+        "type": "voice",
+        "sourcePath": "voicevox:430cfa2d92447fc4da7be631021aeac02dbcfe35d211b4dbef61b6c590713d58",
+        "resolvedPath": ".json-video-work/quality-showcase/voice/430cfa2d92447fc4da7be631021aeac02dbcfe35d211b4dbef61b6c590713d58.wav",
+        "sha256": "d2814e5e4daa8e834a7389251f990b9bffde4d8312ea85e9f736abdaa9428745",
+        "mime": "audio/wav",
+        "sizeBytes": 284204,
+        "durationMs": 5920,
+        "voice": {
+          "provider": "voicevox",
+          "engineVersion": "0.25.1",
+          "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+          "speakerName": "四国めたん",
+          "styleId": 2,
+          "styleName": "ノーマル",
+          "speedScale": 1.05,
+          "volumeScale": 1,
+          "pitchScale": 0,
+          "intonationScale": 1,
+          "cacheKey": "430cfa2d92447fc4da7be631021aeac02dbcfe35d211b4dbef61b6c590713d58",
+          "textSha256": "4f2f4aea207446c03577ea8a40f578f1e5bdfcc54cb5765c23a75ca15495a2b4"
+        }
+      },
+      {
+        "id": "voice:template-split",
+        "type": "voice",
+        "sourcePath": "voicevox:632246b0bbc342158708c5996d2038fbc2a4288e799c6c56aa12d538e86f5fa2",
+        "resolvedPath": ".json-video-work/quality-showcase/voice/632246b0bbc342158708c5996d2038fbc2a4288e799c6c56aa12d538e86f5fa2.wav",
+        "sha256": "340b072400b3fca82466b9a46322f4420e7cfbf00f21b437a3a5a6cdc2771162",
+        "mime": "audio/wav",
+        "sizeBytes": 332332,
+        "durationMs": 6923,
+        "voice": {
+          "provider": "voicevox",
+          "engineVersion": "0.25.1",
+          "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+          "speakerName": "四国めたん",
+          "styleId": 2,
+          "styleName": "ノーマル",
+          "speedScale": 1.05,
+          "volumeScale": 1,
+          "pitchScale": 0,
+          "intonationScale": 1,
+          "cacheKey": "632246b0bbc342158708c5996d2038fbc2a4288e799c6c56aa12d538e86f5fa2",
+          "textSha256": "e3a9900556b432003633b87c8339953f7728d68a7350a84501424dee9a6b908a"
+        }
+      },
+      {
+        "id": "voice:template-media",
+        "type": "voice",
+        "sourcePath": "voicevox:547f725c4cd540bdff009ea72731c6f8eaf0bdf1dc448f14593191ca01849864",
+        "resolvedPath": ".json-video-work/quality-showcase/voice/547f725c4cd540bdff009ea72731c6f8eaf0bdf1dc448f14593191ca01849864.wav",
+        "sha256": "317d933b32596a266ffd262ae030054178f09fa3e5c8d9e9b75f6bd1de9c63a7",
+        "mime": "audio/wav",
+        "sizeBytes": 259628,
+        "durationMs": 5408,
+        "voice": {
+          "provider": "voicevox",
+          "engineVersion": "0.25.1",
+          "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+          "speakerName": "四国めたん",
+          "styleId": 2,
+          "styleName": "ノーマル",
+          "speedScale": 1.05,
+          "volumeScale": 1,
+          "pitchScale": 0,
+          "intonationScale": 1,
+          "cacheKey": "547f725c4cd540bdff009ea72731c6f8eaf0bdf1dc448f14593191ca01849864",
+          "textSha256": "5d5bca6dd016fd1da47bab6c39229700118b184c234bd2043120beaca3a4c77b"
+        }
+      },
+      {
+        "id": "voice:template-code",
+        "type": "voice",
+        "sourcePath": "voicevox:21c1f684a4b11883514561fd230d289a496d89b1490cc9a15456034fcc8e5d8e",
+        "resolvedPath": ".json-video-work/quality-showcase/voice/21c1f684a4b11883514561fd230d289a496d89b1490cc9a15456034fcc8e5d8e.wav",
+        "sha256": "d05fb68a15c7c871d0b203fd96d27881ba9b44001e3d1576fabcd0b3a0465294",
+        "mime": "audio/wav",
+        "sizeBytes": 291884,
+        "durationMs": 6080,
+        "voice": {
+          "provider": "voicevox",
+          "engineVersion": "0.25.1",
+          "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+          "speakerName": "四国めたん",
+          "styleId": 2,
+          "styleName": "ノーマル",
+          "speedScale": 1.05,
+          "volumeScale": 1,
+          "pitchScale": 0,
+          "intonationScale": 1,
+          "cacheKey": "21c1f684a4b11883514561fd230d289a496d89b1490cc9a15456034fcc8e5d8e",
+          "textSha256": "0245ee541876f1721969bc313de89546ad1c14566f83feab64dae869473bdc8c"
+        }
+      },
+      {
+        "id": "voice:template-quote",
+        "type": "voice",
+        "sourcePath": "voicevox:4e755a34b5e258ae9b7d4db15e6942d75d5c27a55032b3815327f1fb193d5ba4",
+        "resolvedPath": ".json-video-work/quality-showcase/voice/4e755a34b5e258ae9b7d4db15e6942d75d5c27a55032b3815327f1fb193d5ba4.wav",
+        "sha256": "df3618e788a4c045a2a0f5afe8381c296c614e75b7372c147a036093377f9d17",
+        "mime": "audio/wav",
+        "sizeBytes": 291884,
+        "durationMs": 6080,
+        "voice": {
+          "provider": "voicevox",
+          "engineVersion": "0.25.1",
+          "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+          "speakerName": "四国めたん",
+          "styleId": 2,
+          "styleName": "ノーマル",
+          "speedScale": 1.05,
+          "volumeScale": 1,
+          "pitchScale": 0,
+          "intonationScale": 1,
+          "cacheKey": "4e755a34b5e258ae9b7d4db15e6942d75d5c27a55032b3815327f1fb193d5ba4",
+          "textSha256": "9a08d10066b3b96cf786bfa8646a4ef400a9b0d56e11d726235e744a59eb2974"
+        }
+      },
+      {
+        "id": "voice:template-metric",
+        "type": "voice",
+        "sourcePath": "voicevox:e1bd115643ce5bb82452f06daaf8b3f981f2f0b24fdfc592cd470518f84d3a59",
+        "resolvedPath": ".json-video-work/quality-showcase/voice/e1bd115643ce5bb82452f06daaf8b3f981f2f0b24fdfc592cd470518f84d3a59.wav",
+        "sha256": "b89cdd9e9f37d09882bc45999d5601be23390c9217b91f08fb587cfa0cb787b5",
+        "mime": "audio/wav",
+        "sizeBytes": 177708,
+        "durationMs": 3701,
+        "voice": {
+          "provider": "voicevox",
+          "engineVersion": "0.25.1",
+          "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+          "speakerName": "四国めたん",
+          "styleId": 2,
+          "styleName": "ノーマル",
+          "speedScale": 1.05,
+          "volumeScale": 1,
+          "pitchScale": 0,
+          "intonationScale": 1,
+          "cacheKey": "e1bd115643ce5bb82452f06daaf8b3f981f2f0b24fdfc592cd470518f84d3a59",
+          "textSha256": "2d6ecede04dd18768fb1d5b5a40497b8abad6fc23371dabaaea3e7e4b7c2a2e8"
+        }
+      },
+      {
+        "id": "voice:template-outro",
+        "type": "voice",
+        "sourcePath": "voicevox:d281a0f35c3f9c329b80566750b259714f65b9911b76f4155f215ecbb2814ad0",
+        "resolvedPath": ".json-video-work/quality-showcase/voice/d281a0f35c3f9c329b80566750b259714f65b9911b76f4155f215ecbb2814ad0.wav",
+        "sha256": "31cffc34b2c2837a84329bc271658c8967e648cc55d97e980eb69ae3444f0152",
+        "mime": "audio/wav",
+        "sizeBytes": 242732,
+        "durationMs": 5056,
+        "voice": {
+          "provider": "voicevox",
+          "engineVersion": "0.25.1",
+          "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+          "speakerName": "四国めたん",
+          "styleId": 2,
+          "styleName": "ノーマル",
+          "speedScale": 1.05,
+          "volumeScale": 1,
+          "pitchScale": 0,
+          "intonationScale": 1,
+          "cacheKey": "d281a0f35c3f9c329b80566750b259714f65b9911b76f4155f215ecbb2814ad0",
+          "textSha256": "bca0bc497d2e5a74588d5f064242a5c46cdeb7102d80c5fa0baf0a14ecf6525d"
+        }
+      }
+    ],
+    "scenes": [
+      {
+        "id": "template-title",
+        "visual": {
+          "type": "title",
+          "title": "8種類のVisual",
+          "subtitle": "安全な固定テンプレートをまとめて確認"
+        },
+        "speakerId": "narrator",
+        "text": "JSONから動画へ。八種類の画面表現を、音声とともに確認します。",
+        "holdAfterMs": 550,
+        "subtitle": "8種類の画面表現を、音声とともに確認",
+        "sectionId": "templates-a",
+        "sectionTitle": "基本レイアウト",
+        "startFrame": 0,
+        "durationInFrames": 189,
+        "audioDurationMs": 5728,
+        "subtitleText": "8種類の画面表現を、音声とともに確認",
+        "resolvedAudioAssetId": "voice:template-title"
+      },
+      {
+        "id": "template-bullets",
+        "visual": {
+          "type": "bullets",
+          "title": "JSONから指定できる内容",
+          "items": [
+            "台詞と字幕",
+            "画面レイアウト",
+            "色と余白"
+          ]
+        },
+        "speakerId": "narrator",
+        "text": "台詞と字幕、画面のレイアウト、色や余白を、JSONで指定します。",
+        "holdAfterMs": 550,
+        "subtitle": "台詞・字幕・レイアウトをJSONで指定",
+        "sectionId": "templates-a",
+        "sectionTitle": "基本レイアウト",
+        "startFrame": 189,
+        "durationInFrames": 195,
+        "audioDurationMs": 5920,
+        "subtitleText": "台詞・字幕・レイアウトをJSONで指定",
+        "resolvedAudioAssetId": "voice:template-bullets"
+      },
+      {
+        "id": "template-split",
+        "visual": {
+          "type": "split",
+          "leftTitle": "入力",
+          "left": "構造化されたvideo-project.json",
+          "rightTitle": "出力",
+          "right": "再現可能な動画と付属ファイル"
+        },
+        "speakerId": "narrator",
+        "text": "入力は構造化されたJSON。出力は動画と字幕、再現条件を記録したファイルです。",
+        "holdAfterMs": 550,
+        "subtitle": "JSONから、動画・字幕・再現条件を出力",
+        "sectionId": "templates-a",
+        "sectionTitle": "基本レイアウト",
+        "startFrame": 384,
+        "durationInFrames": 225,
+        "audioDurationMs": 6923,
+        "subtitleText": "JSONから、動画・字幕・再現条件を出力",
+        "resolvedAudioAssetId": "voice:template-split"
+      },
+      {
+        "id": "template-media",
+        "visual": {
+          "type": "media",
+          "assetId": "template-media",
+          "caption": "ローカル素材だけを参照します",
+          "fit": "contain"
+        },
+        "speakerId": "narrator",
+        "text": "画像もローカル素材から読み込みます。この図は、入力から動画までの流れです。",
+        "holdAfterMs": 550,
+        "subtitle": "ローカル画像で、入力から出力までを表示",
+        "sectionId": "templates-a",
+        "sectionTitle": "基本レイアウト",
+        "startFrame": 609,
+        "durationInFrames": 179,
+        "audioDurationMs": 5408,
+        "subtitleText": "ローカル画像で、入力から出力までを表示",
+        "resolvedAudioAssetId": "voice:template-media"
+      },
+      {
+        "id": "template-code",
+        "visual": {
+          "type": "code",
+          "variant": "source",
+          "title": "静的な表示例",
+          "language": "json",
+          "code": "{\n  \"schemaVersion\": \"1.0.0\",\n  \"canvas\": {\"fps\": 30}\n}"
+        },
+        "speakerId": "narrator",
+        "text": "コードも画面に表示できます。この例では、スキーマのバージョンとフレームレートを指定しています。",
+        "holdAfterMs": 550,
+        "subtitle": "JSONでバージョンとフレームレートを指定",
+        "sectionId": "templates-b",
+        "sectionTitle": "情報表現",
+        "startFrame": 788,
+        "durationInFrames": 199,
+        "audioDurationMs": 6080,
+        "subtitleText": "JSONでバージョンとフレームレートを指定",
+        "resolvedAudioAssetId": "voice:template-code"
+      },
+      {
+        "id": "template-quote",
+        "visual": {
+          "type": "quote",
+          "quote": "編集JSONと生成lockを分けることで、入力と再現条件を明確にします。",
+          "attribution": "JSON Video Studio"
+        },
+        "speakerId": "narrator",
+        "text": "編集するJSONと生成条件のロックを分け、何を使って作ったかを記録します。",
+        "holdAfterMs": 550,
+        "subtitle": "編集するJSONと、生成条件のlockを分離",
+        "sectionId": "templates-b",
+        "sectionTitle": "情報表現",
+        "startFrame": 987,
+        "durationInFrames": 199,
+        "audioDurationMs": 6080,
+        "subtitleText": "編集するJSONと、生成条件のlockを分離",
+        "resolvedAudioAssetId": "voice:template-quote"
+      },
+      {
+        "id": "template-metric",
+        "visual": {
+          "label": "選べる画面テンプレート",
+          "variant": "number",
+          "value": "8種類",
+          "type": "metric"
+        },
+        "speakerId": "narrator",
+        "text": "このプラグインには、八種類の画面テンプレートがあります。",
+        "holdAfterMs": 550,
+        "subtitle": "選べる画面テンプレートは8種類",
+        "sectionId": "templates-b",
+        "sectionTitle": "情報表現",
+        "startFrame": 1186,
+        "durationInFrames": 128,
+        "audioDurationMs": 3701,
+        "subtitleText": "選べる画面テンプレートは8種類",
+        "resolvedAudioAssetId": "voice:template-metric"
+      },
+      {
+        "id": "template-outro",
+        "visual": {
+          "type": "outro",
+          "title": "JSONから、自分の動画へ",
+          "subtitle": "編集 → 絵コンテ確認 → 書き出し"
+        },
+        "speakerId": "narrator",
+        "text": "まずはサンプルを編集し、絵コンテを確認してから、動画を書き出しましょう。",
+        "holdAfterMs": 550,
+        "subtitle": "サンプルを編集し、絵コンテ確認後に書き出し",
+        "sectionId": "templates-b",
+        "sectionTitle": "情報表現",
+        "startFrame": 1314,
+        "durationInFrames": 169,
+        "audioDurationMs": 5056,
+        "subtitleText": "サンプルを編集し、絵コンテ確認後に書き出し",
+        "resolvedAudioAssetId": "voice:template-outro"
+      }
+    ],
+    "totalFrames": 1483,
+    "fps": 30,
+    "credits": [
+      "JSON Video Studio quality verification",
+      "VOICEVOX:四国めたん"
+    ],
+    "warnings": []
+  },
+  "media": {
+    "mediaPath": "final/video.mp4",
+    "durationSeconds": 49.434,
+    "sizeBytes": 2870829,
+    "bitRate": 464591,
+    "video": {
+      "codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "pixelFormat": "yuv420p"
+    },
+    "audio": {
+      "codec": "aac",
+      "sampleRate": 48000,
+      "channels": 2
+    }
+  },
+  "thumbnail": {
+    "width": 1280,
+    "height": 720
+  },
+  "captionsEndSeconds": 48.867,
+  "chapterCount": 2,
+  "fileCount": 18,
+  "checks": {
+    "manifestHashes": true,
+    "requiredArtifacts": true,
+    "lockIntegrity": true,
+    "reportLockHash": true,
+    "mediaContract": true,
+    "captionsWithinDuration": true,
+    "chaptersOrdered": true
+  }
+}

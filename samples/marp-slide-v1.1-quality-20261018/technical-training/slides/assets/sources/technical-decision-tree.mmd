@@ -1,0 +1,5 @@
+flowchart LR
+  S["checkout p95 = 4.2s"] --> A["仮説A<br/>payment timeout設定"]
+  S --> B["仮説B<br/>DB pool枯渇"]
+  A --> D["最初の確認<br/>v2.7.4 / v2.8.0の<br/>timeout値をdiff"]
+  B --> P["次点の確認<br/>pool利用率・待ち時間"]

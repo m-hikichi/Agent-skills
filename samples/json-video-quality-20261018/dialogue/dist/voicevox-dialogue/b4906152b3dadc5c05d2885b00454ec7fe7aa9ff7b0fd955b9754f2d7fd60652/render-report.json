@@ -1,0 +1,48 @@
+{
+  "projectId": "voicevox-dialogue",
+  "projectDigest": "a8a81d31f9230af215d43d80ddf439490b3ec606e4e922e77980d4b923da30ec",
+  "lockHash": "b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652",
+  "runtime": {
+    "node": "v24.18.0",
+    "remotion": "4.0.503",
+    "ffmpeg": "ffmpeg version 5.1.9-0+deb12u1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "chrome": "Chromium 151.0.7922.71 built on Debian GNU/Linux 12 (bookworm)",
+    "font": "Noto Sans CJK JP",
+    "voicevox": "0.25.1"
+  },
+  "outputs": {
+    "video": true,
+    "captions": true,
+    "chapters": true,
+    "thumbnail": true,
+    "storyboard": true
+  },
+  "renderSettings": {
+    "codec": "h264",
+    "audioCodec": "aac",
+    "pixelFormat": "yuv420p",
+    "imageFormat": "png",
+    "colorSpace": "bt709",
+    "crf": 18,
+    "x264Preset": "medium"
+  },
+  "inspection": {
+    "mediaPath": "/workspace/dialogue/dist/voicevox-dialogue/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/video.mp4",
+    "durationSeconds": 14.934,
+    "sizeBytes": 1014967,
+    "bitRate": 543708,
+    "video": {
+      "codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "pixelFormat": "yuv420p"
+    },
+    "audio": {
+      "codec": "aac",
+      "sampleRate": 48000,
+      "channels": 2
+    }
+  },
+  "warnings": []
+}

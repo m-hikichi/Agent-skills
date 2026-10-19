@@ -1,0 +1,85 @@
+{
+  "schema_version": 2,
+  "policy": {
+    "delivery_mode": "read-ahead",
+    "accessibility_target": "standard",
+    "thresholds": {
+      "heading": 28,
+      "body": 20,
+      "label": 16,
+      "note": 14
+    }
+  },
+  "manual_checks": [
+    {
+      "id": "manual-1",
+      "slide": 2,
+      "selector": "img[1]",
+      "kind": "contrast",
+      "reason": "SVG fill/background compositing and label overlap require visual review."
+    },
+    {
+      "id": "manual-2",
+      "slide": 3,
+      "selector": "img[1]",
+      "kind": "contrast",
+      "reason": "SVG fill/background compositing and label overlap require visual review."
+    },
+    {
+      "id": "manual-3",
+      "slide": 4,
+      "selector": "img[1]",
+      "kind": "contrast",
+      "reason": "SVG fill/background compositing and label overlap require visual review."
+    },
+    {
+      "id": "manual-4",
+      "slide": 7,
+      "selector": "img[1]",
+      "kind": "contrast",
+      "reason": "SVG fill/background compositing and label overlap require visual review."
+    }
+  ],
+  "generated_at": "2026-10-17T16:09:36.789Z",
+  "source": {
+    "path": "slides/presentation.md",
+    "sha256": "f4e5f385d56a825ba53f21cc45d005a13cdcf035acd35e228a039880548f13aa"
+  },
+  "artifact_fingerprint": "7f1c5067ab194dd16d59af2e367b2849dfcb07d5edce5eb09e3a5c335f707f48",
+  "status": "pass",
+  "checks": {
+    "page_count": {
+      "status": "pass",
+      "expected": 8,
+      "rendered_png": 8,
+      "rendered_dom": 8
+    },
+    "missing_assets": {
+      "status": "pass",
+      "missing": []
+    },
+    "overflow_and_clipping": {
+      "status": "pass",
+      "violations": []
+    },
+    "minimum_text_size": {
+      "status": "pass",
+      "threshold_px": 14,
+      "minimum_px": 16.88,
+      "violations": []
+    },
+    "contrast": {
+      "status": "pass",
+      "algorithm": "WCAG-2-relative-luminance",
+      "violations": []
+    },
+    "informative_image_alt": {
+      "status": "pass",
+      "missing": []
+    },
+    "manifest_integrity": {
+      "status": "pass",
+      "errors": []
+    }
+  }
+}

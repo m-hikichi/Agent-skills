@@ -1,0 +1,23 @@
+
+> json-video-studio-runtime@0.1.0 test
+> vitest run tests/speech.test.ts tests/resolver.test.ts tests/resilience.test.ts tests/core.test.ts --maxWorkers=2 --minWorkers=1
+
+
+ RUN  v3.2.7 /app
+
+ ✓ tests/resilience.test.ts (7 tests) 285ms
+ ✓ tests/resolver.test.ts (4 tests) 537ms
+   ✓ timeline resolver > resolves a silent project with exact frame, chapter, and companion artifacts  304ms
+ ✓ tests/core.test.ts (7 tests) 436ms
+ ✓ tests/speech.test.ts (4 tests) 289ms
+
+ Test Files  4 passed (4)
+      Tests  22 passed (22)
+   Start at  05:47:52
+   Duration  2.30s (transform 516ms, setup 0ms, collect 1.06s, tests 1.55s, environment 1ms, prepare 327ms)
+
+npm notice
+npm notice New major version of npm available! 11.16.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

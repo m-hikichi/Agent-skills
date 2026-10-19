@@ -1,0 +1,66 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-17T16:29:26.179Z",
+  "checks": [
+    {
+      "name": "node",
+      "ok": true,
+      "value": "v24.18.0"
+    },
+    {
+      "name": "workspace-write",
+      "ok": true,
+      "value": "/workspace"
+    },
+    {
+      "name": "plugin-data-write",
+      "ok": true,
+      "value": "/workspace/.runtime-data"
+    },
+    {
+      "name": "schemas",
+      "ok": true,
+      "value": "/app/schemas/video-project.schema.json (project 1.0.0 + lock 1.0.0)"
+    },
+    {
+      "name": "ffmpeg",
+      "ok": true,
+      "value": "ffmpeg version 5.1.9-0+deb12u1 Copyright (c) 2000-2026 the FFmpeg developers"
+    },
+    {
+      "name": "ffprobe",
+      "ok": true,
+      "value": "ffprobe version 5.1.9-0+deb12u1 Copyright (c) 2007-2026 the FFmpeg developers"
+    },
+    {
+      "name": "chrome",
+      "ok": true,
+      "value": "Chromium 151.0.7922.71 built on Debian GNU/Linux 12 (bookworm)"
+    },
+    {
+      "name": "remotion",
+      "ok": true,
+      "value": "4.0.503"
+    },
+    {
+      "name": "font",
+      "ok": true,
+      "value": "Noto Sans CJK JP"
+    },
+    {
+      "name": "voicevox-version",
+      "ok": true,
+      "value": "0.25.1"
+    },
+    {
+      "name": "voicevox-speakers",
+      "ok": true,
+      "value": "40 speakers"
+    },
+    {
+      "name": "ui-bind",
+      "ok": true,
+      "value": "container=0.0.0.0:43120, publish=127.0.0.1:43120"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "expectations": [
+    {"text": "5種類の成果物が生成される", "passed": true, "evidence": "canonical JSON、3 Markdown、自己完結HTMLの5ファイルを確認。"},
+    {"text": "current要件がFNCとTSTへ追跡できる", "passed": true, "evidence": "検証対象current要件17件でmissing_fn=0、missing_test=0。"},
+    {"text": "未確認のplan/contract対応を自動で確定せずpublishをブロックする", "passed": true, "evidence": "設計資料の原文をunclassifiedへ保持しopen_questionsを作成。publish checkは終了コード1。"},
+    {"text": "MarkdownとHTMLがcanonical JSONから決定的に再生成できる", "passed": true, "evidence": "draft checkのバイト比較が終了コード0。"}
+  ]
+}

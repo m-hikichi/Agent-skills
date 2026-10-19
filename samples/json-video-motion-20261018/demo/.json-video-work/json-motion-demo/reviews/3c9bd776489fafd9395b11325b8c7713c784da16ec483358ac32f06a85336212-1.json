@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "json-motion-demo",
+  "lockHash": "3c9bd776489fafd9395b11325b8c7713c784da16ec483358ac32f06a85336212",
+  "iteration": 1,
+  "status": "pass",
+  "reviewedAt": "2026-10-18T10:35:00.1716438Z",
+  "gates": {
+    "noOverflowOrClipping": true,
+    "noUnintendedOverlap": true,
+    "safeMargins": true,
+    "readableContrast": true,
+    "subtitleReadable": true,
+    "visualMatchesContent": true,
+    "consistentTypography": true,
+    "thumbnailReadable": true
+  },
+  "issues": [
+    {
+      "severity": "warning",
+      "sceneId": "flow-0,flow-1,flow-2,flow-3",
+      "framePath": "storyboard/3c9bd776489fafd9395b11325b8c7713c784da16ec483358ac32f06a85336212/003-flow-0.png",
+      "problem": "全flowカードの説明文で「指定」が「指／定」、「レビュー」が「レ／ビュー」に折り返される。切れはなく読めるが縮小時の読み取りを妨げる。",
+      "fix": "/sections/0/scenes/2〜5/visual/steps/0/detailを「台詞と画面を指定」、steps/2/detailを「文字・図・読みを確認」に短縮する。"
+    }
+  ],
+  "questionsForUser": [],
+  "notes": "独立コンテキストでcontact sheet、全7sceneの個別画像、1280x720 thumbnailを目視照合。静止画8ゲート合格。動画の動き・滑らかさはこの判定の対象外で本番動画の時系列フレームを別途確認する。"
+}

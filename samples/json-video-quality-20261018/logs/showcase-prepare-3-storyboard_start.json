@@ -1,0 +1,29 @@
+{
+  "id": "99300f23-7e9b-4e7f-8377-01c895a349b5",
+  "kind": "storyboard",
+  "projectPath": "showcase/video-project.json",
+  "status": "succeeded",
+  "progress": 1,
+  "message": "Succeeded",
+  "createdAt": "2026-10-17T16:29:47.399Z",
+  "updatedAt": "2026-10-17T16:30:12.621Z",
+  "result": {
+    "outputDirectory": "showcase/.json-video-work/quality-showcase/storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84",
+    "storyboard": [
+      "showcase/.json-video-work/quality-showcase/storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84/001-template-title.png",
+      "showcase/.json-video-work/quality-showcase/storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84/002-template-bullets.png",
+      "showcase/.json-video-work/quality-showcase/storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84/003-template-split.png",
+      "showcase/.json-video-work/quality-showcase/storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84/004-template-media.png",
+      "showcase/.json-video-work/quality-showcase/storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84/005-template-code.png",
+      "showcase/.json-video-work/quality-showcase/storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84/006-template-quote.png",
+      "showcase/.json-video-work/quality-showcase/storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84/007-template-metric.png",
+      "showcase/.json-video-work/quality-showcase/storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84/008-template-outro.png"
+    ],
+    "contactSheet": "showcase/.json-video-work/quality-showcase/storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84/contact-sheet.png",
+    "contactSheets": [
+      "showcase/.json-video-work/quality-showcase/storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84/contact-sheet.png"
+    ],
+    "thumbnailPreview": "showcase/.json-video-work/quality-showcase/storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84/thumbnail-preview.png",
+    "warnings": []
+  }
+}

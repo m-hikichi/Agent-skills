@@ -1,0 +1,52 @@
+{
+  "projectId": "quality-showcase",
+  "lockHash": "0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a",
+  "videoPath": "dist/quality-showcase/0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a/video.mp4",
+  "videoSha256": "ddc81003a49b821615da34ad29752f5ca28b7275c92c07bcc15ff204af70617f",
+  "reviewedAt": "2026-10-18T05:33:01.3269236Z",
+  "status": "pass_visual_samples",
+  "evidenceImages": [
+    "01-template-title-motion.png",
+    "01-template-title.png",
+    "02-template-bullets-motion.png",
+    "02-template-bullets.png",
+    "03-template-split-motion.png",
+    "03-template-split.png",
+    "04-template-media-motion.png",
+    "04-template-media.png",
+    "05-template-code-motion.png",
+    "05-template-code.png",
+    "06-template-quote-motion.png",
+    "06-template-quote.png",
+    "07-template-metric-motion.png",
+    "07-template-metric.png",
+    "08-template-outro-motion.png",
+    "08-template-outro.png",
+    "thumbnail-small.png"
+  ],
+  "scope": "全8scene midpoint、各sceneの0・4・12・30・終端4frame前を並べたmotion strip、320×180 thumbnailの17画像を独立目視",
+  "observations": [
+    "全8テンプレートの内容がprojectと一致。字幕は全て読みやすい1行に収まり、文字切れ・不意の重なり・不自然な改行を認めない。",
+    "media図の3工程と説明、quote本文・出典、codeの4行を確認。字幕と本文に十分な間隔がある。",
+    "motion stripでは背景からフェードイン、箇条書きの順次登場、安定表示、フェードアウトを確認。標本画像に不意の位置飛びはない。",
+    "320×180サムネイルの2行「8種類のVisual」「まとめて確認」が判読可能。"
+  ],
+  "issues": [],
+  "objectiveMediaEvidence": {
+    "source": "media-check-v2.json",
+    "independentlyRerun": false,
+    "decodeAllFrames": true,
+    "clippedSampleFraction": 0,
+    "correlationMin": 0.9878636168930696,
+    "correlationMax": 0.9938199564392234,
+    "constantAudioOffsetMs": 42.666666666666664,
+    "acceptedToleranceFrames": 2,
+    "acceptedToleranceMs": 66.66666666666667,
+    "reportedPassed": true
+  },
+  "limitations": [
+    "抽出静止画像による標本検査。連続再生による全フレームの視聴や動きの滑らかさは直接検証していない。",
+    "実音声は聴いていない。発音、声質、聴きやすさ、知覚上の同期について聴感レビューは未実施。",
+    "客観音声検査は別担当作成のmedia-check-v2.jsonを参照。42.667msの一定遅延は今回の2frame以内（30fpsで66.667ms）の基準内であり、遅延ゼロとはしていない。"
+  ]
+}

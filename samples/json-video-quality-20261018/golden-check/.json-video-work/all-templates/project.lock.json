@@ -1,0 +1,182 @@
+{
+  "lockVersion": "1.0.0",
+  "projectDigest": "40bd94f25e494fd786677ccf27d4a64f3f8af84c4e58972e68d96faadb0483e4",
+  "lockHash": "97dc9c080756c96bea66b5dd9f024082d22308bae9db05a9648429b32313d64d",
+  "generatedAt": "2026-10-17T23:09:36.961Z",
+  "runtime": {
+    "node": "v24.18.0",
+    "remotion": "4.0.503",
+    "ffmpeg": "ffmpeg version 5.1.9-0+deb12u1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "chrome": "Chromium 151.0.7922.71 built on Debian GNU/Linux 12 (bookworm)",
+    "font": "Noto Sans CJK JP"
+  },
+  "assets": [
+    {
+      "id": "template-media",
+      "type": "image",
+      "sourcePath": "assets/all-templates-media.png",
+      "resolvedPath": "assets/all-templates-media.png",
+      "sha256": "d8c0bfd7dbe2c145a8041c883f44854dd2f81b50336cd267482698924c466033",
+      "mime": "image/png",
+      "sizeBytes": 643971,
+      "rights": {
+        "status": "unknown",
+        "source": "replace with the selected local asset source",
+        "attribution": "confirm after replacing the placeholder"
+      },
+      "width": 1280,
+      "height": 720
+    }
+  ],
+  "scenes": [
+    {
+      "id": "template-title",
+      "durationMs": 1800,
+      "visual": {
+        "type": "title",
+        "title": "8種類のVisual",
+        "subtitle": "安全な固定テンプレートをまとめて確認"
+      },
+      "sectionId": "templates-a",
+      "sectionTitle": "基本レイアウト",
+      "startFrame": 0,
+      "durationInFrames": 54,
+      "audioDurationMs": 0,
+      "subtitleText": ""
+    },
+    {
+      "id": "template-bullets",
+      "durationMs": 1800,
+      "visual": {
+        "type": "bullets",
+        "title": "JSONから指定できる内容",
+        "items": [
+          "台詞と字幕",
+          "画面レイアウト",
+          "色と余白"
+        ]
+      },
+      "sectionId": "templates-a",
+      "sectionTitle": "基本レイアウト",
+      "startFrame": 54,
+      "durationInFrames": 54,
+      "audioDurationMs": 0,
+      "subtitleText": ""
+    },
+    {
+      "id": "template-split",
+      "durationMs": 1800,
+      "visual": {
+        "type": "split",
+        "leftTitle": "入力",
+        "left": "構造化されたvideo-project.json",
+        "rightTitle": "出力",
+        "right": "再現可能な動画と付属ファイル"
+      },
+      "sectionId": "templates-a",
+      "sectionTitle": "基本レイアウト",
+      "startFrame": 108,
+      "durationInFrames": 54,
+      "audioDurationMs": 0,
+      "subtitleText": ""
+    },
+    {
+      "id": "template-media",
+      "durationMs": 1800,
+      "visual": {
+        "type": "media",
+        "assetId": "template-media",
+        "caption": "ローカル素材だけを参照します",
+        "fit": "contain"
+      },
+      "sectionId": "templates-a",
+      "sectionTitle": "基本レイアウト",
+      "startFrame": 162,
+      "durationInFrames": 54,
+      "audioDurationMs": 0,
+      "subtitleText": ""
+    },
+    {
+      "id": "template-code",
+      "durationMs": 1800,
+      "visual": {
+        "type": "code",
+        "variant": "source",
+        "title": "静的な表示例",
+        "language": "json",
+        "code": "{\n  \"schemaVersion\": \"1.0.0\",\n  \"canvas\": {\"fps\": 30}\n}"
+      },
+      "sectionId": "templates-b",
+      "sectionTitle": "情報表現",
+      "startFrame": 216,
+      "durationInFrames": 54,
+      "audioDurationMs": 0,
+      "subtitleText": ""
+    },
+    {
+      "id": "template-quote",
+      "durationMs": 1800,
+      "visual": {
+        "type": "quote",
+        "quote": "編集JSONと生成lockを分けることで、入力と再現条件を明確にします。",
+        "attribution": "JSON Video Studio"
+      },
+      "sectionId": "templates-b",
+      "sectionTitle": "情報表現",
+      "startFrame": 270,
+      "durationInFrames": 54,
+      "audioDurationMs": 0,
+      "subtitleText": ""
+    },
+    {
+      "id": "template-metric",
+      "durationMs": 1800,
+      "visual": {
+        "type": "metric",
+        "variant": "line",
+        "label": "sceneごとの確認進捗",
+        "values": [
+          1,
+          3,
+          5,
+          8
+        ],
+        "labels": [
+          "企画",
+          "検証",
+          "レビュー",
+          "完成"
+        ]
+      },
+      "sectionId": "templates-b",
+      "sectionTitle": "情報表現",
+      "startFrame": 324,
+      "durationInFrames": 54,
+      "audioDurationMs": 0,
+      "subtitleText": ""
+    },
+    {
+      "id": "template-outro",
+      "durationMs": 1800,
+      "visual": {
+        "type": "outro",
+        "title": "8種類すべて確認完了",
+        "subtitle": "次はthemeと内容を自分の企画に合わせて編集"
+      },
+      "sectionId": "templates-b",
+      "sectionTitle": "情報表現",
+      "startFrame": 378,
+      "durationInFrames": 54,
+      "audioDurationMs": 0,
+      "subtitleText": ""
+    }
+  ],
+  "totalFrames": 432,
+  "fps": 30,
+  "credits": [
+    "confirm after replacing the placeholder"
+  ],
+  "warnings": [
+    "権利情報が未確認です: template-media"
+  ]
+}

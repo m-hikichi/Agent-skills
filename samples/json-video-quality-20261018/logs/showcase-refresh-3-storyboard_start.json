@@ -1,0 +1,29 @@
+{
+  "id": "7435f3a8-3f36-42c6-a5cc-8af72e321084",
+  "kind": "storyboard",
+  "projectPath": "showcase/video-project.json",
+  "status": "succeeded",
+  "progress": 1,
+  "message": "Succeeded",
+  "createdAt": "2026-10-17T23:09:25.322Z",
+  "updatedAt": "2026-10-17T23:09:38.291Z",
+  "result": {
+    "outputDirectory": "showcase/review-storyboard-v2",
+    "storyboard": [
+      "showcase/review-storyboard-v2/001-template-title.png",
+      "showcase/review-storyboard-v2/002-template-bullets.png",
+      "showcase/review-storyboard-v2/003-template-split.png",
+      "showcase/review-storyboard-v2/004-template-media.png",
+      "showcase/review-storyboard-v2/005-template-code.png",
+      "showcase/review-storyboard-v2/006-template-quote.png",
+      "showcase/review-storyboard-v2/007-template-metric.png",
+      "showcase/review-storyboard-v2/008-template-outro.png"
+    ],
+    "contactSheet": "showcase/review-storyboard-v2/contact-sheet.png",
+    "contactSheets": [
+      "showcase/review-storyboard-v2/contact-sheet.png"
+    ],
+    "thumbnailPreview": "showcase/review-storyboard-v2/thumbnail-preview.png",
+    "warnings": []
+  }
+}

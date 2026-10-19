@@ -1,0 +1,74 @@
+{
+  "manifestVersion": "1.0.0",
+  "projectId": "voicevox-dialogue",
+  "projectDigest": "a8a81d31f9230af215d43d80ddf439490b3ec606e4e922e77980d4b923da30ec",
+  "lockHash": "b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652",
+  "createdAt": "2026-10-17T23:10:51.410Z",
+  "files": [
+    {
+      "path": "captions.srt",
+      "sizeBytes": 339,
+      "sha256": "79b7ee70954033439198e5394cb30da424339c94a18e6005a335477d2d5d56d8"
+    },
+    {
+      "path": "chapters.txt",
+      "sizeBytes": 53,
+      "sha256": "1d82ebd4a85764399f5de431951f04c212a544de996e8caef51ac2a3331ac561"
+    },
+    {
+      "path": "contact-sheet.png",
+      "sizeBytes": 96468,
+      "sha256": "0abfe16f5a075b106bdc6ee49da76facdc156f19e62e0e97cbb5a1e5941a9fdd"
+    },
+    {
+      "path": "credits.txt",
+      "sizeBytes": 25,
+      "sha256": "7ed3a7a59157d3df0945adecd5fea02ce1ed564ea29e05668b0542f35494792d"
+    },
+    {
+      "path": "project.lock.json",
+      "sizeBytes": 5930,
+      "sha256": "29a3edd17df95effcea6aff5b9a7bcfc6e995e9bbb6e85ee140146c03e2ecfe9"
+    },
+    {
+      "path": "render-report.json",
+      "sizeBytes": 1322,
+      "sha256": "70c5b89e55f6a98ba5c9541c5ffd2f1814404472da66088808013a2dbb54398e"
+    },
+    {
+      "path": "storyboard/001-intro-title.png",
+      "sizeBytes": 129485,
+      "sha256": "b0ed03a469c18f285c0140d7e806f1730fbbf94d82bf68501049bb7b21083887"
+    },
+    {
+      "path": "storyboard/002-intro-steps.png",
+      "sizeBytes": 171718,
+      "sha256": "a471489d7a7ffbdf48eadfa2714bfd1784a4b241416932f9a338df74b76418ae"
+    },
+    {
+      "path": "storyboard/003-ending-outro.png",
+      "sizeBytes": 136716,
+      "sha256": "d496c237bf57df5d7741e7acba91a0c8790682e0a3d5fafab1a25b50ad142c87"
+    },
+    {
+      "path": "storyboard/contact-sheet.png",
+      "sizeBytes": 96468,
+      "sha256": "0abfe16f5a075b106bdc6ee49da76facdc156f19e62e0e97cbb5a1e5941a9fdd"
+    },
+    {
+      "path": "storyboard/thumbnail-preview.png",
+      "sizeBytes": 649290,
+      "sha256": "731cb8244ff39cc753a3ea299e9aaef53b7670da8b6a6c744c19a1e28be5b21c"
+    },
+    {
+      "path": "thumbnail.png",
+      "sizeBytes": 649290,
+      "sha256": "731cb8244ff39cc753a3ea299e9aaef53b7670da8b6a6c744c19a1e28be5b21c"
+    },
+    {
+      "path": "video.mp4",
+      "sizeBytes": 1014967,
+      "sha256": "98963f14e832cdedd23a2572acc318e1ad2cf26b23f4584a8f946524a51b7982"
+    }
+  ]
+}

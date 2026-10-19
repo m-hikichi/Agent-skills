@@ -1,0 +1,12 @@
+{
+  "eval_id": 4,
+  "eval_name": "unresolved-clarification-and-checklist-block-publish",
+  "prompt": "添付featureをpublish品質で文書化できるか検査し、可能なら生成してください。未解決clarificationや未チェックのrequirements checklistを一般的な金額で補完しないでください。",
+  "assertions": [
+    "FR-001とFR-002を保持し、金額境界と通貨を捏造しない",
+    "未解決clarificationをopen_questionsへsource locator付きで記録する",
+    "unchecked checklistをテスト失敗ではなく要件品質未完了として記録する",
+    "draftレビューは生成できるがpublish検査はnon-zeroで拒否する",
+    "6品質軸が個別表示される"
+  ]
+}

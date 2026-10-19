@@ -1,0 +1,87 @@
+{
+  "id": "1dc23186-f365-4d1a-b645-2a623dfb41f8",
+  "kind": "resolve",
+  "projectPath": "demo/video-project.json",
+  "status": "succeeded",
+  "progress": 1,
+  "message": "Succeeded",
+  "createdAt": "2026-10-18T10:38:25.403Z",
+  "updatedAt": "2026-10-18T10:38:25.521Z",
+  "result": {
+    "dryRun": true,
+    "projectDigest": "e3c5c14c10d8158e2c10c6818b3bfffdcee1bf0b5c9119a26c1e985ca0c242e1",
+    "assetCount": 0,
+    "sceneCount": 7,
+    "voicevoxCalls": [
+      {
+        "sectionId": "explanation",
+        "sceneId": "intro",
+        "speakerId": "narrator",
+        "characters": 42,
+        "cacheHit": true,
+        "cacheKey": "58b03125edbe3cdd27f91ee530c43c643f550b001bdb2e8d02816279a19db085",
+        "estimatedDurationMs": 6443
+      },
+      {
+        "sectionId": "explanation",
+        "sceneId": "reading",
+        "speakerId": "narrator",
+        "characters": 47,
+        "cacheHit": true,
+        "cacheKey": "f13461ecc18c2191ca1b19a02bde0bc0c3902ac2f46a5988fdf19402a881d71d",
+        "estimatedDurationMs": 6944
+      },
+      {
+        "sectionId": "explanation",
+        "sceneId": "flow-0",
+        "speakerId": "narrator",
+        "characters": 35,
+        "cacheHit": true,
+        "cacheKey": "5bd3a13027ca466b6f1e8979860b4bf881cde77071d7456ba039aa6bb19eee67",
+        "estimatedDurationMs": 5376
+      },
+      {
+        "sectionId": "explanation",
+        "sceneId": "flow-1",
+        "speakerId": "narrator",
+        "characters": 43,
+        "cacheHit": true,
+        "cacheKey": "3e9700b131284e5d947f27ec0157491ec27bcc5f09429d5fbb676a7d912b191d",
+        "estimatedDurationMs": 7061
+      },
+      {
+        "sectionId": "explanation",
+        "sceneId": "flow-2",
+        "speakerId": "narrator",
+        "characters": 42,
+        "cacheHit": true,
+        "cacheKey": "401fb18ba5fc496a416ad58c3e2340afec8cd869ce4f871fbd0858cd7a5161bb",
+        "estimatedDurationMs": 6731
+      },
+      {
+        "sectionId": "explanation",
+        "sceneId": "flow-3",
+        "speakerId": "narrator",
+        "characters": 45,
+        "cacheHit": true,
+        "cacheKey": "ad915343627a17e34c8650ae458e3200c08687728ab45189ea548f72da046dca",
+        "estimatedDurationMs": 7168
+      },
+      {
+        "sectionId": "explanation",
+        "sceneId": "outro",
+        "speakerId": "narrator",
+        "characters": 36,
+        "cacheHit": true,
+        "cacheKey": "78a461ba8a38aad2abf355ebf0b11736ba71a48be0a7130031dd1d38e0983c60",
+        "estimatedDurationMs": 6176
+      }
+    ],
+    "cacheHits": 7,
+    "estimatedDurationMs": 49349,
+    "estimatedFrames": 1484,
+    "rightsWarnings": [],
+    "warnings": [],
+    "lockPath": "demo/.json-video-work/json-motion-demo/project.lock.json"
+  }
+}

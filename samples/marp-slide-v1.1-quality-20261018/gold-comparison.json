@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-17T16:10:50.019Z",
+  "pass": true,
+  "baseline": "/plugin/skills/main/evals/gold-baseline.json",
+  "render_root": "/output",
+  "differences": []
+}

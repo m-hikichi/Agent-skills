@@ -1,0 +1,13 @@
+import {mkdir, copyFile, readFile, writeFile} from 'node:fs/promises';
+import {resolveProject} from '/app/dist/core/resolver.js';
+import {storyboardProject} from '/app/dist/render/api.js';
+import {digestFile} from '/app/dist/core/fs-safe.js';
+const root = '/evidence/golden-check';
+await mkdir(`${root}/assets`, {recursive: true});
+await copyFile('/app/tests/fixtures/all-templates-media.png', `${root}/assets/all-templates-media.png`);
+await copyFile('/examples/all-templates.video-project.json', `${root}/video-project.json`);
+const resolved = await resolveProject({projectPath: 'video-project.json', workspaceRoot: root, cacheRoot: `${root}/cache`, schemaPath: '/app/schemas/video-project.schema.json'});
+const result = await storyboardProject({projectPath: `${root}/video-project.json`, lockPath: resolved.lockPath, outputDir: `${root}/frames`});
+const comparison = await Promise.all(result.storyboard.map(async (file) => ({file, actual: await digestFile(file), previous: await digestFile(`/app/tests/fixtures/golden/${file.split('/').at(-1)}`)})));
+await writeFile(`${root}/comparison.json`, JSON.stringify(comparison, null, 2));
+console.log(JSON.stringify(comparison, null, 2));

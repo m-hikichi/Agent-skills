@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "projects": {
+    "demo/video-project.json": {
+      "revision": 3,
+      "digest": "e3c5c14c10d8158e2c10c6818b3bfffdcee1bf0b5c9119a26c1e985ca0c242e1",
+      "updatedAt": "2026-10-18T10:38:25.373Z"
+    }
+  },
+  "history": {
+    "demo/video-project.json": [
+      {
+        "revision": 1,
+        "digest": "2bfa806df1ff5a2efa7f8aa3dacd2e1eb97493c29dd7047aea9b4e7f31870064",
+        "updatedAt": "2026-10-18T10:33:46.118Z"
+      },
+      {
+        "revision": 2,
+        "digest": "27c0c7fdde202c39865c04ec70866ecd4c0460a6a30aa649bdfd8ae89fc4102c",
+        "updatedAt": "2026-10-18T10:35:32.013Z"
+      },
+      {
+        "revision": 3,
+        "digest": "e3c5c14c10d8158e2c10c6818b3bfffdcee1bf0b5c9119a26c1e985ca0c242e1",
+        "updatedAt": "2026-10-18T10:38:25.373Z"
+      }
+    ]
+  }
+}

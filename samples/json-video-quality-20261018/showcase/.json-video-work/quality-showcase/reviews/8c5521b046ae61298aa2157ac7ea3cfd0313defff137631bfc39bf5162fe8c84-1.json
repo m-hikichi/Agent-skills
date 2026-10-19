@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "quality-showcase",
+  "lockHash": "8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84",
+  "iteration": 1,
+  "status": "fail",
+  "reviewedAt": "2026-10-17T23:07:31.2678803Z",
+  "gates": {
+    "noOverflowOrClipping": false,
+    "noUnintendedOverlap": true,
+    "safeMargins": true,
+    "readableContrast": false,
+    "subtitleReadable": false,
+    "visualMatchesContent": true,
+    "consistentTypography": true,
+    "thumbnailReadable": true
+  },
+  "issues": [
+    {
+      "severity": "error",
+      "sceneId": "template-title",
+      "framePath": "storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84/001-template-title.png",
+      "problem": "字幕が「確認しま／す。」で折り返され、2行目が「す。」だけになっている。",
+      "fix": "/sections/0/scenes/0/subtitle を「8種類の画面表現を、音声とともに確認します。」に設定する。"
+    },
+    {
+      "severity": "error",
+      "sceneId": "template-bullets",
+      "framePath": "storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84/002-template-bullets.png",
+      "problem": "字幕が「指定しま／す。」で折り返され、2行目が「す。」だけになっている。",
+      "fix": "/sections/0/scenes/1/subtitle を「台詞・字幕・レイアウト・色・余白をJSONで指定。」に設定する。"
+    },
+    {
+      "severity": "error",
+      "sceneId": "template-code",
+      "framePath": "storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84/005-template-code.png",
+      "problem": "字幕が単語「バージョン」の途中で改行されている。",
+      "fix": "/sections/1/scenes/0/subtitle を「コード表示：スキーマのバージョンとfpsを指定。」に設定する。"
+    },
+    {
+      "severity": "error",
+      "sceneId": "template-outro",
+      "framePath": "storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84/008-template-outro.png",
+      "problem": "字幕が複合動詞「書き出す」の途中で改行されている。",
+      "fix": "/sections/1/scenes/3/subtitle を「サンプルを編集し、絵コンテ確認後に書き出しましょう。」に設定する。"
+    },
+    {
+      "severity": "error",
+      "sceneId": "template-bullets",
+      "framePath": "storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84/002-template-bullets.png",
+      "problem": "アニメーション途中の代表フレームで第3項目が薄く、最終状態の可読性が確認できない。",
+      "fix": "project JSONは変更せず、全3項目の登場完了後かつscene終了前の代表フレームをDocker内で再生成する。"
+    },
+    {
+      "severity": "error",
+      "sceneId": "template-media",
+      "framePath": "storyboard/8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84/contact-sheet.png",
+      "problem": "contact sheetは全sceneの字幕を切り取り、media下部キャプションも表示していない。",
+      "fix": "project JSONは変更せず、各sceneを16:9の全画面が収まるカードとしてDocker内で再生成する。"
+    }
+  ],
+  "questionsForUser": []
+}

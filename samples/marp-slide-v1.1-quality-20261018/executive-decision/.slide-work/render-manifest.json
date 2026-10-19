@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-17T16:04:26.276Z",
+  "artifact_fingerprint": "1212942bae7966926e46ac7a79dcde22dcb1ee7080e474f24567782aa9eb6e09",
+  "render_iteration": 2,
+  "improvements": [
+    {
+      "iteration": 2,
+      "description": "スモークテスト専用の再レンダー検証。目視レビュー・実際の改善・完成承認の証跡として使用不可。",
+      "slides": [
+        1
+      ]
+    }
+  ],
+  "slide_count": 8,
+  "source": {
+    "path": "slides/presentation.md",
+    "sha256": "fd3c6c245dbdb9e8eec729fb0444188a8dc7ba4f9798222f5289ad76ada39cd3"
+  },
+  "request": {
+    "path": ".slide-work/request.yaml",
+    "sha256": "3676cd36dd50280fab78e256068d027595a11cbb88f5fadfad19e5d6e8e4e211"
+  },
+  "theme": {
+    "path": "slides/theme.css",
+    "sha256": "7aaca0f39fb617c94e5e26f16d2742ed8a2cb272309ce66fc5aaf48f8fe8d3e0"
+  },
+  "assets": [
+    {
+      "path": "slides/assets/executive-decision-gate.svg",
+      "sha256": "b1a84929bc51840411802c59bb0a6fe0d1046884d5429021848f8153eb3efdbc"
+    },
+    {
+      "path": "slides/assets/executive-roadmap.svg",
+      "sha256": "e35695f176cb726a8f6f592502cb535a8a2d20109ba88d53b5b8738a8e889592"
+    },
+    {
+      "path": "slides/assets/executive-search-flow.svg",
+      "sha256": "fc667b06ab0423c93e0f2626c1b17ebaf2f6222b6aaca37a280c527f5cf30fdb"
+    },
+    {
+      "path": "slides/assets/executive-volume-chart.svg",
+      "sha256": "3f4d7385a252126972d2958393ac53f37060298e23a37d8a81a05fa3a31c21c3"
+    },
+    {
+      "path": "slides/assets/sources/executive-decision-gate.mmd",
+      "sha256": "92cc6651a561e44d40a2a29690c4885d716b4caa458fb37b72d48793cee81f15"
+    },
+    {
+      "path": "slides/assets/sources/executive-roadmap.mmd",
+      "sha256": "f77e06e2fffbf328e6146ca96a3d31b7930695b3828424fa33e00165a104a43a"
+    },
+    {
+      "path": "slides/assets/sources/executive-search-flow.mmd",
+      "sha256": "bd433a5532cd83a210239bc8dbf840288a79514e557777ecac5875e062176619"
+    },
+    {
+      "path": "slides/assets/sources/executive-volume-chart.csv",
+      "sha256": "214dc3da6b30bea9e9c2905b200fa1b5f9ed95cae640b7dffca6b7a387280f87"
+    },
+    {
+      "path": "slides/assets/sources/executive-volume-chart.vl.json",
+      "sha256": "c1cec664c2a5d3f86d2c416f5e2cf1ca5c157ff0fdad3f16f9125256984e2048"
+    }
+  ],
+  "formats": [
+    "pdf",
+    "png",
+    "notes"
+  ],
+  "outputs": [
+    {
+      "format": "pdf",
+      "path": ".slide-work/presentation.pdf",
+      "sha256": "9ee98fac5b447cb108e29ea8fb23cf7cda87d601068fe6a33b0288fc2c095133"
+    },
+    {
+      "format": "notes",
+      "path": ".slide-work/presentation-notes.txt",
+      "sha256": "240b3f41d6c381e60e7c7596a4f7c3d5287e2e38cf7098a24b7ebee8d59f2844"
+    }
+  ],
+  "page_images": [
+    {
+      "slide": 1,
+      "path": ".slide-work/rendered-pages/page-001.png",
+      "sha256": "827c49b497408af675f3f7c145bbd7ecd5d20ff6dc8f9acf622815ab02870e04",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "slide": 2,
+      "path": ".slide-work/rendered-pages/page-002.png",
+      "sha256": "c0377840f96c1c852a0868f6f7178ca7f35bcb03013ed484f725eb518d959574",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "slide": 3,
+      "path": ".slide-work/rendered-pages/page-003.png",
+      "sha256": "de9f22c2d11854ab9c4d7c7e185c60090370b0fae37cb114a3e1b47f0baff672",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "slide": 4,
+      "path": ".slide-work/rendered-pages/page-004.png",
+      "sha256": "1640a4184a221703aa565359fb5093f6aff894a181a68b9fa2df1858b36ff7cb",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "slide": 5,
+      "path": ".slide-work/rendered-pages/page-005.png",
+      "sha256": "c0b268813510f768b18505486801669f5ee634f9554bb49febdd724fe506e15d",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "slide": 6,
+      "path": ".slide-work/rendered-pages/page-006.png",
+      "sha256": "c12cfcc917f537adb121284d6c50f8db178b5d689f32f9ebd72641abf9cea6f2",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "slide": 7,
+      "path": ".slide-work/rendered-pages/page-007.png",
+      "sha256": "0e828c68a26fb2b8b22dec5c950bd24f5b575301be39265add4cd5f092972f92",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "slide": 8,
+      "path": ".slide-work/rendered-pages/page-008.png",
+      "sha256": "09587d1ced5483c5326057854ce18ce2f8cbfcfd39106d7964655e5b2ed3b7e2",
+      "width": 2560,
+      "height": 1440
+    }
+  ],
+  "contact_sheet": {
+    "path": ".slide-work/contact-sheet.png",
+    "sha256": "c4b3083a25ddf88852549cc296ff10cd24ed2dcb3edba47119a16b103e66048b",
+    "width": 1048,
+    "height": 712
+  },
+  "environment": {
+    "marp_cli": "4.4.0",
+    "marp_core": "4.3.0",
+    "chromium": "Chromium 150.0.7871.100 built on Debian GNU/Linux 12 (bookworm)",
+    "node": "v20.19.4",
+    "platform": "linux-x64",
+    "fonts": [
+      {
+        "name": "BIZ UDPGothic Regular",
+        "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/bizudpgothic/BIZUDPGothic-Regular.ttf",
+        "sha256": "258d7156c165f2ff774b6efee637c22c3b950de0d8a10e501137061bc8085d01"
+      },
+      {
+        "name": "BIZ UDPGothic Bold",
+        "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/bizudpgothic/BIZUDPGothic-Bold.ttf",
+        "sha256": "30eba52fc837e8b62c97d4b82e6706583149fb7294e3712dd71a655eaea80a90"
+      },
+      {
+        "name": "Source Code Pro Variable",
+        "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/sourcecodepro/SourceCodePro%5Bwght%5D.ttf",
+        "sha256": "b400fc584e10aff25d0e775ce181b4fc1c5ea1b5dc37b81aeb2084375b945790"
+      },
+      {
+        "name": "Source Code Pro Italic Variable",
+        "url": "https://raw.githubusercontent.com/google/fonts/ec0464b978de222073645d6d3366f3fdf03376d8/ofl/sourcecodepro/SourceCodePro-Italic%5Bwght%5D.ttf",
+        "sha256": "6db77d25aa7b30eff449305b5c998e475694c74d398421127ea5a60f536413cd"
+      },
+      {
+        "name": "Noto Sans CJK Regular TTC",
+        "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1",
+        "sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a"
+      },
+      {
+        "name": "Noto Sans CJK Bold TTC",
+        "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1",
+        "sha256": "faa5f3656a78b2e2d450d27fe8382c778bc2b6bb5ea29c986664a6a435056ceb"
+      },
+      {
+        "name": "Noto Serif CJK Regular TTC",
+        "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1",
+        "sha256": "a04178ec485dffdff7cc0c0c20e1fce9202d7e2160d805e8e44a4c8841c58481"
+      },
+      {
+        "name": "Noto Serif CJK Bold TTC",
+        "url": "https://packages.debian.org/bookworm/fonts-noto-cjk#1%3A20220127%2Brepack1-1",
+        "sha256": "a5d4b046c127da3d7c72f98b46c41489cd29bf52abfdf18aba920903e920d4ac"
+      }
+    ]
+  }
+}

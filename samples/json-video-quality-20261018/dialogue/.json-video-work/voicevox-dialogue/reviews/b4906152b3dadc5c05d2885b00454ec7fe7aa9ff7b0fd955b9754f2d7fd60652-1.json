@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "voicevox-dialogue",
+  "lockHash": "b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652",
+  "iteration": 1,
+  "status": "missing_info",
+  "reviewedAt": "2026-10-17T16:30:38.2278747Z",
+  "gates": {
+    "noOverflowOrClipping": false,
+    "noUnintendedOverlap": true,
+    "safeMargins": true,
+    "readableContrast": false,
+    "subtitleReadable": true,
+    "visualMatchesContent": false,
+    "consistentTypography": true,
+    "thumbnailReadable": true
+  },
+  "issues": [
+    {
+      "severity": "error",
+      "sceneId": "intro-steps",
+      "framePath": "storyboard/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/002-intro-steps.png",
+      "problem": "提供された代表フレームは登場アニメーション途中で、項目3がほぼ読めず項目4が表示されていない。全4項目の可読性・余白・内容一致を判定できない。動画本体の欠陥は未確定。",
+      "fix": "project JSONは変更せず、intro-stepsの全4項目の登場完了後かつscene終了前のフレームをDocker内で再生成し、同じscene画像パスで審査に提供する。"
+    },
+    {
+      "severity": "error",
+      "sceneId": "intro-steps",
+      "framePath": "storyboard/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/contact-sheet.png",
+      "problem": "contact sheetの各sceneが縦に切り取られ、字幕が見えない。intro-stepsの項目4も下端で切れており、全画面構図を確認できない。",
+      "fix": "project JSONは変更せず、contact sheetのsceneカードを16:9の全画面が収まる表示に修正し、字幕と第4項目を含む画像をDocker内で再生成する。"
+    }
+  ],
+  "questionsForUser": []
+}

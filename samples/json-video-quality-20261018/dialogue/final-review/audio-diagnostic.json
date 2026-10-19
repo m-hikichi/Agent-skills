@@ -1,0 +1,141 @@
+[
+  {
+    "id": "intro-title",
+    "offset": 0,
+    "sourceSamples": 131072,
+    "windows": [
+      {
+        "start": 240,
+        "end": 130832,
+        "correlation": 0.9908001473236575,
+        "lag": 1024,
+        "lagMs": 42.666666666666664
+      },
+      {
+        "start": 12000,
+        "end": 24000,
+        "correlation": 0.7285544320393569,
+        "lag": 940,
+        "lagMs": 39.166666666666664
+      },
+      {
+        "start": 65536,
+        "end": 77536,
+        "correlation": 0.5410307255330395,
+        "lag": 948,
+        "lagMs": 39.5
+      }
+    ],
+    "fixedLagWindows": [
+      {
+        "start": 240,
+        "end": 130832,
+        "correlation": 0.9908001473236575
+      },
+      {
+        "start": 12000,
+        "end": 24000,
+        "correlation": 0.9836832452139854
+      },
+      {
+        "start": 65536,
+        "end": 77536,
+        "correlation": 0.9964876648081711
+      }
+    ]
+  },
+  {
+    "id": "intro-steps",
+    "offset": 138400,
+    "sourceSamples": 124160,
+    "windows": [
+      {
+        "start": 240,
+        "end": 123920,
+        "correlation": 0.9892848374982902,
+        "lag": 1024,
+        "lagMs": 42.666666666666664
+      },
+      {
+        "start": 12000,
+        "end": 24000,
+        "correlation": 0.6133886545011782,
+        "lag": 662,
+        "lagMs": 27.583333333333332
+      },
+      {
+        "start": 62080,
+        "end": 74080,
+        "correlation": 0.5808291722103461,
+        "lag": 948,
+        "lagMs": 39.5
+      }
+    ],
+    "fixedLagWindows": [
+      {
+        "start": 240,
+        "end": 123920,
+        "correlation": 0.9892848374982902
+      },
+      {
+        "start": 12000,
+        "end": 24000,
+        "correlation": 0.9975265963114036
+      },
+      {
+        "start": 62080,
+        "end": 74080,
+        "correlation": 0.9968261713860201
+      }
+    ]
+  },
+  {
+    "id": "ending-outro",
+    "offset": 263200,
+    "sourceSamples": 93696,
+    "windows": [
+      {
+        "start": 240,
+        "end": 93456,
+        "correlation": 0.9919303987741773,
+        "lag": 1024,
+        "lagMs": 42.666666666666664
+      },
+      {
+        "start": 12000,
+        "end": 24000,
+        "correlation": 0.5586497988747591,
+        "lag": 960,
+        "lagMs": 40
+      },
+      {
+        "start": 46848,
+        "end": 58848,
+        "correlation": 0.9936458968006749,
+        "lag": 1024,
+        "lagMs": 42.666666666666664
+      }
+    ],
+    "fixedLagWindows": [
+      {
+        "start": 240,
+        "end": 93456,
+        "correlation": 0.9919303987741773
+      },
+      {
+        "start": 12000,
+        "end": 24000,
+        "correlation": 0.9939404481266466
+      },
+      {
+        "start": 46848,
+        "end": 58848,
+        "correlation": 0.9936458968006749
+      }
+    ]
+  },
+  {
+    "control": "ffmpeg AAC encode/decode",
+    "zeroLagCorrelation": 0.9991484352716564
+  }
+]

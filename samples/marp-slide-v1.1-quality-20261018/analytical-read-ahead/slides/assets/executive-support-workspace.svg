@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="720" viewBox="0 0 800 720" role="img" aria-labelledby="title desc">
+  <title id="title">問い合わせ支援ワークスペース</title>
+  <desc id="desc">複数のナレッジを検索し、引用元を付けた回答候補を担当者へ提示する概念図</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#102a48"/><stop offset="1" stop-color="#2476a8"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="12" stdDeviation="18" flood-opacity=".22"/></filter>
+  </defs>
+  <rect width="800" height="720" fill="url(#bg)"/>
+  <circle cx="666" cy="126" r="120" fill="#f2a65a" opacity=".18"/>
+  <rect x="86" y="116" width="628" height="440" rx="28" fill="#f8fbff" filter="url(#shadow)"/>
+  <rect x="86" y="116" width="628" height="62" rx="28" fill="#dfeaf5"/><circle cx="124" cy="147" r="8" fill="#e0782f"/><circle cx="151" cy="147" r="8" fill="#e6b955"/><circle cx="178" cy="147" r="8" fill="#4eaf87"/>
+  <rect x="118" y="210" width="176" height="304" rx="14" fill="#eaf1f8"/>
+  <text x="142" y="246" font-family="sans-serif" font-size="18" font-weight="700" fill="#174a7e">参照ナレッジ</text>
+  <g font-family="sans-serif" font-size="15" fill="#42566e">
+    <rect x="140" y="272" width="130" height="38" rx="8" fill="#fff"/><text x="158" y="297">配送FAQ</text>
+    <rect x="140" y="324" width="130" height="38" rx="8" fill="#fff"/><text x="158" y="349">契約規約</text>
+    <rect x="140" y="376" width="130" height="38" rx="8" fill="#fff"/><text x="158" y="401">請求手順</text>
+    <rect x="140" y="428" width="130" height="38" rx="8" fill="#fff"/><text x="158" y="453">過去回答</text>
+  </g>
+  <rect x="326" y="210" width="354" height="76" rx="12" fill="#fff" stroke="#b8c9da"/>
+  <text x="350" y="241" font-family="sans-serif" font-size="16" fill="#58697f">問い合わせ</text><text x="350" y="266" font-family="sans-serif" font-size="18" font-weight="700" fill="#142238">配送予定日を変更できますか？</text>
+  <rect x="326" y="308" width="354" height="206" rx="14" fill="#174a7e"/>
+  <text x="352" y="342" font-family="sans-serif" font-size="16" font-weight="700" fill="#f9b66f">根拠付き回答候補</text>
+  <text x="352" y="379" font-family="sans-serif" font-size="18" fill="#fff">出荷前であれば変更できます。</text>
+  <text x="352" y="409" font-family="sans-serif" font-size="16" fill="#dbe9f7">本人確認後、配送管理画面で</text><text x="352" y="435" font-family="sans-serif" font-size="16" fill="#dbe9f7">希望日を更新してください。</text>
+  <rect x="352" y="462" width="210" height="30" rx="15" fill="#fff" opacity=".16"/><text x="370" y="483" font-family="sans-serif" font-size="14" fill="#fff">引用：配送FAQ §3.2</text>
+  <path d="M294 360h24" stroke="#e0782f" stroke-width="6"/><path d="m313 350 14 10-14 10" fill="#e0782f"/>
+  <text x="92" y="628" font-family="sans-serif" font-size="23" font-weight="700" fill="#fff">検索を短くし、判断は人に残す</text>
+</svg>

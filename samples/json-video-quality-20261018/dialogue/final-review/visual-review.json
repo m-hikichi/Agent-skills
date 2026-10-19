@@ -1,0 +1,27 @@
+{
+  "projectId": "voicevox-dialogue",
+  "lockHash": "b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652",
+  "reviewedAt": "2026-10-17T23:12:15.4826756Z",
+  "status": "pass_visual_samples",
+  "scope": "完成MP4から抽出された3sceneのmidpointと各scene 0,4,12,30,終端-4frameのmotion strip、320px thumbnailの独立目視QA",
+  "evidenceImages": [
+    "01-intro-title.png",
+    "01-intro-title-motion.png",
+    "02-intro-steps.png",
+    "02-intro-steps-motion.png",
+    "03-ending-outro.png",
+    "03-ending-outro-motion.png",
+    "thumbnail-small.png"
+  ],
+  "observations": [
+    "全3sceneの文字・字幕・4項目一覧はprojectと一致し、文字切れ・重なりは見られない。",
+    "motion stripは開始時の背景のみから文字のフェードイン、全項目表示、終端のフェードアウトを示す。採取フレームでは不意の位置飛びや欠損を認めない。",
+    "320×180サムネイルで「JSONだけで」「解説動画を生成」の2行を判読できる。"
+  ],
+  "issues": [],
+  "limitations": [
+    "抽出静止画像による標本検査であり、MP4全フレームの連続再生や動きの滑らかさは直接検証していない。",
+    "実音声は聴いていない。発音・声質・音声と字幕の聴覚上の同期はこの判定に含めない。",
+    "音声の相互相関QAの調査結果は別担当の判定に委ねる。映像標本の合格は音声を含む完成品全体の合格を意味しない。"
+  ]
+}

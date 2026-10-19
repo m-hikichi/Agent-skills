@@ -1,0 +1,19 @@
+topic: technical-training gold regression
+audience: marp-slide maintainers
+presentation_type: gold-deck
+goal: rendererとvisual QAの回帰を検出する
+target_slide_count: 8
+slide_count_mode: exact
+delivery_mode: hybrid
+output_formats:
+  - pdf
+  - png
+  - notes
+must_include: []
+source_materials: []
+language: ja-JP
+author: agent-skills
+approval_mode: autonomous
+image_policy: local-only
+brand_strictness: guided
+accessibility_target: standard

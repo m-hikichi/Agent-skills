@@ -1,0 +1,8 @@
+{
+  "projectId": "json-motion-demo",
+  "goal": "Docker MCPによる生成可否と映像品質の検証",
+  "audience": "プラグイン利用者",
+  "title": "JSONから動画へ：読みと動きで伝える",
+  "source": "inputs/demo.json",
+  "lastProjectRevision": 1
+}

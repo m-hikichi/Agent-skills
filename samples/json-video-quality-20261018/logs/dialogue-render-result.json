@@ -1,0 +1,39 @@
+{
+  "outputDirectory": "dialogue/dist/voicevox-dialogue/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652",
+  "lock": "dialogue/dist/voicevox-dialogue/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/project.lock.json",
+  "video": "dialogue/dist/voicevox-dialogue/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/video.mp4",
+  "thumbnail": "dialogue/dist/voicevox-dialogue/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/thumbnail.png",
+  "captions": "dialogue/dist/voicevox-dialogue/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/captions.srt",
+  "chapters": "dialogue/dist/voicevox-dialogue/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/chapters.txt",
+  "credits": "dialogue/dist/voicevox-dialogue/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/credits.txt",
+  "storyboard": [
+    "dialogue/dist/voicevox-dialogue/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/storyboard/001-intro-title.png",
+    "dialogue/dist/voicevox-dialogue/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/storyboard/002-intro-steps.png",
+    "dialogue/dist/voicevox-dialogue/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/storyboard/003-ending-outro.png"
+  ],
+  "contactSheet": "dialogue/dist/voicevox-dialogue/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/contact-sheet.png",
+  "contactSheets": [
+    "dialogue/dist/voicevox-dialogue/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/contact-sheet.png"
+  ],
+  "manifest": "dialogue/dist/voicevox-dialogue/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/artifact-manifest.json",
+  "report": "dialogue/dist/voicevox-dialogue/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/render-report.json",
+  "inspection": {
+    "mediaPath": "dialogue/dist/voicevox-dialogue/b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652/video.mp4",
+    "durationSeconds": 14.934,
+    "sizeBytes": 1014967,
+    "bitRate": 543708,
+    "video": {
+      "codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "pixelFormat": "yuv420p"
+    },
+    "audio": {
+      "codec": "aac",
+      "sampleRate": 48000,
+      "channels": 2
+    }
+  },
+  "warnings": []
+}

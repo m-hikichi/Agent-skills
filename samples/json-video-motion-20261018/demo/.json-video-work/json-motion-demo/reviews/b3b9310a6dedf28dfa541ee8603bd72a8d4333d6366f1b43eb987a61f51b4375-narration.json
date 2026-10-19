@@ -1,0 +1,67 @@
+{
+  "projectId": "json-motion-demo",
+  "lockHash": "b3b9310a6dedf28dfa541ee8603bd72a8d4333d6366f1b43eb987a61f51b4375",
+  "status": "pass",
+  "method": "engine-kana",
+  "listeningPerformed": false,
+  "unresolvedReadings": [],
+  "evidence": [
+    {
+      "assetId": "voice:intro",
+      "sha256": "cc8b5d33416d8b08e41102cf1a8f30ebd6d96ba4e94556d9b7fd19b9b84fdd9a",
+      "synthesisText": "ジェーソンから動画へ。今回は、正しい読み方と、動きで伝える処理の流れを見ていきます。",
+      "kana": "ジェ'エソンカラ/ドオガエ'、コ'ンカイワ、タダシ'イ/ヨミカタ'ト、ウゴキ'デ/_ツタエル'/ショ'リノ/ナガレ'オ/ミ'テ/イキマ'_ス",
+      "readingsConfirmed": true,
+      "coverage": "full-utterance"
+    },
+    {
+      "assetId": "voice:reading",
+      "sha256": "569b772a0037ee79de9a8e7fb1ac74c5da9b72a47fda9a343b026c53325b858b",
+      "synthesisText": "画面にはジェーソンと表示します。読み上げるときは、ジェーソン。表示と発音を分けて指定できます。",
+      "kana": "ガメンニワ'/ジェ'エソント/ヒョオジ'/シマ'_ス、ヨミアゲ'ル/ト'キワ、ジェ'エソン、ヒョオジト'/ハツオンオ'/ワケ'テ/_シテエ'/デキマ'_ス",
+      "readingsConfirmed": true,
+      "coverage": "full-utterance"
+    },
+    {
+      "assetId": "voice:flow-0",
+      "sha256": "450b3749b523a89f83833becca6941ebad3c6434a0b8f4ed034b9a03b7a0a878",
+      "synthesisText": "まず、ジェーソンに台詞と画面の内容を書きます。これが動画の設計図です。",
+      "kana": "マ'ズ、ジェ'エソンニ/セリ_フト'/ガメンノ'/ナイヨオオ'/カキマ'_ス、コレガ'/ドオガノ'/セッケエ'ズデ_ス",
+      "readingsConfirmed": true,
+      "coverage": "full-utterance"
+    },
+    {
+      "assetId": "voice:flow-1",
+      "sha256": "d2fb7e0b587a4dfff15bdb77cb2a2f9fc729da5644746bfc550203cd710cb18a",
+      "synthesisText": "次に、台詞から音声をつくります。音声の長さに合わせて、字幕と画面の表示時間を決めます。",
+      "kana": "ツギ'ニ、セリ_フカラ'/オ'ンセエオ/_ツクリマ'_ス、オ'ンセエノ/ナガ'サニ/アワセ'テ、ジマ_クト'/ガメンノ'/ヒョオジ'/ジカンオ'/キメマ'_ス",
+      "readingsConfirmed": true,
+      "coverage": "full-utterance"
+    },
+    {
+      "assetId": "voice:flow-2",
+      "sha256": "7d236518a9692b3c156d594036dba1fccd27518f2b1ff0a083ffb3085c4976b1",
+      "synthesisText": "続いて、絵コンテを確認します。読み方と見やすさを点検し、伝わりにくい部分を直します。",
+      "kana": "ツズイテ'、エコ'ンテオ/カクニン'/シマ'_ス、ヨミカタ'ト/ミヤス'サオ/テンケン'/シ'、_ツタワリニク'イ/ブ'ブンオ/ナオシマ'_ス",
+      "readingsConfirmed": true,
+      "coverage": "full-utterance"
+    },
+    {
+      "assetId": "voice:flow-3",
+      "sha256": "97e1a087daa3b7e72bbf62418a2c4c0b6e6a87bfc921ba050fcd94a79bdb548a",
+      "synthesisText": "確認できたら、動画を書き出します。設計した流れが、音声と映像のついた一本の動画になります。",
+      "kana": "カクニン'/デキ'タラ、ドオガオ'/カキダシマ'_ス、セッケエ'/_シタ'/ナガレ'ガ、オ'ンセエト/エエゾオノ'/ツ'イタ/イッ'ポンノ/ドオガニ'/ナリマ'_ス",
+      "readingsConfirmed": true,
+      "coverage": "full-utterance"
+    },
+    {
+      "assetId": "voice:outro",
+      "sha256": "1c6c3538a0c15531b31b6f60f857a8917bcff8603fdd61ef1ccfaf6fd0340bb7",
+      "synthesisText": "読み方を確かめ、動きで関係を伝える。ジェーソンから、説明が伝わる動画へ。",
+      "kana": "ヨミカタ'オ/タ_シカメ'、ウゴキ'デ/カンケエオ'/_ツタエル'、ジェ'エソンカラ、セツメエガ'/_ツタワル'/ドオガエ'",
+      "readingsConfirmed": true,
+      "coverage": "full-utterance"
+    }
+  ],
+  "notes": "独立レビューで全7台詞の合成原稿と生成かなを文脈ごとに全文再照合。辞書語だけでなく、正しい・読み方・動き・処理・流れ・画面・表示・読み上げる・発音・指定・台詞・内容・設計図・音声・長さ・字幕・表示時間・絵コンテ・点検・部分・直す・書き出す・設計・映像・一本・関係・説明とその助詞/活用を確認。一本=イッポン、台詞=セリフ、JSON全5出現=ジェエソンが文脈と指定に一致。固有地名や日付など文脈未確定語はなし。実WAVのSHA256は全件lock一致。聴感評価は未実施で、抑揚・音切れは保証しない。"
+}

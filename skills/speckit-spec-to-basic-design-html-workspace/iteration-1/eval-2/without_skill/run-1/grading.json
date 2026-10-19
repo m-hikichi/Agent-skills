@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {"text": "schema_version 3、document_level implementation-readyである", "passed": false, "evidence": "schema_version=2でdocument_levelがなく、単一quality.status=passed。"},
+    {"text": "source.artifactsにspec/plan/research/data-model/contract/quickstart/tasksの相対path・実在locator・64桁SHA-256 fingerprintがある", "passed": false, "evidence": "v3 source.artifacts契約と7成果物fingerprint/locator検証を持たない。"},
+    {"text": "Clarificationsがsource_catalogとrequirement_decisionsに自動反映され、confirmed factから参照される", "passed": false, "evidence": "requirement_decisionsは0件で、confirmed factの全影響先反映gateがない。"},
+    {"text": "architectureにSystem ContextとContainerがあり、plan/researchへのsource_refsを持つ", "passed": false, "evidence": "architectureデータもタブもない。"},
+    {"text": "注文状態変更・Outbox・外部EC・自動再送・dead-letter・手動復旧を横断する重要sequenceがある", "passed": false, "evidence": "workflows=0、SVG/sequence=0。"},
+    {"text": "state modelはaccepted→shipping、accepted→cancelled、shipping→deliveredだけを許可し、表にない遷移拒否を表現する", "passed": false, "evidence": "state_models=0。状態遷移の完全性を判定できない。"},
+    {"text": "entitiesに一意冪等キー、request hash、version、Outbox、attempt履歴、日次照合とtransaction/排他根拠がある", "passed": false, "evidence": "entities=0。"},
+    {"text": "更新API契約にmethod/path/auth/request/responses/errors/idempotency/transaction/concurrency、event契約にproducer/consumer/trigger/payload/schema/version/at-least-once/ordering/deduplication/retry/recovery、batch契約にschedule/timezone/initiator/input/output/target range/overlap/transaction/retry/recovery/monitoringがある", "passed": false, "evidence": "interface一覧はあるがv3型別contract完全性gateとtransaction/concurrency等を満たさない。"},
+    {"text": "3回失敗後のdead-letter、5分以内alert、同一event IDの手動再送が機能・flow・contract・risk・verificationで追跡できる", "passed": false, "evidence": "機能説明はあるがworkflow/risk/verificationが0件で横断追跡できない。"},
+    {"text": "SC-001〜SC-004それぞれにquickstart等を根拠とする具体的verificationがある", "passed": false, "evidence": "verification=0。"},
+    {"text": "report.readinessの4軸が個別判定され、ブロッキングエラーがなければ全軸passedか適切なnot-applicableでdocument_status implementation-readyになる", "passed": false, "evidence": "4軸なし。未確定な状態・復旧条件があってもquality.status=passed。"},
+    {"text": "HTMLは10タブを所定順で持ち、図は決定的inline SVGと参加者名・役割・根拠を含む同内容のHTML表、ARIA/keyboard代替を持つ", "passed": false, "evidence": "5タブのみ、SVG=0、diagram table=0。"},
+    {"text": "レビュー概要でUser Story由来の要求優先度P1/P2を根拠付きで集計し、未指定を捏造しない", "passed": false, "evidence": "レビュー概要タブとpriority集計がない。"},
+    {"text": "delivery_summaryはtasksのフェーズ・依存・完了2/22だけを読み取り要約し、見積り・日程・担当を捏造しない", "passed": false, "evidence": "delivery_summary/tabs要約がない。"},
+    {"text": "外部URL、style属性、実行時network依存がなく、同じJSONからバイト同一HTMLを再生成できる", "passed": true, "evidence": "外部URL0、style属性0。baseline transcript/checkerでrenderer出力とのバイト一致を確認。"}
+  ],
+  "summary": {"passed": 1, "failed": 14, "total": 15, "pass_rate": 0.0667},
+  "execution_metrics": {"total_tool_calls": 55, "errors_encountered": 8, "output_chars": 161932},
+  "timing": {"total_duration_seconds": 0.0},
+  "claims": {"verified": ["38規範要素のv2 traceability", "自己完結HTMLとバイト一致"], "unverified": ["実装準備の構成・状態・データ・運用完全性"]},
+  "user_notes_summary": {"uncertainties": [], "needs_review": ["単一passedが技術設計・運用準備の不足を隠す", "開発者・プログラマー・マネージャー向け追加ビューがない"], "workarounds": ["独立graderが利用上限で失敗したため、固定15条件をchecker結果と構造検査へ直接照合した"]},
+  "role_scores": {
+    "developer": {"score": 2.0, "max": 5, "evidence": "機能・要求traceは読めるが構成・flow・状態・dataがない"},
+    "programmer": {"score": 1.5, "max": 5, "evidence": "機能詳細はあるが型付きcontract・transaction・排他・復旧gateがない"},
+    "manager": {"score": 1.5, "max": 5, "evidence": "優先度・risk・依存・4軸準備度の俯瞰がない"}
+  },
+  "comparison_notes": "機能基本設計としては有用だが、実装準備資料としての不足をpassedが区別しない。"
+}

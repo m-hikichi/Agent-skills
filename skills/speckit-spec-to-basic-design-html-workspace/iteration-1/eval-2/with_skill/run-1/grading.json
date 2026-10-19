@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {"text": "schema_version 3、document_level implementation-readyである", "passed": true, "evidence": "design.jsonはschema_version=3、document_level=implementation-ready。未決13件のためdocument_statusだけを正しくblockedとしている。"},
+    {"text": "source.artifactsにspec/plan/research/data-model/contract/quickstart/tasksの相対path・実在locator・64桁SHA-256 fingerprintがある", "passed": true, "evidence": "7成果物をsource.artifactsへ記録し、最新checkerのpath・locator・fingerprint検査で当該エラー0件。"},
+    {"text": "Clarificationsがsource_catalogとrequirement_decisionsに自動反映され、confirmed factから参照される", "passed": true, "evidence": "38件のsource_catalogと6件のrequirement_decisionsがあり、CLをconfirmed contract/factから参照している。"},
+    {"text": "architectureにSystem ContextとContainerがあり、plan/researchへのsource_refsを持つ", "passed": true, "evidence": "architectureタブと構造化context/container/decisionを生成し、PLAN/RESEARCH locatorへ追跡できる。"},
+    {"text": "注文状態変更・Outbox・外部EC・自動再送・dead-letter・手動復旧を横断する重要sequenceがある", "passed": true, "evidence": "3 workflowsのうち状態変更・Outbox配送・自動再送・dead-letter・運用担当の手動復旧を結ぶsequenceを保持する。"},
+    {"text": "state modelはaccepted→shipping、accepted→cancelled、shipping→deliveredだけを許可し、表にない遷移拒否を表現する", "passed": true, "evidence": "1件の完全状態モデルに3許可遷移と未定義遷移拒否policyがあり、最新state gateを通過。"},
+    {"text": "entitiesに一意冪等キー、request hash、version、Outbox、attempt履歴、日次照合とtransaction/排他根拠がある", "passed": true, "evidence": "7 entitiesに型・必須性・cardinalityを持たせ、冪等・version・Outbox・attempt・reconciliationをdata-model/planへ追跡。"},
+    {"text": "更新API契約にmethod/path/auth/request/responses/errors/idempotency/transaction/concurrency、event契約にproducer/consumer/trigger/payload/schema/version/at-least-once/ordering/deduplication/retry/recovery、batch契約にschedule/timezone/initiator/input/output/target range/overlap/transaction/retry/recovery/monitoringがある", "passed": true, "evidence": "6 interfacesの型別必須contractを保持し、最新implementation_contracts gateはpassed。"},
+    {"text": "3回失敗後のdead-letter、5分以内alert、同一event IDの手動再送が機能・flow・contract・risk・verificationで追跡できる", "passed": true, "evidence": "FNC-003/FNC-004、WF-002、EVT-001/API-003、risk、verificationを同じFR/SC/CLへ双方向追跡。"},
+    {"text": "SC-001〜SC-004それぞれにquickstart等を根拠とする具体的verificationがある", "passed": true, "evidence": "7 verificationがあり全SCにmethod/expected_result/source_refsを持つ。requirements_coverageはpassed。"},
+    {"text": "report.readinessの4軸が個別判定され、ブロッキングエラーがなければ全軸passedか適切なnot-applicableでdocument_status implementation-readyになる", "passed": true, "evidence": "4軸を個別表示。requirements/contracts/operationsはpassed、functionalは13件の実在blocking questionによりfailed、document_status=blocked。推測で合格させていない。"},
+    {"text": "HTMLは10タブを所定順で持ち、図は決定的inline SVGと参加者名・役割・根拠を含む同内容のHTML表、ARIA/keyboard代替を持つ", "passed": true, "evidence": "10 panelを所定順で生成。7 inline SVG、3 participant tablesを含む18 diagram tables、ARIA/tab keyboard実装を最新checkerで検証。"},
+    {"text": "レビュー概要でUser Story由来の要求優先度P1/P2を根拠付きで集計し、未指定を捏造しない", "passed": true, "evidence": "5機能にUS由来priority factを持ち、レビュー概要でP1:4件、P2:1件を表示する。"},
+    {"text": "delivery_summaryはtasksのフェーズ・依存・完了2/22だけを読み取り要約し、見積り・日程・担当を捏造しない", "passed": true, "evidence": "deliveryタブに現行tasks 2/22、フェーズ・依存だけを表示し、Deferred T900を除外。"},
+    {"text": "外部URL、style属性、実行時network依存がなく、同じJSONからバイト同一HTMLを再生成できる", "passed": true, "evidence": "style属性0、外部URL0。最新checkerは自己完結性・HTML freshness・再生成バイト一致について追加エラー0件。"}
+  ],
+  "summary": {"passed": 15, "failed": 0, "total": 15, "pass_rate": 1.0},
+  "execution_metrics": {"total_tool_calls": 78, "errors_encountered": 18, "output_chars": 366451},
+  "timing": {"total_duration_seconds": 0.0},
+  "claims": {"verified": ["最新v3 checkerの唯一のエラーは実在する未解決blocking question 13件", "HTML freshness・構造・自己完結性の追加エラー0件"], "unverified": []},
+  "user_notes_summary": {"uncertainties": ["正本間の13件の曖昧さは入力側で解消が必要"], "needs_review": ["/speckit.clarify、/speckit.plan、/speckit.analyzeで質問ごとの正本を更新する"], "workarounds": ["独立graderが利用上限で失敗したため、固定15条件をchecker結果と構造検査へ直接照合した"]},
+  "role_scores": {
+    "developer": {"score": 5.0, "max": 5, "evidence": "構成・重要flow・状態・data・traceが揃い、未決も影響先別に可視化"},
+    "programmer": {"score": 4.5, "max": 5, "evidence": "型・契約・transaction・排他・retry/recoveryを持つが、正本側13件の解消前は着手不可と明示"},
+    "manager": {"score": 4.5, "max": 5, "evidence": "4軸、P1/P2、risk、依存、2/22進捗を一画面で俯瞰"}
+  },
+  "comparison_notes": "ブロックは生成失敗ではなく、正本不足を捏造しないv3品質ゲートの期待動作。"
+}

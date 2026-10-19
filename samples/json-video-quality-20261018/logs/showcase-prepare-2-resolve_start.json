@@ -1,0 +1,18 @@
+{
+  "id": "a0e351a8-dfd7-4df1-a36c-b1a68d2b5ee0",
+  "kind": "resolve",
+  "projectPath": "showcase/video-project.json",
+  "status": "succeeded",
+  "progress": 1,
+  "message": "Succeeded",
+  "createdAt": "2026-10-17T16:29:27.783Z",
+  "updatedAt": "2026-10-17T16:29:45.948Z",
+  "result": {
+    "lockPath": "showcase/.json-video-work/quality-showcase/project.lock.json",
+    "lockHash": "8c5521b046ae61298aa2157ac7ea3cfd0313defff137631bfc39bf5162fe8c84",
+    "totalFrames": 1483,
+    "captionsPath": "showcase/.json-video-work/quality-showcase/captions.srt",
+    "chaptersPath": "showcase/.json-video-work/quality-showcase/chapters.txt",
+    "creditsPath": "showcase/.json-video-work/quality-showcase/credits.txt"
+  }
+}

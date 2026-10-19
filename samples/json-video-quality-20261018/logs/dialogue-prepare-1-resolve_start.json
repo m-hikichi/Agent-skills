@@ -1,0 +1,50 @@
+{
+  "id": "7397e10f-2ad6-4df1-b0eb-e67d05904689",
+  "kind": "resolve",
+  "projectPath": "dialogue/video-project.json",
+  "status": "succeeded",
+  "progress": 1,
+  "message": "Succeeded",
+  "createdAt": "2026-10-17T16:28:19.851Z",
+  "updatedAt": "2026-10-17T16:28:19.903Z",
+  "result": {
+    "dryRun": true,
+    "projectDigest": "a8a81d31f9230af215d43d80ddf439490b3ec606e4e922e77980d4b923da30ec",
+    "assetCount": 0,
+    "sceneCount": 3,
+    "voicevoxCalls": [
+      {
+        "sectionId": "intro",
+        "sceneId": "intro-title",
+        "speakerId": "narrator",
+        "characters": 33,
+        "cacheHit": false,
+        "cacheKey": "ae5ac22aaa28055983f748f6cc171ee342b714e95a053b3c3a3025574cdba057",
+        "estimatedDurationMs": 6286
+      },
+      {
+        "sectionId": "intro",
+        "sceneId": "intro-steps",
+        "speakerId": "narrator",
+        "characters": 28,
+        "cacheHit": false,
+        "cacheKey": "fec42eed00c168ab423e1c995d785d413c2f7c6d5fc66344d1f0bc37a7929022",
+        "estimatedDurationMs": 5334
+      },
+      {
+        "sectionId": "ending",
+        "sceneId": "ending-outro",
+        "speakerId": "narrator",
+        "characters": 28,
+        "cacheHit": false,
+        "cacheKey": "7331d036356d236cd37a46be3a0b60ffbc01789176d8a83a1a93114440d83112",
+        "estimatedDurationMs": 5334
+      }
+    ],
+    "cacheHits": 0,
+    "estimatedDurationMs": 17254,
+    "estimatedFrames": 520,
+    "rightsWarnings": [],
+    "lockPath": "dialogue/.json-video-work/voicevox-dialogue/project.lock.json"
+  }
+}

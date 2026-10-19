@@ -1,0 +1,155 @@
+{
+  "lockVersion": "1.0.0",
+  "projectDigest": "a8a81d31f9230af215d43d80ddf439490b3ec606e4e922e77980d4b923da30ec",
+  "lockHash": "b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652",
+  "generatedAt": "2026-10-17T16:28:30.228Z",
+  "runtime": {
+    "node": "v24.18.0",
+    "remotion": "4.0.503",
+    "ffmpeg": "ffmpeg version 5.1.9-0+deb12u1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "chrome": "Chromium 151.0.7922.71 built on Debian GNU/Linux 12 (bookworm)",
+    "font": "Noto Sans CJK JP",
+    "voicevox": "0.25.1"
+  },
+  "assets": [
+    {
+      "id": "voice:intro-title",
+      "type": "voice",
+      "sourcePath": "voicevox:ae5ac22aaa28055983f748f6cc171ee342b714e95a053b3c3a3025574cdba057",
+      "resolvedPath": ".json-video-work/voicevox-dialogue/voice/ae5ac22aaa28055983f748f6cc171ee342b714e95a053b3c3a3025574cdba057.wav",
+      "sha256": "dbf12f5b2d56dc028a11359c189507f51c61eb1f77a2a0f1c902be09ba54e738",
+      "mime": "audio/wav",
+      "sizeBytes": 262188,
+      "durationMs": 5461,
+      "voice": {
+        "provider": "voicevox",
+        "engineVersion": "0.25.1",
+        "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+        "speakerName": "四国めたん",
+        "styleId": 2,
+        "styleName": "ノーマル",
+        "speedScale": 1.05,
+        "volumeScale": 1,
+        "pitchScale": 0,
+        "intonationScale": 1,
+        "cacheKey": "ae5ac22aaa28055983f748f6cc171ee342b714e95a053b3c3a3025574cdba057",
+        "textSha256": "13f155b32c75f1e8b63325fd90f1cefb339bc50cd696b7ff828b3ce36ed00500"
+      }
+    },
+    {
+      "id": "voice:intro-steps",
+      "type": "voice",
+      "sourcePath": "voicevox:fec42eed00c168ab423e1c995d785d413c2f7c6d5fc66344d1f0bc37a7929022",
+      "resolvedPath": ".json-video-work/voicevox-dialogue/voice/fec42eed00c168ab423e1c995d785d413c2f7c6d5fc66344d1f0bc37a7929022.wav",
+      "sha256": "0ed8c4c3c42f60bd62f055ccfabaea58360de2af85aa2ce0704acb94638a4cd4",
+      "mime": "audio/wav",
+      "sizeBytes": 248364,
+      "durationMs": 5173,
+      "voice": {
+        "provider": "voicevox",
+        "engineVersion": "0.25.1",
+        "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+        "speakerName": "四国めたん",
+        "styleId": 2,
+        "styleName": "ノーマル",
+        "speedScale": 1.05,
+        "volumeScale": 1,
+        "pitchScale": 0,
+        "intonationScale": 1,
+        "cacheKey": "fec42eed00c168ab423e1c995d785d413c2f7c6d5fc66344d1f0bc37a7929022",
+        "textSha256": "3ff80cc62eca09f79db533e5a79171346b82d8c3f88048ff6a6b363a2dcc9b44"
+      }
+    },
+    {
+      "id": "voice:ending-outro",
+      "type": "voice",
+      "sourcePath": "voicevox:7331d036356d236cd37a46be3a0b60ffbc01789176d8a83a1a93114440d83112",
+      "resolvedPath": ".json-video-work/voicevox-dialogue/voice/7331d036356d236cd37a46be3a0b60ffbc01789176d8a83a1a93114440d83112.wav",
+      "sha256": "f4dd9211946e2243e9b1e72c2b9bd67e7d51ad5fa22fd620f2b57237b244989b",
+      "mime": "audio/wav",
+      "sizeBytes": 187436,
+      "durationMs": 3904,
+      "voice": {
+        "provider": "voicevox",
+        "engineVersion": "0.25.1",
+        "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+        "speakerName": "四国めたん",
+        "styleId": 2,
+        "styleName": "ノーマル",
+        "speedScale": 1.05,
+        "volumeScale": 1,
+        "pitchScale": 0,
+        "intonationScale": 1,
+        "cacheKey": "7331d036356d236cd37a46be3a0b60ffbc01789176d8a83a1a93114440d83112",
+        "textSha256": "b1efea1a04ecfe51020b732377e028391918c9874d0a34b3aff0a9de9226659c"
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "id": "intro-title",
+      "speakerId": "narrator",
+      "text": "JSONに台詞と画面の内容を書くだけで、音声と映像を同期できます。",
+      "subtitle": "JSONの台詞と画面から、音声と映像を同期できます。",
+      "emotion": "happy",
+      "holdAfterMs": 300,
+      "visual": {
+        "type": "title",
+        "title": "JSONから動画へ",
+        "subtitle": "音声時間を基準にタイムラインを構築"
+      },
+      "sectionId": "intro",
+      "sectionTitle": "JSON動画とは",
+      "startFrame": 0,
+      "durationInFrames": 173,
+      "audioDurationMs": 5461,
+      "subtitleText": "JSONの台詞と画面から、音声と映像を同期できます。",
+      "resolvedAudioAssetId": "voice:intro-title"
+    },
+    {
+      "id": "intro-steps",
+      "speakerId": "narrator",
+      "text": "検証、音声生成、絵コンテ確認、レンダーの順に処理します。",
+      "visual": {
+        "type": "bullets",
+        "title": "再現可能な4段階",
+        "items": [
+          "Schemaで入力を検証",
+          "VOICEVOXで発話音声を生成",
+          "storyboardを目視確認",
+          "固定lockからMP4をレンダー"
+        ]
+      },
+      "sectionId": "intro",
+      "sectionTitle": "JSON動画とは",
+      "startFrame": 173,
+      "durationInFrames": 156,
+      "audioDurationMs": 5173,
+      "subtitleText": "検証、音声生成、絵コンテ確認、レンダーの順に処理します。",
+      "resolvedAudioAssetId": "voice:intro-steps"
+    },
+    {
+      "id": "ending-outro",
+      "speakerId": "narrator",
+      "text": "まずはサンプルを編集して、自分の動画を作ってみましょう。",
+      "visual": {
+        "type": "outro",
+        "title": "次は自分のJSONで",
+        "subtitle": "編集したら再検証してレンダー"
+      },
+      "sectionId": "ending",
+      "sectionTitle": "まとめ",
+      "startFrame": 329,
+      "durationInFrames": 118,
+      "audioDurationMs": 3904,
+      "subtitleText": "まずはサンプルを編集して、自分の動画を作ってみましょう。",
+      "resolvedAudioAssetId": "voice:ending-outro"
+    }
+  ],
+  "totalFrames": 447,
+  "fps": 30,
+  "credits": [
+    "VOICEVOX:四国めたん"
+  ],
+  "warnings": []
+}

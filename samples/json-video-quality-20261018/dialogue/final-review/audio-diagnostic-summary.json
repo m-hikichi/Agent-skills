@@ -1,0 +1,29 @@
+{
+  "lockHash": "b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652",
+  "method": "Decode source WAV and rendered MP4 to 24000 Hz mono float PCM using Docker ffmpeg. Search full-scene correlation over +/- 1 second, refine to one sample, then compare multiple windows at the discovered common offset.",
+  "constantOffsetSamplesAt24000Hz": 1024,
+  "constantOffsetMs": 42.666666666666664,
+  "constantOffsetFramesAt30Fps": 1.28,
+  "scenes": [
+    {"id": "intro-title", "correlation": 0.9908001473236575, "earlyWindowCorrelation": 0.9836832452139854, "middleWindowCorrelation": 0.9964876648081711},
+    {"id": "intro-steps", "correlation": 0.9892848374982902, "earlyWindowCorrelation": 0.9975265963114036, "middleWindowCorrelation": 0.9968261713860201},
+    {"id": "ending-outro", "correlation": 0.9919303987741773, "earlyWindowCorrelation": 0.9939404481266466, "middleWindowCorrelation": 0.9936458968006749}
+  ],
+  "containerMetadata": {
+    "videoStartTimeSeconds": 0,
+    "audioStartTimeSeconds": 0,
+    "audioSampleRate": 48000,
+    "audioPacketDurationSamples": 1024,
+    "firstAudioPacketPts": 0,
+    "firstAudioPacketSkipSamplesPresent": false,
+    "videoDurationSeconds": 14.9,
+    "audioDurationSeconds": 14.933333
+  },
+  "control": {
+    "description": "Encode the first original WAV directly to 48000 Hz stereo AAC using ffmpeg, then decode with the same PCM method.",
+    "zeroOffsetCorrelation": 0.9991484352716564
+  },
+  "conclusion": "The rendered MP4 has a real constant 42.667 ms audio delay relative to the locked scene positions, not a generic ffmpeg decoder artifact. All three source voices match strongly after the same shift, with no observed cumulative timing drift. This shift equals two 1024-sample AAC packets at 48000 Hz and is consistent with encoder priming/mux timing, but the exact internal Remotion cause was not proven. The initial +/- 10 ms QA search could not reach this matching offset.",
+  "acceptance": {"maximumOffsetFrames": 2, "fps": 30, "withinDeclaredTolerance": true},
+  "details": "audio-diagnostic.json"
+}

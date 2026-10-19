@@ -1,0 +1,95 @@
+{
+  "id": "0f8c3bfa-aa01-4ae8-9c39-478497c6caa7",
+  "kind": "resolve",
+  "projectPath": "showcase/video-project.json",
+  "status": "succeeded",
+  "progress": 1,
+  "message": "Succeeded",
+  "createdAt": "2026-10-17T16:29:26.259Z",
+  "updatedAt": "2026-10-17T16:29:26.327Z",
+  "result": {
+    "dryRun": true,
+    "projectDigest": "0edd08cf1b169345c143a8ba70b6391806e4dc8666ab6767f5dcccf15aaa3c98",
+    "assetCount": 1,
+    "sceneCount": 8,
+    "voicevoxCalls": [
+      {
+        "sectionId": "templates-a",
+        "sceneId": "template-title",
+        "speakerId": "narrator",
+        "characters": 32,
+        "cacheHit": false,
+        "cacheKey": "34f55f47d35847f8cb8b8b04a70a4d0e01188e2dec24021d262d5ece52000564",
+        "estimatedDurationMs": 6096
+      },
+      {
+        "sectionId": "templates-a",
+        "sceneId": "template-bullets",
+        "speakerId": "narrator",
+        "characters": 32,
+        "cacheHit": false,
+        "cacheKey": "430cfa2d92447fc4da7be631021aeac02dbcfe35d211b4dbef61b6c590713d58",
+        "estimatedDurationMs": 6096
+      },
+      {
+        "sectionId": "templates-a",
+        "sceneId": "template-split",
+        "speakerId": "narrator",
+        "characters": 39,
+        "cacheHit": false,
+        "cacheKey": "632246b0bbc342158708c5996d2038fbc2a4288e799c6c56aa12d538e86f5fa2",
+        "estimatedDurationMs": 7429
+      },
+      {
+        "sectionId": "templates-a",
+        "sceneId": "template-media",
+        "speakerId": "narrator",
+        "characters": 37,
+        "cacheHit": false,
+        "cacheKey": "547f725c4cd540bdff009ea72731c6f8eaf0bdf1dc448f14593191ca01849864",
+        "estimatedDurationMs": 7048
+      },
+      {
+        "sectionId": "templates-b",
+        "sceneId": "template-code",
+        "speakerId": "narrator",
+        "characters": 47,
+        "cacheHit": false,
+        "cacheKey": "21c1f684a4b11883514561fd230d289a496d89b1490cc9a15456034fcc8e5d8e",
+        "estimatedDurationMs": 8953
+      },
+      {
+        "sectionId": "templates-b",
+        "sceneId": "template-quote",
+        "speakerId": "narrator",
+        "characters": 37,
+        "cacheHit": false,
+        "cacheKey": "4e755a34b5e258ae9b7d4db15e6942d75d5c27a55032b3815327f1fb193d5ba4",
+        "estimatedDurationMs": 7048
+      },
+      {
+        "sectionId": "templates-b",
+        "sceneId": "template-metric",
+        "speakerId": "narrator",
+        "characters": 28,
+        "cacheHit": false,
+        "cacheKey": "e1bd115643ce5bb82452f06daaf8b3f981f2f0b24fdfc592cd470518f84d3a59",
+        "estimatedDurationMs": 5334
+      },
+      {
+        "sectionId": "templates-b",
+        "sceneId": "template-outro",
+        "speakerId": "narrator",
+        "characters": 36,
+        "cacheHit": false,
+        "cacheKey": "d281a0f35c3f9c329b80566750b259714f65b9911b76f4155f215ecbb2814ad0",
+        "estimatedDurationMs": 6858
+      }
+    ],
+    "cacheHits": 0,
+    "estimatedDurationMs": 59262,
+    "estimatedFrames": 1782,
+    "rightsWarnings": [],
+    "lockPath": "showcase/.json-video-work/quality-showcase/project.lock.json"
+  }
+}

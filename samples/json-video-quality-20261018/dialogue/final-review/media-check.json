@@ -1,0 +1,67 @@
+{
+  "lockHash": "b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652",
+  "decodeAllFrames": true,
+  "peak": 0.6293707489967346,
+  "clippedSampleFraction": 0,
+  "audioSourceComparison": "24kHz mono PCM; cross-correlation within +/-10ms of locked scene start",
+  "scenes": [
+    {
+      "id": "intro-title",
+      "startSeconds": 0,
+      "durationSeconds": 5.766666666666667,
+      "midpointFrame": 86,
+      "motionOffsets": [
+        0,
+        4,
+        12,
+        30,
+        169
+      ],
+      "audio": {
+        "correlation": 0.046101810007277255,
+        "offsetSamples": 128,
+        "offsetMs": 5.333333333333333,
+        "sourceDurationSeconds": 5.461333333333333
+      }
+    },
+    {
+      "id": "intro-steps",
+      "startSeconds": 5.766666666666667,
+      "durationSeconds": 5.2,
+      "midpointFrame": 251,
+      "motionOffsets": [
+        0,
+        4,
+        12,
+        30,
+        152
+      ],
+      "audio": {
+        "correlation": 0.09941249443574204,
+        "offsetSamples": 156,
+        "offsetMs": 6.5,
+        "sourceDurationSeconds": 5.173333333333333
+      }
+    },
+    {
+      "id": "ending-outro",
+      "startSeconds": 10.966666666666667,
+      "durationSeconds": 3.933333333333333,
+      "midpointFrame": 388,
+      "motionOffsets": [
+        0,
+        4,
+        12,
+        30,
+        114
+      ],
+      "audio": {
+        "correlation": 0.06997540343308631,
+        "offsetSamples": 220,
+        "offsetMs": 9.166666666666666,
+        "sourceDurationSeconds": 3.904
+      }
+    }
+  ],
+  "passed": false
+}

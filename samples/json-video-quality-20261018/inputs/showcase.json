@@ -1,0 +1,193 @@
+{
+  "schemaVersion": "1.0.0",
+  "meta": {
+    "id": "quality-showcase",
+    "title": "JSONから動画へ：8つの画面表現",
+    "description": "既存の全テンプレートJSONを基に、音声と読みやすい表示時間を追加した検証動画。",
+    "language": "ja-JP"
+  },
+  "canvas": {
+    "preset": "youtube-1080p",
+    "fps": 30
+  },
+  "theme": {
+    "backgroundColor": "#0F172A",
+    "foregroundColor": "#F8FAFC",
+    "accentColor": "#22D3EE",
+    "fontFamily": "Noto Sans CJK JP",
+    "spacing": "comfortable",
+    "subtitleStyle": {
+      "fontSize": 50,
+      "maxLines": 2,
+      "backgroundColor": "#020617DD",
+      "color": "#FFFFFF"
+    }
+  },
+  "assets": [
+    {
+      "id": "template-media",
+      "type": "image",
+      "path": "assets/all-templates-media.png",
+      "rights": {
+        "attribution": "JSON Video Studio quality verification",
+        "status": "owned",
+        "source": "Original diagram created for this local verification"
+      }
+    }
+  ],
+  "speakers": [
+    {
+      "id": "narrator",
+      "displayName": "四国めたん",
+      "voice": {
+        "provider": "voicevox",
+        "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+        "styleId": 2,
+        "speedScale": 1.05,
+        "volumeScale": 1
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "templates-a",
+      "title": "基本レイアウト",
+      "scenes": [
+        {
+          "id": "template-title",
+          "visual": {
+            "type": "title",
+            "title": "8種類のVisual",
+            "subtitle": "安全な固定テンプレートをまとめて確認"
+          },
+          "speakerId": "narrator",
+          "text": "JSONから動画へ。八種類の画面表現を、音声とともに確認します。",
+          "holdAfterMs": 550,
+          "subtitle": "8種類の画面表現を、音声とともに確認"
+        },
+        {
+          "id": "template-bullets",
+          "visual": {
+            "type": "bullets",
+            "title": "JSONから指定できる内容",
+            "items": [
+              "台詞と字幕",
+              "画面レイアウト",
+              "色と余白"
+            ]
+          },
+          "speakerId": "narrator",
+          "text": "台詞と字幕、画面のレイアウト、色や余白を、JSONで指定します。",
+          "holdAfterMs": 550,
+          "subtitle": "台詞・字幕・レイアウトをJSONで指定"
+        },
+        {
+          "id": "template-split",
+          "visual": {
+            "type": "split",
+            "leftTitle": "入力",
+            "left": "構造化されたvideo-project.json",
+            "rightTitle": "出力",
+            "right": "再現可能な動画と付属ファイル"
+          },
+          "speakerId": "narrator",
+          "text": "入力は構造化されたJSON。出力は動画と字幕、再現条件を記録したファイルです。",
+          "holdAfterMs": 550,
+          "subtitle": "JSONから、動画・字幕・再現条件を出力"
+        },
+        {
+          "id": "template-media",
+          "visual": {
+            "type": "media",
+            "assetId": "template-media",
+            "caption": "ローカル素材だけを参照します",
+            "fit": "contain"
+          },
+          "speakerId": "narrator",
+          "text": "画像もローカル素材から読み込みます。この図は、入力から動画までの流れです。",
+          "holdAfterMs": 550,
+          "subtitle": "ローカル画像で、入力から出力までを表示"
+        }
+      ]
+    },
+    {
+      "id": "templates-b",
+      "title": "情報表現",
+      "scenes": [
+        {
+          "id": "template-code",
+          "visual": {
+            "type": "code",
+            "variant": "source",
+            "title": "静的な表示例",
+            "language": "json",
+            "code": "{\n  \"schemaVersion\": \"1.0.0\",\n  \"canvas\": {\"fps\": 30}\n}"
+          },
+          "speakerId": "narrator",
+          "text": "コードも画面に表示できます。この例では、スキーマのバージョンとフレームレートを指定しています。",
+          "holdAfterMs": 550,
+          "subtitle": "JSONでバージョンとフレームレートを指定"
+        },
+        {
+          "id": "template-quote",
+          "visual": {
+            "type": "quote",
+            "quote": "編集JSONと生成lockを分けることで、入力と再現条件を明確にします。",
+            "attribution": "JSON Video Studio"
+          },
+          "speakerId": "narrator",
+          "text": "編集するJSONと生成条件のロックを分け、何を使って作ったかを記録します。",
+          "holdAfterMs": 550,
+          "subtitle": "編集するJSONと、生成条件のlockを分離"
+        },
+        {
+          "id": "template-metric",
+          "visual": {
+            "label": "選べる画面テンプレート",
+            "variant": "number",
+            "value": "8種類",
+            "type": "metric"
+          },
+          "speakerId": "narrator",
+          "text": "このプラグインには、八種類の画面テンプレートがあります。",
+          "holdAfterMs": 550,
+          "subtitle": "選べる画面テンプレートは8種類"
+        },
+        {
+          "id": "template-outro",
+          "visual": {
+            "type": "outro",
+            "title": "JSONから、自分の動画へ",
+            "subtitle": "編集 → 絵コンテ確認 → 書き出し"
+          },
+          "speakerId": "narrator",
+          "text": "まずはサンプルを編集し、絵コンテを確認してから、動画を書き出しましょう。",
+          "holdAfterMs": 550,
+          "subtitle": "サンプルを編集し、絵コンテ確認後に書き出し"
+        }
+      ]
+    }
+  ],
+  "audio": {
+    "bgmVolume": 0.12,
+    "sfxVolume": 0.5
+  },
+  "thumbnail": {
+    "textLines": [
+      "8種類のVisual",
+      "まとめて確認"
+    ],
+    "layout": "center"
+  },
+  "outputs": {
+    "video": true,
+    "captions": true,
+    "chapters": true,
+    "thumbnail": true,
+    "storyboard": true
+  },
+  "policies": {
+    "allowUnknownRights": false,
+    "maxDurationMinutes": 3
+  }
+}

@@ -1,0 +1,544 @@
+{
+  "outputDirectory": "final",
+  "manifest": {
+    "manifestVersion": "1.0.0",
+    "projectId": "json-motion-demo",
+    "projectDigest": "e3c5c14c10d8158e2c10c6818b3bfffdcee1bf0b5c9119a26c1e985ca0c242e1",
+    "lockHash": "41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6",
+    "createdAt": "2026-10-18T10:41:39.662Z",
+    "files": [
+      {
+        "path": "captions.srt",
+        "sizeBytes": 590,
+        "sha256": "beb70cb6e3594c8b0c752bed47ed3fa5775c1d29c2e1dd80c2853a46176b4517"
+      },
+      {
+        "path": "chapters.txt",
+        "sizeBytes": 33,
+        "sha256": "592be35ddda6896b93629958f5716b794a60c5f690f40844b16dfe9fdb0e1cbc"
+      },
+      {
+        "path": "contact-sheet.png",
+        "sizeBytes": 165256,
+        "sha256": "93cd5048690d83ad6262120a90a56347b9a5c63781c3f67d45036466d55a2d03"
+      },
+      {
+        "path": "credits.txt",
+        "sizeBytes": 25,
+        "sha256": "7ed3a7a59157d3df0945adecd5fea02ce1ed564ea29e05668b0542f35494792d"
+      },
+      {
+        "path": "project.lock.json",
+        "sizeBytes": 17225,
+        "sha256": "bb636b498509f3323a5b6695a5b99ec27080f764cc0da7f233db607d5ae9c524"
+      },
+      {
+        "path": "render-report.json",
+        "sizeBytes": 1316,
+        "sha256": "6e48f27735b4f544c2098b0ea5157867114364e67f5068b29503f09a5b8923a2"
+      },
+      {
+        "path": "storyboard/001-intro.png",
+        "sizeBytes": 126563,
+        "sha256": "c9af9be5fb39de232b1ed78bf22b3d3c446e153853c2bfe78892bfe11ec82c7b"
+      },
+      {
+        "path": "storyboard/002-reading.png",
+        "sizeBytes": 113257,
+        "sha256": "1900a65f45e91a1a7645cce863d032562dc974cc5d793a29787f78775db8a8c7"
+      },
+      {
+        "path": "storyboard/003-flow-0.png",
+        "sizeBytes": 178779,
+        "sha256": "59d5b0891a0bebd9e48f219c3d81f4c1e47bb8e25d9232df27dc3054c9fa9b9f"
+      },
+      {
+        "path": "storyboard/004-flow-1.png",
+        "sizeBytes": 179854,
+        "sha256": "42083b2dde6e8376d190704f8433637562bdb143ff8838fa9c67fb1f7581aa9f"
+      },
+      {
+        "path": "storyboard/005-flow-2.png",
+        "sizeBytes": 180881,
+        "sha256": "3babdfd467da65d4bb5b42abeb00a390c12ec029c6342beebc19f942f41a910d"
+      },
+      {
+        "path": "storyboard/006-flow-3.png",
+        "sizeBytes": 179097,
+        "sha256": "b2a2da5ca8ea5fc70e54d23308650e4485ab710b621068f56f73f0d1b30a14b8"
+      },
+      {
+        "path": "storyboard/007-outro.png",
+        "sizeBytes": 127736,
+        "sha256": "c809c28964f328f6f169b626c4a6ced41060464c6532258a8046557150b19023"
+      },
+      {
+        "path": "storyboard/contact-sheet.png",
+        "sizeBytes": 165256,
+        "sha256": "93cd5048690d83ad6262120a90a56347b9a5c63781c3f67d45036466d55a2d03"
+      },
+      {
+        "path": "storyboard/thumbnail-preview.png",
+        "sizeBytes": 660603,
+        "sha256": "03b97d493b3c01f587186f8e418b889e0b3d9fe27eec3dcb19d75cdcde9584e9"
+      },
+      {
+        "path": "thumbnail.png",
+        "sizeBytes": 660603,
+        "sha256": "03b97d493b3c01f587186f8e418b889e0b3d9fe27eec3dcb19d75cdcde9584e9"
+      },
+      {
+        "path": "video.mp4",
+        "sizeBytes": 2832945,
+        "sha256": "8709ae9c8355729bb396cdbf37b4dbe2db6dfd6c9675c7367e258f8810322b13"
+      }
+    ]
+  },
+  "lock": {
+    "lockVersion": "1.0.0",
+    "projectDigest": "e3c5c14c10d8158e2c10c6818b3bfffdcee1bf0b5c9119a26c1e985ca0c242e1",
+    "lockHash": "41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6",
+    "generatedAt": "2026-10-18T10:38:27.172Z",
+    "runtime": {
+      "node": "v24.18.0",
+      "remotion": "4.0.503",
+      "ffmpeg": "ffmpeg version 5.1.9-0+deb12u1 Copyright (c) 2000-2026 the FFmpeg developers",
+      "chrome": "Chromium 151.0.7922.71 built on Debian GNU/Linux 12 (bookworm)",
+      "font": "Noto Sans CJK JP",
+      "voicevox": "0.25.1"
+    },
+    "assets": [
+      {
+        "id": "voice:intro",
+        "type": "voice",
+        "sourcePath": "voicevox:58b03125edbe3cdd27f91ee530c43c643f550b001bdb2e8d02816279a19db085",
+        "resolvedPath": ".json-video-work/json-motion-demo/voice/58b03125edbe3cdd27f91ee530c43c643f550b001bdb2e8d02816279a19db085.wav",
+        "sha256": "cc8b5d33416d8b08e41102cf1a8f30ebd6d96ba4e94556d9b7fd19b9b84fdd9a",
+        "mime": "audio/wav",
+        "sizeBytes": 309292,
+        "durationMs": 6443,
+        "voice": {
+          "provider": "voicevox",
+          "engineVersion": "0.25.1",
+          "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+          "speakerName": "四国めたん",
+          "styleId": 2,
+          "styleName": "ノーマル",
+          "speedScale": 1.05,
+          "volumeScale": 1,
+          "pitchScale": 0,
+          "intonationScale": 1,
+          "cacheKey": "58b03125edbe3cdd27f91ee530c43c643f550b001bdb2e8d02816279a19db085",
+          "textSha256": "5121597ecb34da8e8499c95f6398f86964f4324962878f53417a7afcba278edc",
+          "synthesisText": "ジェーソンから動画へ。今回は、正しい読み方と、動きで伝える処理の流れを見ていきます。",
+          "kana": "ジェ'エソンカラ/ドオガエ'、コ'ンカイワ、タダシ'イ/ヨミカタ'ト、ウゴキ'デ/_ツタエル'/ショ'リノ/ナガレ'オ/ミ'テ/イキマ'_ス"
+        }
+      },
+      {
+        "id": "voice:reading",
+        "type": "voice",
+        "sourcePath": "voicevox:f13461ecc18c2191ca1b19a02bde0bc0c3902ac2f46a5988fdf19402a881d71d",
+        "resolvedPath": ".json-video-work/json-motion-demo/voice/f13461ecc18c2191ca1b19a02bde0bc0c3902ac2f46a5988fdf19402a881d71d.wav",
+        "sha256": "569b772a0037ee79de9a8e7fb1ac74c5da9b72a47fda9a343b026c53325b858b",
+        "mime": "audio/wav",
+        "sizeBytes": 333356,
+        "durationMs": 6944,
+        "voice": {
+          "provider": "voicevox",
+          "engineVersion": "0.25.1",
+          "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+          "speakerName": "四国めたん",
+          "styleId": 2,
+          "styleName": "ノーマル",
+          "speedScale": 1.05,
+          "volumeScale": 1,
+          "pitchScale": 0,
+          "intonationScale": 1,
+          "cacheKey": "f13461ecc18c2191ca1b19a02bde0bc0c3902ac2f46a5988fdf19402a881d71d",
+          "textSha256": "7f2cde8f0c450a142312e94a7953e5c6256dbf9862085c889f4d6c54ca2d478d",
+          "synthesisText": "画面にはジェーソンと表示します。読み上げるときは、ジェーソン。表示と発音を分けて指定できます。",
+          "kana": "ガメンニワ'/ジェ'エソント/ヒョオジ'/シマ'_ス、ヨミアゲ'ル/ト'キワ、ジェ'エソン、ヒョオジト'/ハツオンオ'/ワケ'テ/_シテエ'/デキマ'_ス"
+        }
+      },
+      {
+        "id": "voice:flow-0",
+        "type": "voice",
+        "sourcePath": "voicevox:5bd3a13027ca466b6f1e8979860b4bf881cde77071d7456ba039aa6bb19eee67",
+        "resolvedPath": ".json-video-work/json-motion-demo/voice/5bd3a13027ca466b6f1e8979860b4bf881cde77071d7456ba039aa6bb19eee67.wav",
+        "sha256": "450b3749b523a89f83833becca6941ebad3c6434a0b8f4ed034b9a03b7a0a878",
+        "mime": "audio/wav",
+        "sizeBytes": 258092,
+        "durationMs": 5376,
+        "voice": {
+          "provider": "voicevox",
+          "engineVersion": "0.25.1",
+          "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+          "speakerName": "四国めたん",
+          "styleId": 2,
+          "styleName": "ノーマル",
+          "speedScale": 1.05,
+          "volumeScale": 1,
+          "pitchScale": 0,
+          "intonationScale": 1,
+          "cacheKey": "5bd3a13027ca466b6f1e8979860b4bf881cde77071d7456ba039aa6bb19eee67",
+          "textSha256": "236546cf99a2b4fd102734523d0835917d94a9ab34f5e75943bb1469b68be20c",
+          "synthesisText": "まず、ジェーソンに台詞と画面の内容を書きます。これが動画の設計図です。",
+          "kana": "マ'ズ、ジェ'エソンニ/セリ_フト'/ガメンノ'/ナイヨオオ'/カキマ'_ス、コレガ'/ドオガノ'/セッケエ'ズデ_ス"
+        }
+      },
+      {
+        "id": "voice:flow-1",
+        "type": "voice",
+        "sourcePath": "voicevox:3e9700b131284e5d947f27ec0157491ec27bcc5f09429d5fbb676a7d912b191d",
+        "resolvedPath": ".json-video-work/json-motion-demo/voice/3e9700b131284e5d947f27ec0157491ec27bcc5f09429d5fbb676a7d912b191d.wav",
+        "sha256": "d2fb7e0b587a4dfff15bdb77cb2a2f9fc729da5644746bfc550203cd710cb18a",
+        "mime": "audio/wav",
+        "sizeBytes": 338988,
+        "durationMs": 7061,
+        "voice": {
+          "provider": "voicevox",
+          "engineVersion": "0.25.1",
+          "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+          "speakerName": "四国めたん",
+          "styleId": 2,
+          "styleName": "ノーマル",
+          "speedScale": 1.05,
+          "volumeScale": 1,
+          "pitchScale": 0,
+          "intonationScale": 1,
+          "cacheKey": "3e9700b131284e5d947f27ec0157491ec27bcc5f09429d5fbb676a7d912b191d",
+          "textSha256": "d69f86a9e2f0270133f50665f83e9858184c2f2b12136c6a1a6b3b514d88cf6e",
+          "synthesisText": "次に、台詞から音声をつくります。音声の長さに合わせて、字幕と画面の表示時間を決めます。",
+          "kana": "ツギ'ニ、セリ_フカラ'/オ'ンセエオ/_ツクリマ'_ス、オ'ンセエノ/ナガ'サニ/アワセ'テ、ジマ_クト'/ガメンノ'/ヒョオジ'/ジカンオ'/キメマ'_ス"
+        }
+      },
+      {
+        "id": "voice:flow-2",
+        "type": "voice",
+        "sourcePath": "voicevox:401fb18ba5fc496a416ad58c3e2340afec8cd869ce4f871fbd0858cd7a5161bb",
+        "resolvedPath": ".json-video-work/json-motion-demo/voice/401fb18ba5fc496a416ad58c3e2340afec8cd869ce4f871fbd0858cd7a5161bb.wav",
+        "sha256": "7d236518a9692b3c156d594036dba1fccd27518f2b1ff0a083ffb3085c4976b1",
+        "mime": "audio/wav",
+        "sizeBytes": 323116,
+        "durationMs": 6731,
+        "voice": {
+          "provider": "voicevox",
+          "engineVersion": "0.25.1",
+          "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+          "speakerName": "四国めたん",
+          "styleId": 2,
+          "styleName": "ノーマル",
+          "speedScale": 1.05,
+          "volumeScale": 1,
+          "pitchScale": 0,
+          "intonationScale": 1,
+          "cacheKey": "401fb18ba5fc496a416ad58c3e2340afec8cd869ce4f871fbd0858cd7a5161bb",
+          "textSha256": "b0ede017fbd8c28d509141d8e9b93f70cf6ff7566100db7b3dcdf688efca3aac",
+          "synthesisText": "続いて、絵コンテを確認します。読み方と見やすさを点検し、伝わりにくい部分を直します。",
+          "kana": "ツズイテ'、エコ'ンテオ/カクニン'/シマ'_ス、ヨミカタ'ト/ミヤス'サオ/テンケン'/シ'、_ツタワリニク'イ/ブ'ブンオ/ナオシマ'_ス"
+        }
+      },
+      {
+        "id": "voice:flow-3",
+        "type": "voice",
+        "sourcePath": "voicevox:ad915343627a17e34c8650ae458e3200c08687728ab45189ea548f72da046dca",
+        "resolvedPath": ".json-video-work/json-motion-demo/voice/ad915343627a17e34c8650ae458e3200c08687728ab45189ea548f72da046dca.wav",
+        "sha256": "97e1a087daa3b7e72bbf62418a2c4c0b6e6a87bfc921ba050fcd94a79bdb548a",
+        "mime": "audio/wav",
+        "sizeBytes": 344108,
+        "durationMs": 7168,
+        "voice": {
+          "provider": "voicevox",
+          "engineVersion": "0.25.1",
+          "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+          "speakerName": "四国めたん",
+          "styleId": 2,
+          "styleName": "ノーマル",
+          "speedScale": 1.05,
+          "volumeScale": 1,
+          "pitchScale": 0,
+          "intonationScale": 1,
+          "cacheKey": "ad915343627a17e34c8650ae458e3200c08687728ab45189ea548f72da046dca",
+          "textSha256": "bf2d947ae2149d277d7e6fb83694630fd79bfccdc4c39b0bd45cff78dc75f529",
+          "synthesisText": "確認できたら、動画を書き出します。設計した流れが、音声と映像のついた一本の動画になります。",
+          "kana": "カクニン'/デキ'タラ、ドオガオ'/カキダシマ'_ス、セッケエ'/_シタ'/ナガレ'ガ、オ'ンセエト/エエゾオノ'/ツ'イタ/イッ'ポンノ/ドオガニ'/ナリマ'_ス"
+        }
+      },
+      {
+        "id": "voice:outro",
+        "type": "voice",
+        "sourcePath": "voicevox:78a461ba8a38aad2abf355ebf0b11736ba71a48be0a7130031dd1d38e0983c60",
+        "resolvedPath": ".json-video-work/json-motion-demo/voice/78a461ba8a38aad2abf355ebf0b11736ba71a48be0a7130031dd1d38e0983c60.wav",
+        "sha256": "1c6c3538a0c15531b31b6f60f857a8917bcff8603fdd61ef1ccfaf6fd0340bb7",
+        "mime": "audio/wav",
+        "sizeBytes": 296492,
+        "durationMs": 6176,
+        "voice": {
+          "provider": "voicevox",
+          "engineVersion": "0.25.1",
+          "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+          "speakerName": "四国めたん",
+          "styleId": 2,
+          "styleName": "ノーマル",
+          "speedScale": 1.05,
+          "volumeScale": 1,
+          "pitchScale": 0,
+          "intonationScale": 1,
+          "cacheKey": "78a461ba8a38aad2abf355ebf0b11736ba71a48be0a7130031dd1d38e0983c60",
+          "textSha256": "c6cd218da1146e92cf6554d1068f94a306433b8587aacbfdeed6982929940ba1",
+          "synthesisText": "読み方を確かめ、動きで関係を伝える。ジェーソンから、説明が伝わる動画へ。",
+          "kana": "ヨミカタ'オ/タ_シカメ'、ウゴキ'デ/カンケエオ'/_ツタエル'、ジェ'エソンカラ、セツメエガ'/_ツタワル'/ドオガエ'"
+        }
+      }
+    ],
+    "scenes": [
+      {
+        "text": "JSONから動画へ。今回は、正しい読み方と、動きで伝える処理の流れを見ていきます。",
+        "visual": {
+          "subtitle": "読みと動きで、伝わり方を変える",
+          "type": "title",
+          "title": "JSONから動画へ"
+        },
+        "subtitle": "読みを指定し、処理の流れを動きで伝える",
+        "id": "intro",
+        "speakerId": "narrator",
+        "holdAfterMs": 400,
+        "sectionId": "explanation",
+        "sectionTitle": "JSONから動画へ",
+        "startFrame": 0,
+        "durationInFrames": 206,
+        "audioDurationMs": 6443,
+        "subtitleText": "読みを指定し、処理の流れを動きで伝える",
+        "resolvedAudioAssetId": "voice:intro"
+      },
+      {
+        "text": "画面にはJSONと表示します。読み上げるときは、ジェーソン。表示と発音を分けて指定できます。",
+        "visual": {
+          "right": "ジェーソン",
+          "type": "split",
+          "left": "JSON",
+          "leftTitle": "画面で見せる表記",
+          "rightTitle": "音声で伝える読み"
+        },
+        "subtitle": "画面は「JSON」、音声は「ジェーソン」",
+        "id": "reading",
+        "speakerId": "narrator",
+        "holdAfterMs": 400,
+        "sectionId": "explanation",
+        "sectionTitle": "JSONから動画へ",
+        "startFrame": 206,
+        "durationInFrames": 221,
+        "audioDurationMs": 6944,
+        "subtitleText": "画面は「JSON」、音声は「ジェーソン」",
+        "resolvedAudioAssetId": "voice:reading"
+      },
+      {
+        "text": "まず、JSONに台詞と画面の内容を書きます。これが動画の設計図です。",
+        "visual": {
+          "steps": [
+            {
+              "detail": "台詞と画面を指定",
+              "title": "JSON原稿"
+            },
+            {
+              "detail": "音声の尺に同期",
+              "title": "音声と字幕"
+            },
+            {
+              "detail": "文字・図・読みを点検",
+              "title": "絵コンテ確認"
+            },
+            {
+              "detail": "音声付き動画へ",
+              "title": "動画の書き出し"
+            }
+          ],
+          "type": "flow",
+          "title": "原稿が動画になるまで",
+          "activeStep": 0
+        },
+        "subtitle": "JSON原稿に、台詞と画面の内容を書く",
+        "id": "flow-0",
+        "speakerId": "narrator",
+        "holdAfterMs": 500,
+        "sectionId": "explanation",
+        "sectionTitle": "JSONから動画へ",
+        "startFrame": 427,
+        "durationInFrames": 177,
+        "audioDurationMs": 5376,
+        "subtitleText": "JSON原稿に、台詞と画面の内容を書く",
+        "resolvedAudioAssetId": "voice:flow-0"
+      },
+      {
+        "text": "次に、台詞から音声をつくります。音声の長さに合わせて、字幕と画面の表示時間を決めます。",
+        "visual": {
+          "steps": [
+            {
+              "detail": "台詞と画面を指定",
+              "title": "JSON原稿"
+            },
+            {
+              "detail": "音声の尺に同期",
+              "title": "音声と字幕"
+            },
+            {
+              "detail": "文字・図・読みを点検",
+              "title": "絵コンテ確認"
+            },
+            {
+              "detail": "音声付き動画へ",
+              "title": "動画の書き出し"
+            }
+          ],
+          "type": "flow",
+          "title": "原稿が動画になるまで",
+          "activeStep": 1
+        },
+        "subtitle": "音声の長さに、字幕と画面を合わせる",
+        "id": "flow-1",
+        "speakerId": "narrator",
+        "holdAfterMs": 500,
+        "sectionId": "explanation",
+        "sectionTitle": "JSONから動画へ",
+        "startFrame": 604,
+        "durationInFrames": 227,
+        "audioDurationMs": 7061,
+        "subtitleText": "音声の長さに、字幕と画面を合わせる",
+        "resolvedAudioAssetId": "voice:flow-1"
+      },
+      {
+        "text": "続いて、絵コンテを確認します。読み方と見やすさを点検し、伝わりにくい部分を直します。",
+        "visual": {
+          "steps": [
+            {
+              "detail": "台詞と画面を指定",
+              "title": "JSON原稿"
+            },
+            {
+              "detail": "音声の尺に同期",
+              "title": "音声と字幕"
+            },
+            {
+              "detail": "文字・図・読みを点検",
+              "title": "絵コンテ確認"
+            },
+            {
+              "detail": "音声付き動画へ",
+              "title": "動画の書き出し"
+            }
+          ],
+          "type": "flow",
+          "title": "原稿が動画になるまで",
+          "activeStep": 2
+        },
+        "subtitle": "読み方と見やすさを確認して修正",
+        "id": "flow-2",
+        "speakerId": "narrator",
+        "holdAfterMs": 500,
+        "sectionId": "explanation",
+        "sectionTitle": "JSONから動画へ",
+        "startFrame": 831,
+        "durationInFrames": 217,
+        "audioDurationMs": 6731,
+        "subtitleText": "読み方と見やすさを確認して修正",
+        "resolvedAudioAssetId": "voice:flow-2"
+      },
+      {
+        "text": "確認できたら、動画を書き出します。設計した流れが、音声と映像のついた一本の動画になります。",
+        "visual": {
+          "steps": [
+            {
+              "detail": "台詞と画面を指定",
+              "title": "JSON原稿"
+            },
+            {
+              "detail": "音声の尺に同期",
+              "title": "音声と字幕"
+            },
+            {
+              "detail": "文字・図・読みを点検",
+              "title": "絵コンテ確認"
+            },
+            {
+              "detail": "音声付き動画へ",
+              "title": "動画の書き出し"
+            }
+          ],
+          "type": "flow",
+          "title": "原稿が動画になるまで",
+          "activeStep": 3
+        },
+        "subtitle": "確認した内容を、音声付き動画にする",
+        "id": "flow-3",
+        "speakerId": "narrator",
+        "holdAfterMs": 500,
+        "sectionId": "explanation",
+        "sectionTitle": "JSONから動画へ",
+        "startFrame": 1048,
+        "durationInFrames": 231,
+        "audioDurationMs": 7168,
+        "subtitleText": "確認した内容を、音声付き動画にする",
+        "resolvedAudioAssetId": "voice:flow-3"
+      },
+      {
+        "text": "読み方を確かめ、動きで関係を伝える。JSONから、説明が伝わる動画へ。",
+        "visual": {
+          "subtitle": "JSONから、説明が伝わる動画へ",
+          "type": "outro",
+          "title": "読みを確かめ、動きで伝える"
+        },
+        "subtitle": "読みを確かめ、動きで関係を伝える",
+        "id": "outro",
+        "speakerId": "narrator",
+        "holdAfterMs": 650,
+        "sectionId": "explanation",
+        "sectionTitle": "JSONから動画へ",
+        "startFrame": 1279,
+        "durationInFrames": 205,
+        "audioDurationMs": 6176,
+        "subtitleText": "読みを確かめ、動きで関係を伝える",
+        "resolvedAudioAssetId": "voice:outro"
+      }
+    ],
+    "totalFrames": 1484,
+    "fps": 30,
+    "credits": [
+      "VOICEVOX:四国めたん"
+    ],
+    "warnings": []
+  },
+  "media": {
+    "mediaPath": "final/video.mp4",
+    "durationSeconds": 49.467,
+    "sizeBytes": 2832945,
+    "bitRate": 458155,
+    "video": {
+      "codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "pixelFormat": "yuv420p"
+    },
+    "audio": {
+      "codec": "aac",
+      "sampleRate": 48000,
+      "channels": 2
+    }
+  },
+  "thumbnail": {
+    "width": 1280,
+    "height": 720
+  },
+  "captionsEndSeconds": 48.833,
+  "chapterCount": 1,
+  "fileCount": 17,
+  "checks": {
+    "manifestHashes": true,
+    "requiredArtifacts": true,
+    "lockIntegrity": true,
+    "reportLockHash": true,
+    "mediaContract": true,
+    "captionsWithinDuration": true,
+    "chaptersOrdered": true
+  }
+}

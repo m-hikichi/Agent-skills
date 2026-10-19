@@ -1,0 +1,12 @@
+{
+  "eval_id": 0,
+  "eval_name": "complete-feature-builds-full-trace-chain",
+  "prompt": "添付したSpec Kit v1.0.xのfeatureディレクトリ一式から、publish品質の要件定義書・要件に紐づく機能一覧・機能に基づくテスト一覧・統合レビューHTML・canonical JSONを生成してください。spec以外の成果物にしかない契約、状態遷移、NFR検証も根拠付きで反映してください。",
+  "assertions": [
+    "5成果物が生成されcanonical schema_version=1、speckit_compatibility=1.0.xである",
+    "全current REQからFNC、全current FNCからTSTへ到達し孤立要素がない",
+    "Acceptance 4件、Edge Case 2件、SC 3件がsource locator付きで存在する",
+    "状態遷移3件と未定義遷移拒否、POST/PATCH契約、SC-001/SC-003のplan測定、SC-002のquickstart確認がテスト化される",
+    "3 MarkdownとHTMLがcanonical JSONから決定的に再生成できる"
+  ]
+}

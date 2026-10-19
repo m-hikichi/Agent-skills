@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "projects": {
+    "video-project.json": {
+      "revision": 1,
+      "digest": "40bd94f25e494fd786677ccf27d4a64f3f8af84c4e58972e68d96faadb0483e4",
+      "updatedAt": "2026-10-17T23:09:36.764Z"
+    }
+  },
+  "history": {
+    "video-project.json": [
+      {
+        "revision": 1,
+        "digest": "40bd94f25e494fd786677ccf27d4a64f3f8af84c4e58972e68d96faadb0483e4",
+        "updatedAt": "2026-10-17T23:09:36.764Z"
+      }
+    ]
+  }
+}

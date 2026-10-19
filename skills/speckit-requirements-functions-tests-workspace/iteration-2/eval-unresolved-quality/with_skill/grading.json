@@ -1,0 +1,8 @@
+{
+  "expectations": [
+    {"text": "未決の金額・通貨を補完しない", "passed": true, "evidence": "入力文の未決表現を保持し、具体的な金額・通貨を追加していない。"},
+    {"text": "未解決事項とchecklistを根拠付きで表示する", "passed": true, "evidence": "canonicalと派生文書にsource locator付きopen question、品質警告を収録。"},
+    {"text": "draft成果物は生成できるがpublishは拒否される", "passed": true, "evidence": "draft generate/checkは終了コード0、publish checkは終了コード1。"},
+    {"text": "6軸の品質診断を表示する", "passed": true, "evidence": "report.axesとHTML概要に6軸を個別表示。"}
+  ]
+}

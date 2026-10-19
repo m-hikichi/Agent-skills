@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-17T16:04:08.711Z",
+  "assets": [
+    {
+      "id": "G-001",
+      "path": "slides/assets/executive-volume-chart.svg",
+      "pages": [
+        3
+      ],
+      "type": "chart",
+      "source": {
+        "kind": "data",
+        "path": "slides/assets/sources/executive-volume-chart.csv",
+        "url": null
+      },
+      "license": null,
+      "alt": "配送確認1,480件、契約変更920件、請求760件が月間4,380件の72%を占める横棒グラフ",
+      "decorative": false,
+      "crop": null,
+      "generator": {
+        "kind": "vega-lite",
+        "spec_path": "slides/assets/sources/executive-volume-chart.vl.json",
+        "model": null,
+        "prompt_sha256": null
+      },
+      "sha256": "3f4d7385a252126972d2958393ac53f37060298e23a37d8a81a05fa3a31c21c3"
+    },
+    {
+      "id": "G-002",
+      "path": "slides/assets/executive-search-flow.svg",
+      "pages": [
+        4
+      ],
+      "type": "diagram",
+      "source": {
+        "kind": "data",
+        "path": "slides/assets/sources/executive-search-flow.mmd",
+        "url": null
+      },
+      "license": null,
+      "alt": "現状は5つの情報源を順番に探し、PoCでは横断検索から根拠候補を提示するbefore-after図",
+      "decorative": false,
+      "crop": null,
+      "generator": {
+        "kind": "mermaid",
+        "spec_path": "slides/assets/sources/executive-search-flow.mmd",
+        "model": null,
+        "prompt_sha256": null
+      },
+      "sha256": "fc667b06ab0423c93e0f2626c1b17ebaf2f6222b6aaca37a280c527f5cf30fdb"
+    },
+    {
+      "id": "G-003",
+      "path": "slides/assets/executive-decision-gate.svg",
+      "pages": [
+        6
+      ],
+      "type": "diagram",
+      "source": {
+        "kind": "data",
+        "path": "slides/assets/sources/executive-decision-gate.mmd",
+        "url": null
+      },
+      "license": null,
+      "alt": "一次回答時間17分以下、再問い合わせ率18%以下、週次更新2時間以下をすべて満たす本導入判定ゲート",
+      "decorative": false,
+      "crop": null,
+      "generator": {
+        "kind": "mermaid",
+        "spec_path": "slides/assets/sources/executive-decision-gate.mmd",
+        "model": null,
+        "prompt_sha256": null
+      },
+      "sha256": "b1a84929bc51840411802c59bb0a6fe0d1046884d5429021848f8153eb3efdbc"
+    },
+    {
+      "id": "G-004",
+      "path": "slides/assets/executive-roadmap.svg",
+      "pages": [
+        7
+      ],
+      "type": "diagram",
+      "source": {
+        "kind": "data",
+        "path": "slides/assets/sources/executive-roadmap.mmd",
+        "url": null
+      },
+      "license": null,
+      "alt": "1〜2週で基準測定、3〜10週で限定運用、11〜13週で評価し、毎週品質監査を行うロードマップ",
+      "decorative": false,
+      "crop": null,
+      "generator": {
+        "kind": "mermaid",
+        "spec_path": "slides/assets/sources/executive-roadmap.mmd",
+        "model": null,
+        "prompt_sha256": null
+      },
+      "sha256": "e35695f176cb726a8f6f592502cb535a8a2d20109ba88d53b5b8738a8e889592"
+    }
+  ]
+}

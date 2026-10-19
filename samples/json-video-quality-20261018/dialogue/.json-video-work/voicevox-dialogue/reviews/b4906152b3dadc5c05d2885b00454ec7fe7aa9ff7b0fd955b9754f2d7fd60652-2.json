@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "voicevox-dialogue",
+  "lockHash": "b4906152b3dadc5c05d2885b00454ec7fe7aa9ff7b0fd955b9754f2d7fd60652",
+  "iteration": 2,
+  "status": "pass",
+  "reviewedAt": "2026-10-17T23:09:37.7284216Z",
+  "gates": {
+    "noOverflowOrClipping": true,
+    "noUnintendedOverlap": true,
+    "safeMargins": true,
+    "readableContrast": true,
+    "subtitleReadable": true,
+    "visualMatchesContent": true,
+    "consistentTypography": true,
+    "thumbnailReadable": true
+  },
+  "issues": [],
+  "questionsForUser": []
+}

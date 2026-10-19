@@ -1,0 +1,164 @@
+{
+  "lockHash": "0016a3722402bd96f756a8caa5edb01e7f54ca1ec8e0be81e2de58141225c44a",
+  "decodeAllFrames": true,
+  "peak": 0.7410626411437988,
+  "clippedSampleFraction": 0,
+  "audioSourceComparison": "24kHz mono PCM; cross-correlation within +/-2 video frames of locked scene start",
+  "maxAllowedOffsetMs": 66.66666666666667,
+  "limitation": "Objective waveform/timing checks; pronunciation and subjective listening are not assessed.",
+  "scenes": [
+    {
+      "id": "template-title",
+      "startSeconds": 0,
+      "durationSeconds": 6.3,
+      "midpointFrame": 94,
+      "motionOffsets": [
+        0,
+        4,
+        12,
+        30,
+        185
+      ],
+      "audio": {
+        "correlation": 0.9903136235498282,
+        "offsetSamples": 1024,
+        "offsetMs": 42.666666666666664,
+        "sourceDurationSeconds": 5.728
+      }
+    },
+    {
+      "id": "template-bullets",
+      "startSeconds": 6.3,
+      "durationSeconds": 6.5,
+      "midpointFrame": 286,
+      "motionOffsets": [
+        0,
+        4,
+        12,
+        30,
+        191
+      ],
+      "audio": {
+        "correlation": 0.9899317604433872,
+        "offsetSamples": 1024,
+        "offsetMs": 42.666666666666664,
+        "sourceDurationSeconds": 5.92
+      }
+    },
+    {
+      "id": "template-split",
+      "startSeconds": 12.8,
+      "durationSeconds": 7.5,
+      "midpointFrame": 496,
+      "motionOffsets": [
+        0,
+        4,
+        12,
+        30,
+        221
+      ],
+      "audio": {
+        "correlation": 0.9927050472795728,
+        "offsetSamples": 1024,
+        "offsetMs": 42.666666666666664,
+        "sourceDurationSeconds": 6.922666666666666
+      }
+    },
+    {
+      "id": "template-media",
+      "startSeconds": 20.3,
+      "durationSeconds": 5.966666666666667,
+      "midpointFrame": 698,
+      "motionOffsets": [
+        0,
+        4,
+        12,
+        30,
+        175
+      ],
+      "audio": {
+        "correlation": 0.9938199564392234,
+        "offsetSamples": 1024,
+        "offsetMs": 42.666666666666664,
+        "sourceDurationSeconds": 5.408
+      }
+    },
+    {
+      "id": "template-code",
+      "startSeconds": 26.266666666666666,
+      "durationSeconds": 6.633333333333334,
+      "midpointFrame": 887,
+      "motionOffsets": [
+        0,
+        4,
+        12,
+        30,
+        195
+      ],
+      "audio": {
+        "correlation": 0.9926791536499376,
+        "offsetSamples": 1024,
+        "offsetMs": 42.666666666666664,
+        "sourceDurationSeconds": 6.08
+      }
+    },
+    {
+      "id": "template-quote",
+      "startSeconds": 32.9,
+      "durationSeconds": 6.633333333333334,
+      "midpointFrame": 1086,
+      "motionOffsets": [
+        0,
+        4,
+        12,
+        30,
+        195
+      ],
+      "audio": {
+        "correlation": 0.9878636168930696,
+        "offsetSamples": 1024,
+        "offsetMs": 42.666666666666664,
+        "sourceDurationSeconds": 6.08
+      }
+    },
+    {
+      "id": "template-metric",
+      "startSeconds": 39.53333333333333,
+      "durationSeconds": 4.266666666666667,
+      "midpointFrame": 1250,
+      "motionOffsets": [
+        0,
+        4,
+        12,
+        30,
+        124
+      ],
+      "audio": {
+        "correlation": 0.9931386621272843,
+        "offsetSamples": 1024,
+        "offsetMs": 42.666666666666664,
+        "sourceDurationSeconds": 3.7013333333333334
+      }
+    },
+    {
+      "id": "template-outro",
+      "startSeconds": 43.8,
+      "durationSeconds": 5.633333333333334,
+      "midpointFrame": 1398,
+      "motionOffsets": [
+        0,
+        4,
+        12,
+        30,
+        165
+      ],
+      "audio": {
+        "correlation": 0.9914761226921613,
+        "offsetSamples": 1024,
+        "offsetMs": 42.666666666666664,
+        "sourceDurationSeconds": 5.056
+      }
+    }
+  ],
+  "passed": true
+}

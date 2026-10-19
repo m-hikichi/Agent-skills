@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>備品貸出管理デモ　機能一覧</title>
+<style>
+:root{ --grid:#BFBFBF; --hdr:#C6D9F1; --dai:#4BACC6; --chu:#92CDDC;
+       --sho0:#DAEEF3; --sho1:#FDE9D9; --future:#EFEFEF; }
+*{ box-sizing:border-box; }
+body{ font-family:"游ゴシック","Yu Gothic",YuGothic,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;
+      font-size:13px; color:#222; margin:0; padding:24px; background:#fff; line-height:1.5; }
+.titlebar{ display:flex; align-items:flex-end; justify-content:space-between;
+           gap:24px; margin:4px 0 16px; flex-wrap:wrap; }
+.title{ font-size:26px; font-weight:700; margin:0; letter-spacing:.04em; }
+table.meta{ border-collapse:collapse; font-size:12px; }
+table.meta td{ border:1px solid var(--grid); padding:3px 10px; white-space:nowrap; }
+table.meta td.k{ background:var(--hdr); text-align:center; }
+h2{ font-size:16px; margin:6px 0 8px; padding-left:8px; border-left:6px solid var(--dai); }
+table{ border-collapse:collapse; width:100%; table-layout:fixed; }
+col.w025{ width:2.5%; } col.w055{ width:5.5%; } col.w060{ width:6%; }
+col.w065{ width:6.5%; } col.w090{ width:9%; } col.w100{ width:10%; }
+col.w130{ width:13%; } col.w160{ width:16%; } col.w180{ width:18%; }
+col.w220{ width:22%; } col.w240{ width:24%; } col.w260{ width:26%; }
+col.w295{ width:29.5%; } col.w440{ width:44%; } col.w720{ width:72%; }
+col.w780{ width:78%; }
+th,td{ border:1px solid var(--grid); padding:5px 7px; vertical-align:top;
+       word-break:break-word; overflow-wrap:anywhere; }
+thead th{ background:var(--hdr); text-align:center; vertical-align:middle;
+          position:sticky; top:46px; z-index:2; }  /* タブバー(上部固定)の下に貼り付く */
+td.c{ text-align:center; }
+td.dai,td.chu,td.sho0,td.sho1{ vertical-align:middle; font-weight:600; }
+td.dai{ background:var(--dai); }
+td.chu{ background:var(--chu); }
+td.sho0{ background:var(--sho0); }
+td.sho1{ background:var(--sho1); }
+td.g{ background:#fff; }
+td.rule{ font-size:12.5px; }
+td.frcol{ font-size:12px; color:#555; white-space:nowrap; }
+.scr{ font-size:11px; color:#1f6f86; font-weight:700;
+      background:#eaf4f8; border:1px solid #c7e2ea; border-radius:3px; padding:0 3px; }
+.muted{ color:#aaa; }
+/* 将来対応（将来バージョンで提供予定）: 淡色＋「将来対応」バッジで控えめに示す（取消線は使わない） */
+td.future{ background:var(--future); color:#888; }
+td.dai.future,td.chu.future,td.sho0.future,td.sho1.future{ font-weight:600; }
+.ftag{ font-size:10.5px; color:#8a5a00; background:#fdeccb; border:1px solid #f0d39a;
+       border-radius:3px; padding:0 4px; margin-right:4px; white-space:nowrap; }
+.legend{ font-size:11px; color:#888; margin:6px 0 0; }
+/* シート切替（上部に固定。見つけやすく、長い表でもスクロール追従で確認しやすい） */
+.panel{ display:none; }
+.panel.active{ display:block; }
+.tabbar{ position:sticky; top:0; z-index:6; display:flex; gap:4px; align-items:flex-end;
+         background:#fff; border-bottom:2px solid var(--dai); padding:6px 0 0; margin:0 0 12px;
+         overflow-x:auto; min-height:40px; }
+.tabbar button{ font:inherit; font-size:13px; border:1px solid #d4dde4; border-bottom:none;
+                background:#eef2f5; color:#456; padding:7px 18px; border-radius:6px 6px 0 0;
+                cursor:pointer; white-space:nowrap; }
+.tabbar button:hover{ background:#e3eaef; }
+.tabbar button.active{ background:var(--dai); color:#fff; font-weight:700; border-color:var(--dai); }
+@media print{
+  body{ padding:0; font-size:10px; }
+  thead th{ position:static; }
+  tr{ break-inside:avoid; }
+  thead{ display:table-header-group; }  /* 各ページにヘッダを繰り返す */
+  .tabbar{ display:none; }
+  .panel{ display:block !important; }   /* 印刷は全シートを通しで出す */
+  .panel + .panel{ page-break-before:always; }
+}
+</style>
+</head>
+<body>
+  <div class="titlebar">
+    <h1 class="title">備品貸出管理デモ　機能一覧</h1>
+    <table class="meta"><tr><td class="k">作成日</td><td>2026年06月01日</td></tr><tr><td class="k">作成者</td><td>サンプル作成者</td></tr><tr><td class="k">更新日</td><td>2026年06月14日</td></tr><tr><td class="k">更新者</td><td>サンプル作成者</td></tr></table>
+  </div>
+  <nav class="tabbar">
+    <button class="active" data-target="panel-func">機能一覧</button>
+    <button class="" data-target="panel-screens">画面一覧</button>
+    <button class="" data-target="panel-us">ユーザーストーリー</button>
+    <button class="" data-target="panel-crit">成功基準ほか</button>
+    <button class="" data-target="panel-ent">データエンティティ</button>
+  </nav>
+  <section class="panel active" id="panel-func">
+    <h2 id="func">機能一覧</h2>
+    <table class="funclist">
+    <colgroup><col class="w065"><col class="w025"><col class="w065"><col class="w025"><col class="w065"><col class="w025"><col class="w090"><col class="w160"><col class="w295"><col class="w130"><col class="w055"></colgroup>
+      <thead><tr><th>大分類</th><th>大分類ID</th><th>中分類</th><th>中分類ID</th><th>小分類</th><th>小分類ID</th><th>機能名</th><th>概要</th><th>業務ルール</th><th>画面</th><th>要求ID</th></tr></thead>
+      <tbody>
+      <tr><td class="dai" rowspan="2">利用者管理</td><td class="dai c" rowspan="2">01</td><td class="chu" rowspan="2">認証・権限</td><td class="chu c" rowspan="2">01</td><td class="sho0" rowspan="2">ログイン</td><td class="sho0 c" rowspan="2">01</td><td class="g">利用者認証</td><td class="g">入力された認証情報で利用者を認証する</td><td class="g rule">・未認証の利用者には各機能を提供しない</td><td class="g scrcol"><span class="scr">SCR-001</span> ログイン画面</td><td class="g frcol c">FR-001</td></tr>
+      <tr><td class="g">ロール判定</td><td class="g">利用者のロールに応じて利用可能な機能を判定する</td><td class="g rule">・備品登録・在庫調整・貸出・返却は管理者のみ利用できる</td><td class="g scrcol">全画面共通</td><td class="g frcol c">FR-002</td></tr>
+      <tr><td class="dai" rowspan="5">備品利用</td><td class="dai c" rowspan="5">02</td><td class="chu" rowspan="2">検索</td><td class="chu c" rowspan="2">01</td><td class="sho1" rowspan="2">備品検索</td><td class="sho1 c" rowspan="2">01</td><td class="g">検索条件入力</td><td class="g">備品名・カテゴリ・管理番号で備品を検索する</td><td class="g rule">・各項目は部分一致で検索する</td><td class="g scrcol"><span class="scr">SCR-010</span> 備品検索画面</td><td class="g frcol c">FR-010</td></tr>
+      <tr><td class="g">空き状況表示</td><td class="g">備品ごとの貸出可能数と次回利用可能日時を表示する</td><td class="g rule">・検索結果に備品名・カテゴリ・現在の貸出可能数・次回利用可能日時を表示する</td><td class="g scrcol"><span class="scr">SCR-010</span> 備品検索画面</td><td class="g frcol c">FR-011</td></tr>
+      <tr><td class="chu" rowspan="3">予約</td><td class="chu c" rowspan="3">02</td><td class="sho0" rowspan="3">予約受付</td><td class="sho0 c" rowspan="3">01</td><td class="g">予約登録</td><td class="g">利用期間を指定して備品の予約を登録する</td><td class="g rule">・利用開始日時は終了日時より前であること<br>・登録時に予約番号を発行する</td><td class="g scrcol"><span class="scr">SCR-020</span> 予約入力画面</td><td class="g frcol c">FR-020</td></tr>
+      <tr><td class="g">在庫重複チェック</td><td class="g">指定期間の予約数が利用可能在庫数を超えないか検査する</td><td class="g rule">・在庫数を超える場合は予約を拒否する<br>・拒否時は代替期間を案内する</td><td class="g scrcol"><span class="scr">SCR-020</span> 予約入力画面</td><td class="g frcol c">FR-021</td></tr>
+      <tr><td class="g">予約取消</td><td class="g">貸出開始前の予約を取り消す</td><td class="g rule">・貸出開始後は取消できない</td><td class="g scrcol"><span class="scr">SCR-020</span> 予約入力画面</td><td class="g frcol c">FR-022</td></tr>
+      <tr><td class="dai" rowspan="6">貸出管理</td><td class="dai c" rowspan="6">03</td><td class="chu" rowspan="3">貸出・返却</td><td class="chu c" rowspan="3">01</td><td class="sho1" rowspan="3">窓口処理</td><td class="sho1 c" rowspan="3">01</td><td class="g">貸出登録</td><td class="g">予約番号を確認して備品の貸出を記録する</td><td class="g rule">・有効な予約のみ貸出できる<br>・貸出日時と返却予定日を記録する</td><td class="g scrcol"><span class="scr">SCR-030</span> 貸出返却画面</td><td class="g frcol c">FR-023</td></tr>
+      <tr><td class="g">返却登録</td><td class="g">貸出中の備品を返却済みにする</td><td class="g rule">・返却時に備品状態を利用可能・点検中・故障から選択する<br>・点検中または故障は予約可能在庫から除外する</td><td class="g scrcol"><span class="scr">SCR-030</span> 貸出返却画面</td><td class="g frcol c">FR-024</td></tr>
+      <tr><td class="g">期限超過通知</td><td class="g">返却期限を過ぎた貸出を検出して通知する</td><td class="g rule">・利用者と管理者へ1日1回通知する</td><td class="g scrcol">画面なし（自動処理）</td><td class="g frcol c">FR-025</td></tr>
+      <tr><td class="chu" rowspan="2">備品マスタ</td><td class="chu c" rowspan="2">02</td><td class="sho0" rowspan="2">備品・在庫</td><td class="sho0 c" rowspan="2">01</td><td class="g">備品情報管理</td><td class="g">備品名・カテゴリ・管理番号・在庫数を登録および編集する</td><td class="g rule">・管理番号は備品ごとに一意とする<br>・管理者のみ操作できる</td><td class="g scrcol"><span class="scr">SCR-040</span> 備品管理画面</td><td class="g frcol c">FR-030</td></tr>
+      <tr><td class="g">在庫数調整</td><td class="g">故障や廃棄に応じて備品の在庫数を変更する</td><td class="g rule">・変更理由を必須入力とする<br>・変更前後の在庫数・実施者・実施日時を履歴に残す</td><td class="g scrcol"><span class="scr">SCR-040</span> 備品管理画面</td><td class="g frcol c">FR-031</td></tr>
+      <tr><td class="future" rowspan="1">利用実績</td><td class="future c" rowspan="1">03</td><td class="future" rowspan="1">データ出力</td><td class="future c" rowspan="1">01</td><td class="g future"><span class="ftag">将来対応</span> 月次利用実績CSV出力</td><td class="g future">月次の備品利用実績をCSV形式で出力する</td><td class="g rule future">・出力対象月を指定する<br>・管理者のみ操作できる (SHOULD)</td><td class="g scrcol future"><span class="scr">SCR-050</span> 利用実績画面</td><td class="g frcol c future">FR-040</td></tr>
+      </tbody>
+    </table>
+    <p class="legend">※ 「将来対応」の行は将来バージョンで提供予定。「画面」列の SCR-xxx は「画面一覧」タブに対応。</p>
+  </section>
+  <section class="panel" id="panel-screens">
+    <h2 id="screens">画面一覧（画面マスタ）</h2>
+    <table class="aux"><colgroup><col class="w100"><col class="w220"><col class="w440"><col class="w240"></colgroup>
+      <thead><tr><th>画面ID</th><th>画面名</th><th>概要</th><th>主な対象ロール</th></tr></thead>
+      <tbody>
+      <tr><td class="c">SCR-001</td><td>ログイン画面</td><td>利用者を認証する</td><td>全ロール</td></tr>
+      <tr><td class="c">SCR-010</td><td>備品検索画面</td><td>備品を検索して空き状況を確認する</td><td>利用者／管理者</td></tr>
+      <tr><td class="c">SCR-020</td><td>予約入力画面</td><td>利用期間を指定して予約する</td><td>利用者／管理者</td></tr>
+      <tr><td class="c">SCR-030</td><td>貸出返却画面</td><td>貸出と返却を処理する</td><td>管理者</td></tr>
+      <tr><td class="c">SCR-040</td><td>備品管理画面</td><td>備品情報と在庫数を管理する</td><td>管理者</td></tr>
+      <tr><td class="c future">SCR-050</td><td class="future">利用実績画面（将来対応）</td><td class="future">月次利用実績を確認・出力する</td><td class="future">管理者</td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section class="panel" id="panel-us">
+    <h2 id="us">ユーザーストーリー・受入基準</h2>
+    <table class="aux"><colgroup><col class="w060"><col class="w260"><col class="w060"><col class="w160"><col class="w220"><col class="w240"></colgroup>
+      <thead><tr><th>ID</th><th>ストーリー</th><th>優先度</th><th>スコープ単位</th><th>概要</th><th>受入シナリオ</th></tr></thead>
+      <tbody>
+      <tr><td class="c">US1</td><td>備品を検索して予約する</td><td class="c">P1</td><td>利用者</td><td>貸出可能な備品を検索し利用期間を指定して予約する</td><td>在庫があれば予約番号を発行し、在庫を超える場合は拒否する</td></tr>
+      <tr><td class="c">US2</td><td>貸出と返却を処理する</td><td class="c">P1</td><td>管理者</td><td>予約に基づく貸出と備品状態を含む返却を記録する</td><td>貸出日時・返却予定日・返却時状態が記録される</td></tr>
+      <tr><td class="c">US3</td><td>備品と在庫を管理する</td><td class="c">P2</td><td>管理者</td><td>備品情報を登録し在庫変更理由を記録する</td><td>登録した備品が検索対象になり在庫変更履歴が残る</td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section class="panel" id="panel-crit">
+    <h2 id="crit">成功基準・前提・対象外・要確認事項</h2>
+    <table class="aux"><colgroup><col class="w100"><col class="w180"><col class="w720"></colgroup>
+      <thead><tr><th>区分</th><th>ID／項目</th><th>内容</th></tr></thead>
+      <tbody>
+      <tr><td class="c">成功基準</td><td>SC-001</td><td>利用者は検索開始から3分以内に備品予約を完了できる</td></tr>
+      <tr><td class="c">成功基準</td><td>SC-002</td><td>在庫数を超える重複予約は0件である</td></tr>
+      <tr><td class="c">成功基準</td><td>SC-003</td><td>返却期限超過の通知漏れは0件である</td></tr>
+      <tr><td class="c future">成功基準</td><td class="future">SC-004</td><td class="future">月次利用実績を3操作以内でCSV出力できる（将来対応）</td></tr>
+      <tr><td class="c">前提</td><td>認証・通知基盤</td><td>認証基盤とメール通知基盤は既存サービスを利用できる</td></tr>
+      <tr><td class="c">前提</td><td>管理番号</td><td>管理番号は備品ごとに一意である</td></tr>
+      <tr><td class="c future">対象外</td><td class="future">月次CSV出力</td><td class="future">FR-040／SC-004は将来バージョンで提供する</td></tr>
+      <tr><td class="c">対象外</td><td>購入・会計</td><td>備品の購入申請および会計処理は対象外とする</td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section class="panel" id="panel-ent">
+    <h2 id="ent">主要データエンティティ</h2>
+    <table class="aux"><colgroup><col class="w220"><col class="w780"></colgroup>
+      <thead><tr><th>エンティティ</th><th>説明</th></tr></thead>
+      <tbody>
+      <tr><td>利用者</td><td>備品を検索・予約する利用者。管理者ロールを持つ場合は管理機能も利用できる</td></tr>
+      <tr><td>備品</td><td>備品名・カテゴリ・管理番号・在庫数を持つ貸出対象</td></tr>
+      <tr><td>予約</td><td>利用者・備品・利用期間・状態・予約番号を持つ</td></tr>
+      <tr><td>貸出</td><td>貸出日時・返却予定日・返却日時・備品状態を持つ</td></tr>
+      <tr><td>在庫変更履歴</td><td>在庫数の変更前後・変更理由・実施者・実施日時を持つ</td></tr>
+      </tbody>
+    </table>
+  </section>
+  <script>
+(function(){
+  var tabs=[].slice.call(document.querySelectorAll('.tabbar button'));
+  var panels=[].slice.call(document.querySelectorAll('.panel'));
+  function show(id){
+    panels.forEach(function(p){ p.classList.toggle('active', p.id===id); });
+    tabs.forEach(function(t){ t.classList.toggle('active', t.dataset.target===id); });
+    window.scrollTo(0,0);
+  }
+  tabs.forEach(function(t){ t.addEventListener('click', function(){ show(t.dataset.target); }); });
+})();
+</script>
+</body>
+</html>

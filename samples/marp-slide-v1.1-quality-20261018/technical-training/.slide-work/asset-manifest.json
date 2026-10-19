@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-17T16:04:08.780Z",
+  "assets": [
+    {
+      "id": "G-001",
+      "path": "slides/assets/technical-first-15-flow.svg",
+      "pages": [
+        3
+      ],
+      "type": "diagram",
+      "source": {
+        "kind": "data",
+        "path": "slides/assets/sources/technical-first-15-flow.mmd",
+        "url": null
+      },
+      "license": null,
+      "alt": "検知から影響確認、指揮系統確立、変更凍結、仮説検証へ進む最初の15分のフロー図",
+      "decorative": false,
+      "crop": null,
+      "generator": {
+        "kind": "mermaid",
+        "spec_path": "slides/assets/sources/technical-first-15-flow.mmd",
+        "model": null,
+        "prompt_sha256": null
+      },
+      "sha256": "9bcc1a39fae8455fb0ed30f18dc9c044c06726017da3d321e9e1798c6e510743"
+    },
+    {
+      "id": "G-002",
+      "path": "slides/assets/technical-console.svg",
+      "pages": [
+        4
+      ],
+      "type": "illustration",
+      "source": {
+        "kind": "generated",
+        "path": null,
+        "url": null
+      },
+      "license": null,
+      "alt": "10時2分のversion 2.8.0 deploy後、checkoutだけが504となりpayment依存のtimeoutが増えたannotated log画面",
+      "decorative": false,
+      "crop": null,
+      "generator": {
+        "kind": "other",
+        "spec_path": null,
+        "model": null,
+        "prompt_sha256": null
+      },
+      "sha256": "ca7bb8e39bff94d93a03d22f0ca48e929a4650e05a05926b98a6aa5754ef808e"
+    },
+    {
+      "id": "G-003",
+      "path": "slides/assets/technical-latency-chart.svg",
+      "pages": [
+        5
+      ],
+      "type": "chart",
+      "source": {
+        "kind": "data",
+        "path": "slides/assets/sources/technical-latency-chart.csv",
+        "url": null
+      },
+      "license": null,
+      "alt": "deploy前後のp95 latencyでcheckoutが220msから4200msへ上昇し、searchとprofileはほぼ不変のslope chart",
+      "decorative": false,
+      "crop": null,
+      "generator": {
+        "kind": "vega-lite",
+        "spec_path": "slides/assets/sources/technical-latency-chart.vl.json",
+        "model": null,
+        "prompt_sha256": null
+      },
+      "sha256": "951b30edfc7c22b8cfb0308d2cb870f3dd4a5dfa77c0c8384adbcf43fda0d0fc"
+    },
+    {
+      "id": "G-004",
+      "path": "slides/assets/technical-decision-tree.svg",
+      "pages": [
+        6
+      ],
+      "type": "diagram",
+      "source": {
+        "kind": "data",
+        "path": "slides/assets/sources/technical-decision-tree.mmd",
+        "url": null
+      },
+      "license": null,
+      "alt": "checkoutの遅延からpayment timeout設定とDB pool枯渇の2仮説へ分岐し、旧版比較とpool利用率で切り分けるdecision tree",
+      "decorative": false,
+      "crop": null,
+      "generator": {
+        "kind": "mermaid",
+        "spec_path": "slides/assets/sources/technical-decision-tree.mmd",
+        "model": null,
+        "prompt_sha256": null
+      },
+      "sha256": "21ca2eb4e39a6e1dfa325436eeb54345d0a3333424614525eb0c37a3ba3015af"
+    }
+  ]
+}

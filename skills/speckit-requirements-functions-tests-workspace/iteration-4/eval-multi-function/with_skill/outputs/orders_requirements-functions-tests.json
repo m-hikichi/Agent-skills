@@ -1,0 +1,711 @@
+{
+  "change_impact": [],
+  "context": {
+    "key_entities": [],
+    "overview": "この資料はスキル検証用の架空仕様であり、実在する業務の承認済み要件ではない。",
+    "title": "Feature Specification: 注文登録と取消（架空の検証用仕様）"
+  },
+  "functions": [
+    {
+      "actors": [
+        "注文担当者"
+      ],
+      "basis": "confirmed",
+      "business_rules": [
+        "注文担当者は商品 A の数量を整数 1 件以上 5 件以下で登録できる。登録前に対象注文が存在しないこと。数量 1 と 5 は状態「受付済み」で 1 注文として保存する。数量 0 と 6 は「数量は1～5で入力してください」と表示し、注文を保存しない。",
+        "登録成功時と取消成功時に、注文 ID と操作種別（登録または取消）を持つ監査記録をそれぞれ 1 件作成する。拒否された登録・再取消では監査記録を増やさない。同じ注文の登録後に取消を行うと、その注文 ID の監査記録は登録 1 件・取消 1 件の合計 2 件になる。"
+      ],
+      "exceptions": [],
+      "id": "FNC-001",
+      "inputs": [
+        "商品 A の数量"
+      ],
+      "name": "注文を登録する",
+      "outputs": [
+        "保存状態または拒否メッセージ",
+        "成功時の監査記録"
+      ],
+      "postconditions": [],
+      "preconditions": [
+        "注文担当者としてログイン済み"
+      ],
+      "priority": "unspecified",
+      "rationale": "架空仕様の概要で登録と取消を別業務と明記。FR-003 の監査記録は両機能に共通する条件として扱い、独立した利用者操作には分割しない。",
+      "source_refs": [
+        "spec.md#L10",
+        "spec.md#L12"
+      ],
+      "status": "current",
+      "summary": "注文を登録する",
+      "trigger": "注文担当者が商品 A の数量を入力して登録する"
+    },
+    {
+      "actors": [
+        "注文担当者"
+      ],
+      "basis": "confirmed",
+      "business_rules": [
+        "注文担当者は状態「受付済み」の注文を取り消せる。取消後の状態は「取消済み」となる。同じ注文に再度取消を実行した場合は「既に取消済みです」と表示し、状態を変更しない。",
+        "登録成功時と取消成功時に、注文 ID と操作種別（登録または取消）を持つ監査記録をそれぞれ 1 件作成する。拒否された登録・再取消では監査記録を増やさない。同じ注文の登録後に取消を行うと、その注文 ID の監査記録は登録 1 件・取消 1 件の合計 2 件になる。"
+      ],
+      "exceptions": [],
+      "id": "FNC-002",
+      "inputs": [
+        "対象注文 ID"
+      ],
+      "name": "注文を取り消す",
+      "outputs": [
+        "保存状態または拒否メッセージ",
+        "成功時の監査記録"
+      ],
+      "postconditions": [],
+      "preconditions": [
+        "注文担当者としてログイン済み"
+      ],
+      "priority": "unspecified",
+      "rationale": "架空仕様の概要で登録と取消を別業務と明記。FR-003 の監査記録は両機能に共通する条件として扱い、独立した利用者操作には分割しない。",
+      "source_refs": [
+        "spec.md#L11",
+        "spec.md#L12"
+      ],
+      "status": "current",
+      "summary": "注文を取り消す",
+      "trigger": "注文担当者が受付済み注文の取消を実行する"
+    }
+  ],
+  "generation_digest": "3c73b1ee061c85af70c83b04120d6ecbc07c04f1e4e1fb4b40ec8adc666ba190",
+  "identity_registry": [
+    {
+      "aliases": [],
+      "id": "ASM-001",
+      "kind": "requirement",
+      "lifecycle": "active",
+      "source_key": "assumption:332f345b3e4b91a8c17e28d5525a6074cd88ee3c1eb34b1232c726124efd2e55"
+    },
+    {
+      "aliases": [],
+      "id": "ASM-002",
+      "kind": "requirement",
+      "lifecycle": "active",
+      "source_key": "assumption:e103898d72f2706b6d1580193d296201833c35d1ce56af6d173de5e7081425bb"
+    },
+    {
+      "aliases": [],
+      "id": "FR-001",
+      "kind": "requirement",
+      "lifecycle": "active",
+      "source_key": "functional-requirement:79cb616d5b58fca5c35adc899441ddb347c7ed627efdae677c435072041471ae"
+    },
+    {
+      "aliases": [],
+      "id": "FR-002",
+      "kind": "requirement",
+      "lifecycle": "active",
+      "source_key": "functional-requirement:2e46883316bd5a9f202a3e263d3e54ef9b87b84ffc966996634a827ff38ef6ef"
+    },
+    {
+      "aliases": [],
+      "id": "FR-003",
+      "kind": "requirement",
+      "lifecycle": "active",
+      "source_key": "functional-requirement:fd1c35e2563e85ac495e0c0517dcfc258ef938841899d102053cc5df336f406d"
+    },
+    {
+      "aliases": [],
+      "id": "OOS-001",
+      "kind": "requirement",
+      "lifecycle": "active",
+      "source_key": "out-of-scope:e29d6e2f10b06f3a107fef55267c55bb55856a35a6b2821dec70b8279f4c587e"
+    },
+    {
+      "aliases": [],
+      "id": "FNC-001",
+      "kind": "function",
+      "lifecycle": "active",
+      "source_key": "reviewed-sample:FNC-001"
+    },
+    {
+      "aliases": [],
+      "id": "FNC-002",
+      "kind": "function",
+      "lifecycle": "active",
+      "source_key": "reviewed-sample:FNC-002"
+    },
+    {
+      "aliases": [],
+      "id": "TST-001",
+      "kind": "test-case",
+      "lifecycle": "active",
+      "source_key": "reviewed-sample:TST-001"
+    },
+    {
+      "aliases": [],
+      "id": "TST-002",
+      "kind": "test-case",
+      "lifecycle": "active",
+      "source_key": "reviewed-sample:TST-002"
+    },
+    {
+      "aliases": [],
+      "id": "TST-003",
+      "kind": "test-case",
+      "lifecycle": "active",
+      "source_key": "reviewed-sample:TST-003"
+    },
+    {
+      "aliases": [],
+      "id": "TST-004",
+      "kind": "test-case",
+      "lifecycle": "active",
+      "source_key": "reviewed-sample:TST-004"
+    },
+    {
+      "aliases": [],
+      "id": "TST-005",
+      "kind": "test-case",
+      "lifecycle": "active",
+      "source_key": "reviewed-sample:TST-005"
+    },
+    {
+      "aliases": [],
+      "id": "TST-006",
+      "kind": "test-case",
+      "lifecycle": "active",
+      "source_key": "reviewed-sample:TST-006"
+    },
+    {
+      "aliases": [],
+      "id": "FNC-003",
+      "kind": "function",
+      "lifecycle": "retired",
+      "source_key": "requirement:FR-003"
+    }
+  ],
+  "links": [
+    {
+      "from_id": "FR-001",
+      "to_id": "FNC-001",
+      "type": "requirement-to-function"
+    },
+    {
+      "from_id": "FR-002",
+      "to_id": "FNC-002",
+      "type": "requirement-to-function"
+    },
+    {
+      "from_id": "FR-003",
+      "to_id": "FNC-001",
+      "type": "requirement-to-function"
+    },
+    {
+      "from_id": "FR-003",
+      "to_id": "FNC-002",
+      "type": "requirement-to-function"
+    },
+    {
+      "from_id": "FR-001",
+      "to_id": "TST-001",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "FR-003",
+      "to_id": "TST-001",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "FNC-001",
+      "to_id": "TST-001",
+      "type": "function-to-test"
+    },
+    {
+      "from_id": "FR-001",
+      "to_id": "TST-002",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "FR-003",
+      "to_id": "TST-002",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "FNC-001",
+      "to_id": "TST-002",
+      "type": "function-to-test"
+    },
+    {
+      "from_id": "FR-001",
+      "to_id": "TST-003",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "FR-003",
+      "to_id": "TST-003",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "FNC-001",
+      "to_id": "TST-003",
+      "type": "function-to-test"
+    },
+    {
+      "from_id": "FR-001",
+      "to_id": "TST-004",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "FR-003",
+      "to_id": "TST-004",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "FNC-001",
+      "to_id": "TST-004",
+      "type": "function-to-test"
+    },
+    {
+      "from_id": "FR-001",
+      "to_id": "TST-005",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "FR-002",
+      "to_id": "TST-005",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "FR-003",
+      "to_id": "TST-005",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "FNC-001",
+      "to_id": "TST-005",
+      "type": "function-to-test"
+    },
+    {
+      "from_id": "FNC-002",
+      "to_id": "TST-005",
+      "type": "function-to-test"
+    },
+    {
+      "from_id": "FR-002",
+      "to_id": "TST-006",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "FR-003",
+      "to_id": "TST-006",
+      "type": "requirement-to-test"
+    },
+    {
+      "from_id": "FNC-002",
+      "to_id": "TST-006",
+      "type": "function-to-test"
+    }
+  ],
+  "mode": "spec-only",
+  "open_questions": [
+    {
+      "affected_ids": [
+        "FR-001",
+        "TST-001"
+      ],
+      "id": "Q-001",
+      "question": "FR-001の試験操作・事前条件・観測可能な期待結果を入力資料で具体化してください。",
+      "resolution": "作成担当 independent_review の合成例を、別担当 root が2026-09-26に入力全文と照合。数量 0/1/5/6、取消成功・再取消拒否、成功・拒否の監査件数、機能と要件の多対多対応を確認し、根拠行番号を修正した。これは合成例の整合確認であり実業務の承認でも試験実施結果でもない。",
+      "return_to": "speckit.clarify",
+      "source_refs": [
+        "spec.md#L5",
+        "spec.md#L6",
+        "spec.md#L10",
+        "spec.md#L11",
+        "spec.md#L12",
+        "spec.md#L16",
+        "spec.md#L17"
+      ],
+      "status": "resolved"
+    },
+    {
+      "affected_ids": [
+        "FR-002",
+        "TST-002"
+      ],
+      "id": "Q-002",
+      "question": "FR-002の試験操作・事前条件・観測可能な期待結果を入力資料で具体化してください。",
+      "resolution": "作成担当 independent_review の合成例を、別担当 root が2026-09-26に入力全文と照合。数量 0/1/5/6、取消成功・再取消拒否、成功・拒否の監査件数、機能と要件の多対多対応を確認し、根拠行番号を修正した。これは合成例の整合確認であり実業務の承認でも試験実施結果でもない。",
+      "return_to": "speckit.clarify",
+      "source_refs": [
+        "spec.md#L5",
+        "spec.md#L6",
+        "spec.md#L10",
+        "spec.md#L11",
+        "spec.md#L12",
+        "spec.md#L16",
+        "spec.md#L17"
+      ],
+      "status": "resolved"
+    },
+    {
+      "affected_ids": [
+        "FR-003",
+        "TST-003"
+      ],
+      "id": "Q-003",
+      "question": "FR-003の試験操作・事前条件・観測可能な期待結果を入力資料で具体化してください。",
+      "resolution": "作成担当 independent_review の合成例を、別担当 root が2026-09-26に入力全文と照合。数量 0/1/5/6、取消成功・再取消拒否、成功・拒否の監査件数、機能と要件の多対多対応を確認し、根拠行番号を修正した。これは合成例の整合確認であり実業務の承認でも試験実施結果でもない。",
+      "return_to": "speckit.clarify",
+      "source_refs": [
+        "spec.md#L5",
+        "spec.md#L6",
+        "spec.md#L10",
+        "spec.md#L11",
+        "spec.md#L12",
+        "spec.md#L16",
+        "spec.md#L17"
+      ],
+      "status": "resolved"
+    },
+    {
+      "affected_ids": [],
+      "id": "Q-004",
+      "question": "入力資料と全要件・機能・テストの意味対応を独立レビューし、根拠と判断を記録してください。",
+      "resolution": "作成担当 independent_review の合成例を、別担当 root が2026-09-26に入力全文と照合。数量 0/1/5/6、取消成功・再取消拒否、成功・拒否の監査件数、機能と要件の多対多対応を確認し、根拠行番号を修正した。これは合成例の整合確認であり実業務の承認でも試験実施結果でもない。",
+      "return_to": "semantic-review",
+      "source_refs": [
+        "spec.md#L5",
+        "spec.md#L6",
+        "spec.md#L10",
+        "spec.md#L11",
+        "spec.md#L12",
+        "spec.md#L16",
+        "spec.md#L17"
+      ],
+      "status": "resolved"
+    }
+  ],
+  "profile": "publish",
+  "report": {
+    "axes": {
+      "cross_artifact_consistency": {
+        "errors": [],
+        "metrics": {
+          "errors": 0,
+          "warnings": 0
+        },
+        "status": "passed",
+        "warnings": []
+      },
+      "function_coverage": {
+        "errors": [],
+        "metrics": {
+          "errors": 0,
+          "warnings": 0
+        },
+        "status": "passed",
+        "warnings": []
+      },
+      "render_reproducibility": {
+        "errors": [],
+        "metrics": {
+          "errors": 0,
+          "warnings": 0
+        },
+        "status": "passed",
+        "warnings": []
+      },
+      "requirements_quality": {
+        "errors": [],
+        "metrics": {
+          "errors": 0,
+          "warnings": 1
+        },
+        "status": "passed",
+        "warnings": [
+          "unclassified section: 概要 (spec.md#L3)"
+        ]
+      },
+      "source_integrity": {
+        "errors": [],
+        "metrics": {
+          "errors": 0,
+          "warnings": 0
+        },
+        "status": "passed",
+        "warnings": []
+      },
+      "test_coverage": {
+        "errors": [],
+        "metrics": {
+          "errors": 0,
+          "warnings": 0
+        },
+        "status": "passed",
+        "warnings": []
+      }
+    },
+    "blocking_errors": 0,
+    "profile": "publish",
+    "status": "publishable"
+  },
+  "requirements": [
+    {
+      "basis": "specified",
+      "id": "ASM-001",
+      "kind": "assumption",
+      "parent_id": null,
+      "priority": "unspecified",
+      "source_refs": [
+        "spec.md#L16"
+      ],
+      "statement": "テスト環境には注文担当者としてログイン済みで、商品 A を使用する。各テストは注文と監査記録を空に戻してから開始する。保存内容と監査記録を確認できる検証用の参照手段が利用できる。",
+      "status": "current"
+    },
+    {
+      "basis": "specified",
+      "id": "ASM-002",
+      "kind": "assumption",
+      "parent_id": null,
+      "priority": "unspecified",
+      "source_refs": [
+        "spec.md#L17"
+      ],
+      "statement": "正常登録の注文 ID はテスト環境が発行した値を記録し、取消と監査の確認に使う。ID の形式はこの仕様の検証対象外とする。",
+      "status": "current"
+    },
+    {
+      "basis": "specified",
+      "id": "FR-001",
+      "kind": "functional-requirement",
+      "parent_id": null,
+      "priority": "unspecified",
+      "source_refs": [
+        "spec.md#L10"
+      ],
+      "statement": "注文担当者は商品 A の数量を整数 1 件以上 5 件以下で登録できる。登録前に対象注文が存在しないこと。数量 1 と 5 は状態「受付済み」で 1 注文として保存する。数量 0 と 6 は「数量は1～5で入力してください」と表示し、注文を保存しない。",
+      "status": "current"
+    },
+    {
+      "basis": "specified",
+      "id": "FR-002",
+      "kind": "functional-requirement",
+      "parent_id": null,
+      "priority": "unspecified",
+      "source_refs": [
+        "spec.md#L11"
+      ],
+      "statement": "注文担当者は状態「受付済み」の注文を取り消せる。取消後の状態は「取消済み」となる。同じ注文に再度取消を実行した場合は「既に取消済みです」と表示し、状態を変更しない。",
+      "status": "current"
+    },
+    {
+      "basis": "specified",
+      "id": "FR-003",
+      "kind": "functional-requirement",
+      "parent_id": null,
+      "priority": "unspecified",
+      "source_refs": [
+        "spec.md#L12"
+      ],
+      "statement": "登録成功時と取消成功時に、注文 ID と操作種別（登録または取消）を持つ監査記録をそれぞれ 1 件作成する。拒否された登録・再取消では監査記録を増やさない。同じ注文の登録後に取消を行うと、その注文 ID の監査記録は登録 1 件・取消 1 件の合計 2 件になる。",
+      "status": "current"
+    },
+    {
+      "basis": "specified",
+      "id": "OOS-001",
+      "kind": "out-of-scope",
+      "parent_id": null,
+      "priority": "unspecified",
+      "source_refs": [
+        "spec.md#L21"
+      ],
+      "statement": "在庫、決済、認証方式、性能測定、テスト実行結果は扱わない。",
+      "status": "out-of-scope"
+    }
+  ],
+  "schema_version": 1,
+  "sources": [
+    {
+      "authority": "normative",
+      "locator": "*",
+      "path": "spec.md",
+      "sha256": "c71b1b6bbf563012dca9afa0d45c4e89d42f6b04c458c3a6fc7a590d9ae1b562",
+      "type": "spec"
+    }
+  ],
+  "speckit_compatibility": "1.0.x",
+  "test_cases": [
+    {
+      "automation_status": "unspecified",
+      "basis": "confirmed",
+      "expected_result": "受付済みの注文が 1 件保存される。発行された注文 ID と操作種別「登録」を持つ監査記録が 1 件ある。",
+      "id": "TST-001",
+      "level": "logical-acceptance",
+      "preconditions": [
+        "注文担当者としてログイン済み。商品 A が使える。注文・監査記録を空に戻している。保存内容と監査記録の検証用参照手段が使える。"
+      ],
+      "priority": "unspecified",
+      "rationale": "架空仕様に明示された数量境界・状態・監査件数を具体化した試験仕様。テスト実施済みを意味しない。",
+      "source_refs": [
+        "spec.md#L10",
+        "spec.md#L12",
+        "spec.md#L16"
+      ],
+      "status": "planned",
+      "steps": [
+        "数量 1 を入力して登録する",
+        "保存注文と監査記録を参照する"
+      ],
+      "test_data": [
+        "商品 A、数量 1"
+      ],
+      "title": "数量下限 1 の登録成功",
+      "type": "boundary"
+    },
+    {
+      "automation_status": "unspecified",
+      "basis": "confirmed",
+      "expected_result": "受付済みの注文が 1 件保存される。発行された注文 ID と操作種別「登録」を持つ監査記録が 1 件ある。",
+      "id": "TST-002",
+      "level": "logical-acceptance",
+      "preconditions": [
+        "注文担当者としてログイン済み。商品 A が使える。注文・監査記録を空に戻している。保存内容と監査記録の検証用参照手段が使える。"
+      ],
+      "priority": "unspecified",
+      "rationale": "架空仕様に明示された数量境界・状態・監査件数を具体化した試験仕様。テスト実施済みを意味しない。",
+      "source_refs": [
+        "spec.md#L10",
+        "spec.md#L12",
+        "spec.md#L16"
+      ],
+      "status": "planned",
+      "steps": [
+        "数量 5 を入力して登録する",
+        "保存注文と監査記録を参照する"
+      ],
+      "test_data": [
+        "商品 A、数量 5"
+      ],
+      "title": "数量上限 5 の登録成功",
+      "type": "boundary"
+    },
+    {
+      "automation_status": "unspecified",
+      "basis": "confirmed",
+      "expected_result": "「数量は1～5で入力してください」と表示される。注文も監査記録も 0 件のままである。",
+      "id": "TST-003",
+      "level": "logical-acceptance",
+      "preconditions": [
+        "注文担当者としてログイン済み。商品 A が使える。注文・監査記録を空に戻している。保存内容と監査記録の検証用参照手段が使える。"
+      ],
+      "priority": "unspecified",
+      "rationale": "架空仕様に明示された数量境界・状態・監査件数を具体化した試験仕様。テスト実施済みを意味しない。",
+      "source_refs": [
+        "spec.md#L10",
+        "spec.md#L12",
+        "spec.md#L16"
+      ],
+      "status": "planned",
+      "steps": [
+        "数量 0 を入力して登録する",
+        "メッセージ、保存注文、監査記録を確認する"
+      ],
+      "test_data": [
+        "商品 A、数量 0"
+      ],
+      "title": "下限未満 0 の登録拒否",
+      "type": "boundary"
+    },
+    {
+      "automation_status": "unspecified",
+      "basis": "confirmed",
+      "expected_result": "「数量は1～5で入力してください」と表示される。注文も監査記録も 0 件のままである。",
+      "id": "TST-004",
+      "level": "logical-acceptance",
+      "preconditions": [
+        "注文担当者としてログイン済み。商品 A が使える。注文・監査記録を空に戻している。保存内容と監査記録の検証用参照手段が使える。"
+      ],
+      "priority": "unspecified",
+      "rationale": "架空仕様に明示された数量境界・状態・監査件数を具体化した試験仕様。テスト実施済みを意味しない。",
+      "source_refs": [
+        "spec.md#L10",
+        "spec.md#L12",
+        "spec.md#L16"
+      ],
+      "status": "planned",
+      "steps": [
+        "数量 6 を入力して登録する",
+        "メッセージ、保存注文、監査記録を確認する"
+      ],
+      "test_data": [
+        "商品 A、数量 6"
+      ],
+      "title": "上限超過 6 の登録拒否",
+      "type": "boundary"
+    },
+    {
+      "automation_status": "unspecified",
+      "basis": "confirmed",
+      "expected_result": "注文状態は取消済みである。同じ注文 ID の監査記録は登録 1 件、取消 1 件、合計 2 件である。",
+      "id": "TST-005",
+      "level": "logical-acceptance",
+      "preconditions": [
+        "注文担当者としてログイン済み。商品 A が使える。注文・監査記録を空に戻している。保存内容と監査記録の検証用参照手段が使える。"
+      ],
+      "priority": "unspecified",
+      "rationale": "架空仕様に明示された数量境界・状態・監査件数を具体化した試験仕様。テスト実施済みを意味しない。",
+      "source_refs": [
+        "spec.md#L10",
+        "spec.md#L11",
+        "spec.md#L12",
+        "spec.md#L16"
+      ],
+      "status": "planned",
+      "steps": [
+        "数量 1 で登録し、受付済みであることと注文 ID を確認する",
+        "その注文 ID に取消を実行する",
+        "注文状態と、その注文 ID の監査記録を参照する"
+      ],
+      "test_data": [
+        "商品 A、数量 1、登録時に発行された注文 ID"
+      ],
+      "title": "登録から取消までの監査整合性",
+      "type": "state"
+    },
+    {
+      "automation_status": "unspecified",
+      "basis": "confirmed",
+      "expected_result": "「既に取消済みです」と表示される。注文状態は取消済みのまま、監査記録は登録 1 件・取消 1 件の合計 2 件から増えない。",
+      "id": "TST-006",
+      "level": "logical-acceptance",
+      "preconditions": [
+        "注文担当者としてログイン済み。商品 A が使える。注文・監査記録を空に戻している。保存内容と監査記録の検証用参照手段が使える。"
+      ],
+      "priority": "unspecified",
+      "rationale": "架空仕様に明示された数量境界・状態・監査件数を具体化した試験仕様。テスト実施済みを意味しない。",
+      "source_refs": [
+        "spec.md#L11",
+        "spec.md#L12",
+        "spec.md#L16"
+      ],
+      "status": "planned",
+      "steps": [
+        "準備操作として数量 1 で注文を登録し、発行された注文 ID に取消を 1 回実行する",
+        "同じ注文 ID にもう一度取消を実行する",
+        "メッセージ、注文状態、監査記録を確認する"
+      ],
+      "test_data": [
+        "商品 A、数量 1、準備操作で発行された注文 ID"
+      ],
+      "title": "取消済み注文の再取消を拒否",
+      "type": "negative"
+    }
+  ],
+  "tested_versions": [],
+  "title": "Feature Specification: 注文登録と取消（架空の検証用仕様）",
+  "unclassified": [
+    {
+      "content": "\nこの資料はスキル検証用の架空仕様であり、実在する業務の承認済み要件ではない。\n登録と取消を別々の業務機能とし、監査記録は両方に共通する。\n",
+      "source_ref": "spec.md#L3",
+      "title": "概要"
+    }
+  ]
+}

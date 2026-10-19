@@ -1,0 +1,43 @@
+{
+  "outputDirectory": "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6",
+  "lock": "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/project.lock.json",
+  "video": "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/video.mp4",
+  "thumbnail": "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/thumbnail.png",
+  "captions": "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/captions.srt",
+  "chapters": "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/chapters.txt",
+  "credits": "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/credits.txt",
+  "storyboard": [
+    "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/storyboard/001-intro.png",
+    "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/storyboard/002-reading.png",
+    "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/storyboard/003-flow-0.png",
+    "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/storyboard/004-flow-1.png",
+    "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/storyboard/005-flow-2.png",
+    "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/storyboard/006-flow-3.png",
+    "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/storyboard/007-outro.png"
+  ],
+  "contactSheet": "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/contact-sheet.png",
+  "contactSheets": [
+    "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/contact-sheet.png"
+  ],
+  "manifest": "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/artifact-manifest.json",
+  "report": "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/render-report.json",
+  "inspection": {
+    "mediaPath": "demo/dist/json-motion-demo/41775e5be268612e0d154cc7be1076eac1f9e1fe09f7e98c0102ef4205b0d8d6/video.mp4",
+    "durationSeconds": 49.467,
+    "sizeBytes": 2832945,
+    "bitRate": 458155,
+    "video": {
+      "codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "pixelFormat": "yuv420p"
+    },
+    "audio": {
+      "codec": "aac",
+      "sampleRate": 48000,
+      "channels": 2
+    }
+  },
+  "warnings": []
+}
