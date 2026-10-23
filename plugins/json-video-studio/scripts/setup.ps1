@@ -8,7 +8,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $pluginRoot = Split-Path -Parent $PSScriptRoot
 $imageName = 'json-video-studio:0.1.0'
-$composeFile = Join-Path $pluginRoot 'compose.voicevox.yml'
+$composeFile = Join-Path $pluginRoot 'mcp-server/compose.voicevox.yml'
 
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
     throw 'Docker CLI was not found. Install Docker Desktop or Docker Engine first.'
@@ -31,7 +31,7 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
 
 if (-not $SkipBuild) {
     Write-Host "Building $imageName ..."
-    & docker build --tag $imageName $pluginRoot
+    & docker compose --file (Join-Path $pluginRoot 'mcp-server/compose.build.yml') build runtime
     if ($LASTEXITCODE -ne 0) {
         throw 'Failed to build the JSON Video Studio image.'
     }
@@ -60,7 +60,7 @@ if (-not $SkipVoicevox) {
         if ($attempt -lt 60) { Start-Sleep -Seconds 2 }
     }
     if (-not $voicevoxReady) {
-        throw 'VOICEVOX Engine did not become ready after 60 probes. Check: docker compose --file compose.voicevox.yml logs voicevox'
+        throw 'VOICEVOX Engine did not become ready after 60 probes. Check: docker compose --file mcp-server/compose.voicevox.yml logs voicevox'
     }
 }
 
@@ -71,13 +71,6 @@ Write-Host 'Running the deterministic runtime doctor ...'
 $doctorArgs = @(
     'run', '--rm', '--init',
     '--network', 'json-video-studio',
-    '-e', 'JSON_VIDEO_WORKSPACE_ROOT=/workspace',
-    '-e', 'JSON_VIDEO_DATA_ROOT=/data',
-    '-e', 'JSON_VIDEO_SCHEMA_PATH=/app/schemas/video-project.schema.json',
-    '-e', 'JSON_VIDEO_UI_HOST=0.0.0.0',
-    '-e', 'JSON_VIDEO_ALLOW_CONTAINER_BIND=1',
-    '-e', 'JSON_VIDEO_UI_PORT=43120',
-    '-e', 'VOICEVOX_URL=http://voicevox:50021',
     '-v', "${pluginRoot}:/workspace",
     '-v', "${setupData}:/data",
     $imageName, 'doctor'
@@ -91,7 +84,6 @@ Write-Host 'Validating the bundled minimal project ...'
 $validateArgs = @(
     'run', '--rm', '--init',
     '-e', 'JSON_VIDEO_WORKSPACE_ROOT=/app/examples',
-    '-e', 'JSON_VIDEO_SCHEMA_PATH=/app/schemas/video-project.schema.json',
     $imageName, 'validate', 'minimal.video-project.json'
 )
 & docker @validateArgs
@@ -113,21 +105,11 @@ if (-not $SkipPersonalInstall) {
         $staging = Join-Path $personalRoot ('.json-video-studio.install-' + [guid]::NewGuid().ToString('N'))
         New-Item -ItemType Directory -Path $staging | Out-Null
         try {
-            foreach ($file in @('.mcp.json', '.dockerignore', '.gitignore', 'compose.voicevox.yml', 'Dockerfile', 'README.md', 'THIRD_PARTY_NOTICES.md')) {
-                Copy-Item -LiteralPath (Join-Path $pluginRoot $file) -Destination $staging
-            }
-            foreach ($directory in @('.claude-plugin', 'agents', 'docs', 'examples', 'schemas', 'skills', 'scripts')) {
-                Copy-Item -LiteralPath (Join-Path $pluginRoot $directory) -Destination $staging -Recurse
-            }
-            # Copy runtime source and E2E inputs explicitly. Generated build, coverage,
-            # smoke, and Playwright result directories are intentionally not copied.
-            $runtimeTarget = Join-Path $staging 'runtime'
-            New-Item -ItemType Directory -Path $runtimeTarget | Out-Null
-            foreach ($file in @('package.json', 'package-lock.json', 'tsconfig.json', 'vite.config.ts', 'vitest.config.ts', 'playwright.config.ts', '.npmrc')) {
-                Copy-Item -LiteralPath (Join-Path $pluginRoot "runtime\$file") -Destination $runtimeTarget
-            }
-            foreach ($directory in @('src', 'scripts', 'tests', 'e2e')) {
-                Copy-Item -LiteralPath (Join-Path $pluginRoot "runtime\$directory") -Destination $runtimeTarget -Recurse
+            foreach ($relativePath in Get-Content -LiteralPath (Join-Path $PSScriptRoot 'install-files.txt')) {
+                if (-not $relativePath.Trim()) { continue }
+                $destination = Join-Path $staging $relativePath
+                New-Item -ItemType Directory -Force -Path (Split-Path -Parent $destination) | Out-Null
+                Copy-Item -LiteralPath (Join-Path $pluginRoot $relativePath) -Destination $destination -Recurse
             }
             Move-Item -LiteralPath $staging -Destination $personalPath
             Write-Host "Installed the personal Claude Code plugin at $personalPath"

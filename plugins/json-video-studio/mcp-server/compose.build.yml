@@ -1,0 +1,9 @@
+name: json-video-studio-build
+
+services:
+  runtime:
+    image: json-video-studio:0.1.0
+    build:
+      context: ..
+      dockerfile: mcp-server/Dockerfile
+      target: runtime

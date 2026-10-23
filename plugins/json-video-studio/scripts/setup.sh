@@ -3,7 +3,7 @@ set -eu
 
 plugin_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 image_name='json-video-studio:0.1.0'
-compose_file="$plugin_root/compose.voicevox.yml"
+compose_file="$plugin_root/mcp-server/compose.voicevox.yml"
 
 if ! command -v docker >/dev/null 2>&1; then
   echo 'Docker CLI was not found. Install Docker Desktop or Docker Engine first.' >&2
@@ -19,7 +19,7 @@ fi
 
 if [ "${SKIP_BUILD:-0}" != 1 ]; then
   echo "Building $image_name ..."
-  docker build --tag "$image_name" "$plugin_root"
+  docker compose --file "$plugin_root/mcp-server/compose.build.yml" build runtime
 fi
 
 if [ "${SKIP_VOICEVOX:-0}" != 1 ]; then
@@ -40,7 +40,7 @@ if [ "${SKIP_VOICEVOX:-0}" != 1 ]; then
     attempt=$((attempt + 1))
   done
   if [ "$voicevox_ready" != 1 ]; then
-    echo 'VOICEVOX Engine did not become ready after 60 probes. Check: docker compose --file compose.voicevox.yml logs voicevox' >&2
+    echo 'VOICEVOX Engine did not become ready after 60 probes. Check: docker compose --file mcp-server/compose.voicevox.yml logs voicevox' >&2
     exit 3
   fi
 fi
@@ -51,13 +51,6 @@ mkdir -p "$setup_data"
 echo 'Running the deterministic runtime doctor ...'
 docker run --rm --init \
   --network json-video-studio \
-  -e JSON_VIDEO_WORKSPACE_ROOT=/workspace \
-  -e JSON_VIDEO_DATA_ROOT=/data \
-  -e JSON_VIDEO_SCHEMA_PATH=/app/schemas/video-project.schema.json \
-  -e JSON_VIDEO_UI_HOST=0.0.0.0 \
-  -e JSON_VIDEO_ALLOW_CONTAINER_BIND=1 \
-  -e JSON_VIDEO_UI_PORT=43120 \
-  -e VOICEVOX_URL=http://voicevox:50021 \
   -v "${plugin_root}:/workspace" \
   -v "${setup_data}:/data" \
   "$image_name" doctor
@@ -65,7 +58,6 @@ docker run --rm --init \
 echo 'Validating the bundled minimal project ...'
 docker run --rm --init \
   -e JSON_VIDEO_WORKSPACE_ROOT=/app/examples \
-  -e JSON_VIDEO_SCHEMA_PATH=/app/schemas/video-project.schema.json \
   "$image_name" validate minimal.video-project.json
 
 personal_root="$HOME/.claude/skills"
@@ -83,17 +75,9 @@ else
   staging="$personal_root/.json-video-studio.install-$$"
   mkdir "$staging"
   trap 'rm -rf -- "$staging"' EXIT HUP INT TERM
-  tar -C "$plugin_root" \
-    --exclude='./.git' \
-    --exclude='./.json-video-work' \
-    --exclude='./dist' \
-    --exclude='./runtime/node_modules' \
-    --exclude='./runtime/dist' \
-    --exclude='./runtime/coverage' \
-    --exclude='./runtime/.vite' \
-    --exclude='./runtime/test-results' \
-    --exclude='./runtime/playwright-report' \
-    -cf - . | tar -C "$staging" -xf -
+  tar -C "$plugin_root" -cf "$staging/.install.tar" -T "$plugin_root/scripts/install-files.txt"
+  tar -C "$staging" -xf "$staging/.install.tar"
+  rm -- "$staging/.install.tar"
   mv "$staging" "$personal_path"
   trap - EXIT HUP INT TERM
   echo "Installed the personal Claude Code plugin at $personal_path"

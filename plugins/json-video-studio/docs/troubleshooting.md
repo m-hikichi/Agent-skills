@@ -2,13 +2,13 @@
 
 ## MCPが起動しない
 
-`docker image inspect json-video-studio:0.1.0`と`docker network inspect json-video-studio`を確認します。見つからなければ[READMEのAI不要セットアップ](../README.md#セットアップai不要)を再実行します。`.mcp.json`変更後は新しいClaude Codeセッションを開始します。
+`docker image inspect json-video-studio:0.1.0`と`docker network inspect json-video-studio`を確認します。見つからなければ[READMEのAI不要セットアップ](../README.md#セットアップ)を再実行します。`.mcp.json`変更後は新しいClaude Codeセッションを開始します。
 
 stdoutはMCP JSON-RPC専用です。runtimeの診断ログをstdoutへ追加すると接続が壊れるため、ログはstderrへ出します。
 
 ## リポジトリの変更が反映されない
 
-[READMEの更新手順](../README.md#4-既存の個人用コピーを更新する)に従います。個人用コピーを自動上書きせず、更新後は新しいClaude Codeセッションで確認します。
+[READMEの更新手順](../README.md#セットアップ)に従います。個人用コピーを自動上書きせず、更新後は新しいClaude Codeセッションで確認します。
 
 ## UIを開けない
 
@@ -17,11 +17,11 @@ stdoutはMCP JSON-RPC専用です。runtimeの診断ログをstdoutへ追加す�
 ## VOICEVOXへ接続できない
 
 ```sh
-docker compose -f compose.voicevox.yml ps
-docker compose -f compose.voicevox.yml logs voicevox
+docker compose -f mcp-server/compose.voicevox.yml ps
+docker compose -f mcp-server/compose.voicevox.yml logs voicevox
 ```
 
-Engine起動直後はspeaker modelの準備に時間がかかる場合があります。`http://127.0.0.1:50021/version`が応答することを確認し、[READMEの再診断](../README.md#5-セットアップオプションと再診断)を実行します。コンテナ内runtimeは`http://voicevox:50021`を使います。
+Engine起動直後はspeaker modelの準備に時間がかかる場合があります。`http://127.0.0.1:50021/version`が応答することを確認し、[READMEの再診断](../README.md#設定診断)を実行します。コンテナ内runtimeは`http://voicevox:50021`を使います。
 
 ## speaker/styleがない
 

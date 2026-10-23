@@ -21,13 +21,12 @@ description: 日本語の企画、台詞、ローカル素材からvideo-project
 
 ## 共通ルール
 
-- 正本は`../../schemas/video-project.schema.json`。未知フィールドを推測して追加しない。
+- 正本は`../../schemas/video-project.schema.json`（プラグインルート基準では`schemas/video-project.schema.json`）。未知フィールドを推測して追加しない。
 - プロジェクト外のファイル、絶対パス、URL、`..`、任意HTML/CSS/JavaScript/React、shell、SVGを入力へ書かない。
 - 利用者が権利を説明できない素材は`rights.status: unknown`にする。`allowUnknownRights: false`のまま本番レンダーを迂回しない。
 - 既存の出力を上書きしない。変更時は新しいlock hashの出力先を使う。
 - 長時間処理は`*_start`のjob IDを保存し、`job_status`で追跡する。キャンセルは利用者が求めたときだけ`job_cancel`する。
-- MCPへ渡すpathと`job_status.result`が返す全pathは`${CLAUDE_PROJECT_DIR}`基準のworkspace相対POSIX pathとして扱う。Docker内の`/workspace/...`へ読み替えたり、その絶対pathを利用者へ返したりしない。
-- project JSONがサブディレクトリにある場合、lock、review、storyboardなどの`.json-video-work/`はworkspace直下ではなく、そのproject JSON所在ディレクトリ基準である。たとえば`videos/demo/video-project.json`の作業領域は`videos/demo/.json-video-work/<project-id>/`になる。
+- MCPのpathはworkspace相対POSIX path、作業領域はproject JSON所在ディレクトリ基準とする。詳細は`references/workflow.md`のpath契約を参照。
 - 本番renderの前に必ずstoryboardをレビューする。
 - ユーザーの事実関係や引用を勝手に補わない。初版には調査・事実確認機能がない。
 
@@ -47,7 +46,7 @@ description: 日本語の企画、台詞、ローカル素材からvideo-project
 ## S2. Draft
 
 1. 新規プロジェクトは`project_create`を使い、直接の無検証書き込みを避ける。
-2. `references/visual-guidelines.md`からsceneごとに8種類のvisualを選ぶ。
+2. `references/visual-guidelines.md`からsceneごとにvisualを選ぶ。レイアウト・scene JSONだけの依頼もこの手順で扱い、一時的なvalid projectに組み込んで検証し、該当sceneを絵コンテで確認して返す。
 3. sceneは次のいずれか1方式だけを使う。
    - ユーザー音声: `audioAssetId`。`durationMs`を書かない
    - VOICEVOX: `speakerId`と`text`。`audioAssetId`と`durationMs`を書かない

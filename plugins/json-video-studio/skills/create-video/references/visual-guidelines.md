@@ -29,4 +29,4 @@
 
 ## テンプレート追加境界
 
-JSONから任意React componentを読み込めない。既存8種類と`flow`のテキスト・色・asset・variantで表現する。さらにtypeが必要な場合は、runtimeのSchema・型・renderer・テストを同時に更新する開発作業として扱う。
+JSONから任意React componentを読み込めない。既存8種類と`flow`のテキスト・色・asset・variantで表現する。さらにtypeが必要な場合は、Schema・型・renderer・Web UI form・goldenテスト・ドキュメントを同時に更新する開発作業として扱う。

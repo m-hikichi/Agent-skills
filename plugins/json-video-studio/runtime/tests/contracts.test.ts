@@ -7,7 +7,9 @@ import {clearSchemaCacheForTests, validateProject, validateProjectLock} from '..
 const pluginRoot = resolve(import.meta.dirname, '..', '..');
 const schemaPath = resolve(pluginRoot, 'schemas', 'video-project.schema.json');
 const fixture = async (name: string): Promise<VideoProject> => JSON.parse(
-  await readFile(resolve(pluginRoot, 'examples', name), 'utf8'),
+  await readFile(['all-templates.video-project.json', 'invalid.video-project.json'].includes(name)
+    ? resolve(import.meta.dirname, 'fixtures', name)
+    : resolve(pluginRoot, 'examples', name), 'utf8'),
 ) as VideoProject;
 
 beforeEach(() => clearSchemaCacheForTests());

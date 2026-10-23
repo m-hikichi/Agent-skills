@@ -2,8 +2,8 @@ FROM node:24.18.0-bookworm-slim AS build
 
 WORKDIR /app
 
-COPY runtime/package.json runtime/package-lock.json* ./
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+COPY runtime/package.json runtime/package-lock.json ./
+RUN npm ci
 
 COPY runtime/ ./
 COPY schemas/ /schemas/

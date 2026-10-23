@@ -156,7 +156,7 @@ describe('pinned Remotion golden frames', () => {
     const projectPath = path.join(projectRoot, 'video-project.json');
     await writeFile(
       projectPath,
-      await readFile(path.resolve(process.cwd(), '..', 'examples', 'all-templates.video-project.json')),
+      await readFile(path.resolve(import.meta.dirname, 'fixtures', 'all-templates.video-project.json')),
     );
 
     const resolved = await resolveProject({
