@@ -95,4 +95,4 @@ else
 fi
 echo 'The local editor will be available at http://127.0.0.1:43120 after the MCP server starts.'
 echo 'Before organizational use or offering a service, re-check the current Remotion terms: https://www.remotion.dev/docs/license/pricing'
-echo 'Review THIRD_PARTY_NOTICES.md and the selected VOICEVOX character terms before publishing a video.'
+echo 'Review the selected VOICEVOX character terms before publishing a video.'

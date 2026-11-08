@@ -10,8 +10,8 @@ import {clearSchemaCacheForTests, validateProject} from '../src/core/schema.js';
 import {VoicevoxClient} from '../src/core/voicevox.js';
 
 const roots: string[] = [];
-const schemaPath = resolve(import.meta.dirname, '../../schemas/video-project.schema.json');
-const examplePath = resolve(import.meta.dirname, '../../examples/minimal.video-project.json');
+const schemaPath = resolve(import.meta.dirname, '../../../schemas/video-project.schema.json');
+const examplePath = resolve(import.meta.dirname, '../../../examples/minimal.video-project.json');
 
 async function temporaryRoot(): Promise<string> {
   const root = await mkdtemp(resolve(tmpdir(), 'json-video-core-'));

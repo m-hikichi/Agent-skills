@@ -1,9 +1,9 @@
-runtime/node_modules/
-runtime/dist/
-runtime/coverage/
-runtime/test-results/
-runtime/playwright-report/
-runtime/.vite/
+mcp-server/runtime/node_modules/
+mcp-server/runtime/dist/
+mcp-server/runtime/coverage/
+mcp-server/runtime/test-results/
+mcp-server/runtime/playwright-report/
+mcp-server/runtime/.vite/
 .json-video-work/
 dist/
 *.log

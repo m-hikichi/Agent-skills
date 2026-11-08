@@ -2,10 +2,10 @@ FROM node:24.18.0-bookworm-slim AS build
 
 WORKDIR /app
 
-COPY runtime/package.json runtime/package-lock.json ./
+COPY mcp-server/runtime/package.json mcp-server/runtime/package-lock.json ./
 RUN npm ci
 
-COPY runtime/ ./
+COPY mcp-server/runtime/ ./
 COPY schemas/ /schemas/
 
 RUN npm run build
@@ -63,8 +63,8 @@ COPY --from=build --chown=node:node /app/scripts ./scripts
 COPY --chown=node:node schemas ./schemas
 COPY --chown=node:node schemas /schemas
 COPY --chown=node:node examples /examples
-COPY --chown=node:node runtime/playwright.config.ts ./playwright.config.ts
-COPY --chown=node:node runtime/e2e ./e2e
+COPY --chown=node:node mcp-server/runtime/playwright.config.ts ./playwright.config.ts
+COPY --chown=node:node mcp-server/runtime/e2e ./e2e
 RUN mkdir -p /app/test-results && chown -R node:node /app/test-results
 
 USER node
@@ -80,7 +80,6 @@ COPY --from=production-dependencies --chown=node:node /app/node_modules ./node_m
 COPY --from=build --chown=node:node /app/package.json ./package.json
 COPY --chown=node:node schemas ./schemas
 COPY --chown=node:node examples ./examples
-COPY --chown=node:node THIRD_PARTY_NOTICES.md ./THIRD_PARTY_NOTICES.md
 
 RUN mkdir -p /workspace /data && chown -R node:node /workspace /data
 

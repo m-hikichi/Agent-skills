@@ -6,8 +6,8 @@ import {resolveSpeechText, pronunciationWarnings} from '../src/core/speech.js';
 import {validateProject} from '../src/core/schema.js';
 import {VoicevoxClient} from '../src/core/voicevox.js';
 import type {VideoProject} from '../src/shared/video-types.js';
-const schemaPath = resolve(import.meta.dirname, '../../schemas/video-project.schema.json');
-const fixture = async (): Promise<VideoProject> => JSON.parse(await readFile(resolve(import.meta.dirname, '../../examples/dialogue.video-project.json'), 'utf8'));
+const schemaPath = resolve(import.meta.dirname, '../../../schemas/video-project.schema.json');
+const fixture = async (): Promise<VideoProject> => JSON.parse(await readFile(resolve(import.meta.dirname, '../../../examples/dialogue.video-project.json'), 'utf8'));
 const roots: string[] = [];
 afterEach(async () => {vi.unstubAllGlobals(); await Promise.all(roots.splice(0).map(root => rm(root, {recursive:true, force:true})));});
 

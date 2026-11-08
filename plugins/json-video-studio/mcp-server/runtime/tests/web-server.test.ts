@@ -218,7 +218,7 @@ describe('Web API concurrency and render gates', () => {
     const workspaceRoot = path.join(root, 'workspace');
     const dataRoot = path.join(root, 'data');
     await Promise.all([mkdir(workspaceRoot, {recursive: true}), mkdir(dataRoot, {recursive: true})]);
-    const schemaPath = path.resolve(import.meta.dirname, '../../schemas/video-project.schema.json');
+    const schemaPath = path.resolve(import.meta.dirname, '../../../schemas/video-project.schema.json');
     const runtime = new RuntimeService({workspaceRoot, dataRoot, schemaPath});
     await runtime.initialize();
     const created = await runtime.createProject('sample/video-project.json');
@@ -253,7 +253,7 @@ describe('Web API concurrency and render gates', () => {
     const workspaceRoot = path.join(root, 'workspace');
     const dataRoot = path.join(root, 'data');
     await Promise.all([mkdir(workspaceRoot, {recursive: true}), mkdir(dataRoot, {recursive: true})]);
-    const schemaPath = path.resolve(import.meta.dirname, '../../schemas/video-project.schema.json');
+    const schemaPath = path.resolve(import.meta.dirname, '../../../schemas/video-project.schema.json');
     const runtime = new RuntimeService({workspaceRoot, dataRoot, schemaPath});
     await runtime.initialize();
     const created = await runtime.createProject('sample/video-project.json');

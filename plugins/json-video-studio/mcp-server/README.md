@@ -4,12 +4,12 @@ JSONから動画を生成するstdio MCPサーバのDocker構築設定です。N
 
 ## ファイル
 
-- `Dockerfile`：runtimeおよびtestイメージの構築。MCP実装は`../runtime/src/mcp/`。
+- `Dockerfile`：runtimeおよびtestイメージの構築。MCP実装は`runtime/src/mcp/`。
 - `compose.build.yml`：`json-video-studio:0.1.0`をビルド。
 - `compose.voicevox.yml`：VOICEVOX Engineと共通ネットワーク`json-video-studio`を起動。
 - `../.mcp.json`：Claude CodeがruntimeイメージからMCPを起動する設定。
 
-ビルドコンテキストはプラグインルートです。`runtime/`、`schemas/`、`examples/`を参照し、除外設定にはルートの`.dockerignore`を使います。このディレクトリだけをコピーしてビルドすることはできません。
+ビルドコンテキストはプラグインルートです。`mcp-server/runtime/`、`schemas/`、`examples/`を参照し、除外設定にはルートの`.dockerignore`を使います。このディレクトリだけをコピーしてビルドすることはできません。
 
 ## 構築・起動
 
