@@ -95,7 +95,7 @@ contact sheet、manifest記載の全ページ、2倍PNGのいずれかが不足�
 
 ## 用途別の可読性と未測定範囲
 
-`references/readability.md`と`references/evidence-based-design.md`を使う。2倍PNGの詳細観察に加えて全体表示・想定閲覧サイズを確認する。図表ラベル・出典・注記を含む文字、意味による近接、整列、対比、同じ対象の色と位置の反復、直接ラベル、不要な罫線・目盛・小数桁を確認する。日本語の孤立改行や単位分離も見る。
+`$CLAUDE_PLUGIN_ROOT/skills/slide-authoring/guidelines/readability.md`と`$CLAUDE_PLUGIN_ROOT/skills/slide-authoring/guidelines/evidence-based-design.md`を使う。2倍PNGの詳細観察に加えて全体表示・想定閲覧サイズを確認する。図表ラベル・出典・注記を含む文字、意味による近接、整列、対比、同じ対象の色と位置の反復、直接ラベル、不要な罫線・目盛・小数桁を確認する。日本語の孤立改行や単位分離も見る。
 
 レンダラーのmachine-qa.jsonを入力に加え、`manual_checks`の全IDへ`manual_resolutions: [{id, status, evidence}]`を付ける。証拠にはページ・対象・表示条件・観測を記し、測れなかった写真上の文字やSVG背景のコントラストを未確認のまま合格にしない。失敗はissuesにも記録する。自動検査のfailを手動解決で上書きしない。
 

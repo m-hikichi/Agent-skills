@@ -8,22 +8,25 @@ lang: ja-JP
 title: 2026年第2四半期 解約分析
 description: 方法、主要発見、限界、次の検証を自立して読めるanalytical read-aheadの完成例
 author: agent-skills
-footer: 'Demo data · see assets/SOURCES.md'
+footer: '説明用の架空データ｜出典：assets/SOURCES.md'
 ---
 
 <!-- _class: read-ahead cover -->
 <!-- _paginate: false -->
 
-# 解約差は価格より、初週設定の完了有無と強く関連していた
+# 初週設定を終えた顧客は、継続率が高い
 
 ## 2026年第2四半期 解約分析
+
+初週設定＝契約後7日以内の初期設定。
+継続率＝契約した顧客のうち、90日後も利用している割合。
 
 
 ---
 
 <!-- _class: read-ahead diagram dense compact-visual -->
 
-# 1,240社を契約月で揃え、初週設定と90日継続の関連を比較した
+# 同じ契約月の顧客で、設定完了と継続率を比べた
 
 ![契約・利用ログ・サポート履歴・退会回答を顧客IDで結合し、契約月別の顧客群で比較する分析手順](assets/analytical-method.svg)
 
@@ -34,25 +37,26 @@ footer: 'Demo data · see assets/SOURCES.md'
 
 <!-- _class: read-ahead chart compact-visual -->
 
-# 初週設定完了群は、すべての契約月別顧客群で90日継続率が22〜27pt高い
+# 継続率の差は、各月で約24〜26ポイント
 
-![1月から3月の各顧客群で初週設定完了群の90日継続率が未完了群より22から27ポイント高い比較グラフ](assets/analytical-cohort-chart.svg)
+![1月から3月の各顧客群で初週設定完了群の90日継続率が未完了群より約24から26ポイント高い比較グラフ](assets/analytical-cohort-chart.svg)
 
-注：観察データの関連であり、設定完了の因果効果を直接示さない。95% Wilson区間を表示。
+例：1月は78%と54.1%で、差は23.9ポイント。線は推定の幅（95%信頼区間）。
+設定を終えたことが継続の原因だとは、まだ言えない。
 
 ---
 
 <!-- _class: read-ahead chart compact-visual -->
 
-# 価格を退会理由に挙げた企業でも、低利用群では設定未完了が集中した
+# 価格に不満がある顧客も、初週の利用が少ない
 
 ![企業規模と初週利用回数のsegment mapで、価格理由の解約が低利用かつ設定未完了領域に集中する散布図](assets/analytical-segment-map.svg)
 
-読み取り：価格認識と導入停滞は併存する。値引き単独での改善を示す結果ではない。
+読み方：色の付いた領域に注目。価格への不満と設定の停滞は重なっており、値下げだけで解決するとは言えない。
 
 ---
 
-# 事実と解釈を分けると、改善仮説は「最初の7日」に絞られる
+# 関連は見えた。支援の効果は、まだ分からない
 
 | 層 | この分析から言えること | まだ言えないこと |
 |---|---|---|
@@ -66,7 +70,7 @@ footer: 'Demo data · see assets/SOURCES.md'
 
 <!-- _class: read-ahead dense -->
 
-# 結論の一般化には、選択の偏り・計測誤差・90日追跡の限界がある
+# 設定だけが原因とは言えない、4つの理由がある
 
 | 限界 | 影響 | 次の対処 |
 |---|---|---|
@@ -81,7 +85,7 @@ footer: 'Demo data · see assets/SOURCES.md'
 
 <!-- _class: read-ahead diagram compact-visual -->
 
-# 次四半期は、初週支援の無作為化実験で因果効果を切り分ける
+# くじ引きで2群に分け、初週支援の効果を測る
 
 ![新規顧客を通常導入と初週ガイド付き導入へ無作為に割り付け、設定完了率と90日継続率を比較する実験設計](assets/analytical-experiment.svg)
 
@@ -91,6 +95,8 @@ footer: 'Demo data · see assets/SOURCES.md'
 
 <!-- _class: read-ahead closing -->
 
-# 現時点の結論は「値引き」ではなく「初週支援を検証する価値がある」までである
+# 次に試すのは、最初の7日の設定支援
 
-因果効果、長期継続、費用対効果は次の実験で更新する。
+設定を終えた顧客ほど継続している。ただし、支援の効果は未確認。
+
+支援あり・なしで比較し、継続率が上がるかと支援の手間を確かめる。

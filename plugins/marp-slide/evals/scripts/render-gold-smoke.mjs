@@ -11,7 +11,7 @@ if (!pluginRoot || !outputRoot) {
 }
 
 const { renderDeck } = await import(process.env.MARP_RENDERING_MODULE ?? '/app/dist/rendering.js');
-const mainRoot = path.join(pluginRoot, 'skills', 'main');
+const mainRoot = pluginRoot;
 const config = JSON.parse(await readFile(path.join(mainRoot, 'evals', 'gold-decks.json'), 'utf8'));
 const selectedDecks = deckFilter
   ? config.decks.filter((deck) => deck.id === deckFilter)

@@ -13,7 +13,7 @@ if ! command -v docker >/dev/null 2>&1; then
   exit 1
 fi
 
-PLUGIN_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/../../../.." && pwd)
+PLUGIN_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
 HOST_ROOT=$(pwd -P)
 IMAGE=${MARP_SLIDE_IMAGE:-marp-mcp-server}
 
@@ -52,5 +52,5 @@ docker run --rm --network none --entrypoint node \
   -v "$PLUGIN_ROOT:/plugin:ro" \
   -w /workspace \
   "$IMAGE" \
-  /plugin/skills/main/evals/scripts/eval-harness.mjs \
+  /plugin/evals/scripts/eval-harness.mjs \
   "$@"

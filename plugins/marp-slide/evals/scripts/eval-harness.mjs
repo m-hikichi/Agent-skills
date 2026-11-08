@@ -19,7 +19,7 @@ import { deflateSync, inflateSync } from 'node:zlib';
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = resolve(SCRIPT_DIR, '..');
 const SKILL_ROOT = resolve(EVAL_ROOT, '..');
-const PLUGIN_ROOT = resolve(SKILL_ROOT, '../..');
+const PLUGIN_ROOT = SKILL_ROOT;
 const EVALS_PATH = join(EVAL_ROOT, 'evals.json');
 const POLICY_PATH = join(EVAL_ROOT, 'acceptance-policy.json');
 const GOLD_CATALOG_PATH = join(EVAL_ROOT, 'gold-decks.json');
@@ -196,7 +196,7 @@ async function copySnapshot(source, target, expectedFingerprint = null) {
 async function loadAndValidateEvals() {
   const document = await readJson(EVALS_PATH);
   const errors = [];
-  if (document.skill_name !== 'main') errors.push('skill_name must match SKILL.md frontmatter: main');
+  if (document.skill_name !== 'slide-authoring') errors.push('skill_name must match SKILL.md frontmatter: slide-authoring');
   if (!Array.isArray(document.evals) || document.evals.length !== 5) errors.push('exactly five evals are required');
   const ids = new Set();
   const names = new Set();
@@ -290,7 +290,7 @@ async function initWorkspace(options) {
         eval_name: item.name,
         configuration,
         plugin_path: pluginSnapshot,
-        skill_path: join(pluginSnapshot, 'skills', 'main'),
+        skill_path: join(pluginSnapshot, 'skills', existsSync(join(pluginSnapshot, 'skills', 'slide-authoring', 'SKILL.md')) ? 'slide-authoring' : 'main'),
         task: item.prompt,
         input_files: stagedInputs.map((file) => resolve(evalDir, file)),
         output_dir: outputDir,

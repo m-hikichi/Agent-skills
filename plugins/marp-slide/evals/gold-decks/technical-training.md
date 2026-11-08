@@ -8,15 +8,17 @@ lang: ja-JP
 title: 障害対応 最初の15分
 description: 観測、仮説、最小検証を演習で身につけるtechnical training deckの完成例
 author: agent-skills
-footer: 'Training fixture · see assets/SOURCES.md'
+footer: '研修用の架空事例｜出典：assets/SOURCES.md'
 ---
 
 <!-- _class: hybrid cover -->
 <!-- _paginate: false -->
 
-# 最初の15分を「観測→仮説→最小検証」で再現可能にする
+# 障害対応は、事実を集めて原因を絞る
 
-## 新人SRE向け incident response
+## 新人のサービス運用担当者向け・20分の研修
+
+観測＝見えた事実。仮説＝原因の候補。検証＝候補を確かめる確認。
 
 
 <!--
@@ -25,7 +27,7 @@ footer: 'Training fixture · see assets/SOURCES.md'
 
 ---
 
-# 20分後には、事実と推測を分けて次の1手を説明できる
+# 今日の目標：事実と推測を分け、次の確認を1つ選ぶ
 
 1. 症状の時刻・範囲・期待値を固定する
 2. 変更履歴と依存関係から仮説を2つまで立てる
@@ -41,9 +43,11 @@ footer: 'Training fixture · see assets/SOURCES.md'
 
 <!-- _class: hybrid diagram -->
 
-# 初動は、復旧作業の前に影響範囲と時間軸を固定する
+# まず「いつから・誰に・何が起きたか」を揃える
 
 ![検知から影響確認、指揮系統確立、変更凍結、仮説検証へ進む最初の15分のフロー図](assets/technical-first-15-flow.svg)
+
+緊急の安全確保を優先しつつ、原因の証拠が消える変更は避ける。
 
 <!--
 安全上必要な緊急操作を除き、証拠を消す変更は避けます。
@@ -53,11 +57,11 @@ footer: 'Training fixture · see assets/SOURCES.md'
 
 <!-- _class: hybrid screenshot -->
 
-# エラー行だけでなく、直前の変更と依存先を時系列で比べる
+# 更新後に、購入手続きだけでエラーが増えた
 
 ![10時2分のversion 2.8.0 deploy後、checkoutだけが504となりpayment依存のtimeoutが増えたannotated log画面](assets/technical-console.svg)
 
-観測：checkoutのみ悪化 ／ 仮説：v2.8.0のpayment timeout設定
+checkout＝購入手続き、payment＝決済。更新との時間的な重なりだけでは、原因は確定しない。
 
 <!--
 この時点ではdeployとの時間的関連だけで、原因確定ではありません。
@@ -67,11 +71,12 @@ footer: 'Training fixture · see assets/SOURCES.md'
 
 <!-- _class: hybrid chart compact-visual -->
 
-# p95悪化はcheckoutだけに集中している
+# 購入手続きだけが遅くなり、他の機能はほぼ同じ
 
 ![deploy前後のp95 latencyでcheckoutが220msから4200msへ上昇し、searchとprofileはほぼ不変のslope chart](assets/technical-latency-chart.svg)
 
-出典：training fixture `service-metrics.csv`、10:00〜10:10 UTC
+p95＝100回中95回が、この時間以内に応答する目安。購入手続きは0.22秒→4.2秒。
+対数目盛なので、線の傾きではなく表示された数値を比べる。
 
 <!--
 対数尺度なので、線の傾きだけで差を読まず、必ず併記した実値を確認します。
@@ -82,7 +87,7 @@ searchとprofileはほぼ不変なので、全体的な計算資源不足とい�
 
 <!-- _class: hybrid diagram -->
 
-# 最小検証は、payment呼び出しを旧版と比較して仮説を1つ落とす
+# 決済の待ち時間設定を比べ、原因候補を減らす
 
 ![checkoutの遅延からpayment timeout設定とDB pool枯渇の2仮説へ分岐し、旧版比較とpool利用率で切り分けるdecision tree](assets/technical-decision-tree.svg)
 
@@ -94,7 +99,7 @@ searchとprofileはほぼ不変なので、全体的な計算資源不足とい�
 
 <!-- _class: hybrid exercise -->
 
-# 演習：次に確認する1項目を選ぶ
+# 演習・90秒：次に何を1つ確認しますか？
 
 ```text
 10:02 deploy checkout v2.8.0 completed
@@ -103,7 +108,9 @@ searchとprofileはほぼ不変なので、全体的な計算資源不足とい�
 10:06 payment dependency timeout=3.0s
 ```
 
-回答形式：`仮説 / 確認項目 / Aなら次へ / Bなら次へ`
+504＝待ち時間超過のエラー。timeout＝応答を待つ上限時間。
+
+回答：原因候補 → 確認するもの → 結果ごとの次の行動
 
 <!--
 90秒。復旧操作ではなく、まず確認を1つだけ選んでください。
@@ -113,9 +120,12 @@ searchとprofileはほぼ不変なので、全体的な計算資源不足とい�
 
 <!-- _class: hybrid closing -->
 
-# 持ち帰る順序は、観測 → 仮説 → 最小検証
+# 事実 → 原因候補 → 1つ確認。この順番を持ち帰る
 
-原因候補を狭めてから変更し、各操作と結果を同じ時系列へ残す。
+演習の例：決済の待ち時間設定を、更新前と更新後で比べる。
+
+変わった → 値とエラーの関係を調べる。
+変わらない → 別の候補を確かめる。操作と結果は時刻付きで残す。
 
 <!--
 演習の推奨回答は、旧版と新版のpayment呼び出しtimeout値を比較する、です。

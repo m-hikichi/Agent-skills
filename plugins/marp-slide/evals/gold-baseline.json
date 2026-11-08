@@ -1,69 +1,69 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-17T16:10:21.449Z",
-  "catalog_sha256": "87db85ad80a44f05116a32234f8fb5ef1fd0090dd88ae3a1fdcb83c36bf5c76c",
+  "generated_at": "2026-11-08T06:05:13.274Z",
+  "catalog_sha256": "c12cbf910a92281900accd765ed463a6716fe3313057ced41678db0057d8b7e2",
   "input_fingerprint": {
-    "sha256": "914a2ee39d7607e748a3a9cf80dffd30fe98a3de596b6ed8a2b19f97b022d97d",
+    "sha256": "9776c454fae5b2d76d51f02bc8b77f2a6fcd1f5dbeafcb5dce837cd6fae66f49",
     "files": [
       {
         "deck": "_shared",
         "field": "shared_input",
-        "path": "templates/themes/src",
-        "sha256": "38011b78ab5f2490352a6e476999f700e5bfd27c1182585d0750d272e57ad705"
+        "path": "skills/slide-authoring/design/themes/src",
+        "sha256": "e5a849727bf4cfdc9a73e347630ff86607be394152a100d4db3ddfbd591a861f"
       },
       {
         "deck": "executive-decision",
         "field": "source",
-        "path": "templates/examples/gold/executive-decision.md",
-        "sha256": "fd3c6c245dbdb9e8eec729fb0444188a8dc7ba4f9798222f5289ad76ada39cd3"
+        "path": "evals/gold-decks/executive-decision.md",
+        "sha256": "2dc7e3ad71e93bb4767b6be1a55e62a8f8ea5fef9419418ef12ea21d89b35797"
       },
       {
         "deck": "executive-decision",
         "field": "theme",
-        "path": "templates/themes/executive-clean.css",
+        "path": "skills/slide-authoring/design/themes/executive-clean.css",
         "sha256": "7aaca0f39fb617c94e5e26f16d2742ed8a2cb272309ce66fc5aaf48f8fe8d3e0"
       },
       {
         "deck": "executive-decision",
         "field": "assets",
-        "path": "templates/examples/gold/assets",
-        "sha256": "da329cebad4811e4cb6d2a9fc19f2f44a445c50c9818ed2fc4dd661f7d8945ac"
+        "path": "evals/gold-decks/assets",
+        "sha256": "b7c4d8eba0b1fce5a829cd17170fd5ff8f60dbc5d39b0e53198afd371792ddad"
       },
       {
         "deck": "analytical-read-ahead",
         "field": "source",
-        "path": "templates/examples/gold/analytical-read-ahead.md",
-        "sha256": "f4e5f385d56a825ba53f21cc45d005a13cdcf035acd35e228a039880548f13aa"
+        "path": "evals/gold-decks/analytical-read-ahead.md",
+        "sha256": "c7dbceef2e84c67ff12384fa9861460a91d0320cc329bff58132fb7cc265e036"
       },
       {
         "deck": "analytical-read-ahead",
         "field": "theme",
-        "path": "templates/themes/editorial.css",
+        "path": "skills/slide-authoring/design/themes/editorial.css",
         "sha256": "21b9f2c7559d167044aac1336951aeb4f9e8484a05969d51139d2ac766b03bcb"
       },
       {
         "deck": "analytical-read-ahead",
         "field": "assets",
-        "path": "templates/examples/gold/assets",
-        "sha256": "da329cebad4811e4cb6d2a9fc19f2f44a445c50c9818ed2fc4dd661f7d8945ac"
+        "path": "evals/gold-decks/assets",
+        "sha256": "b7c4d8eba0b1fce5a829cd17170fd5ff8f60dbc5d39b0e53198afd371792ddad"
       },
       {
         "deck": "technical-training",
         "field": "source",
-        "path": "templates/examples/gold/technical-training.md",
-        "sha256": "aba199679630ec68ccc6a5b82b091890447a69636c0ed3072144bf506f2212be"
+        "path": "evals/gold-decks/technical-training.md",
+        "sha256": "cd8b147ba0f825c915e4e727ef8d9d2fe4aa568806652f21dac8464238bda689"
       },
       {
         "deck": "technical-training",
         "field": "theme",
-        "path": "templates/themes/technical.css",
+        "path": "skills/slide-authoring/design/themes/technical.css",
         "sha256": "02eea092aff517ba330d04b1d841bacba7f0780fde44c91b15e96ff94790760b"
       },
       {
         "deck": "technical-training",
         "field": "assets",
-        "path": "templates/examples/gold/assets",
-        "sha256": "da329cebad4811e4cb6d2a9fc19f2f44a445c50c9818ed2fc4dd661f7d8945ac"
+        "path": "evals/gold-decks/assets",
+        "sha256": "b7c4d8eba0b1fce5a829cd17170fd5ff8f60dbc5d39b0e53198afd371792ddad"
       }
     ]
   },
@@ -125,55 +125,55 @@
           "page": 1,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "827c49b497408af675f3f7c145bbd7ecd5d20ff6dc8f9acf622815ab02870e04"
+          "normalized_png_sha256": "d3a577afeb601f8b25b1a9d97c88fb3e9032abd8a593b878f7dcbf2bf475dbb7"
         },
         {
           "page": 2,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "c0377840f96c1c852a0868f6f7178ca7f35bcb03013ed484f725eb518d959574"
+          "normalized_png_sha256": "cc5c8ff40b4039356f2c21de4602c9d121be2707b8d5c89bbffb0d83db5528de"
         },
         {
           "page": 3,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "de9f22c2d11854ab9c4d7c7e185c60090370b0fae37cb114a3e1b47f0baff672"
+          "normalized_png_sha256": "f668872320ce17bdc1ce5c1fba28b630a053f728c018c6db10e0b3093718dea9"
         },
         {
           "page": 4,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "1640a4184a221703aa565359fb5093f6aff894a181a68b9fa2df1858b36ff7cb"
+          "normalized_png_sha256": "341401b0c73bc3e3126e9f0a48ed1a62b9cb013a54c64968c66126babfb37be0"
         },
         {
           "page": 5,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "c0b268813510f768b18505486801669f5ee634f9554bb49febdd724fe506e15d"
+          "normalized_png_sha256": "3e5efe2703512598865c01068cd59fb78a185da03653bc891b57866b50c3f308"
         },
         {
           "page": 6,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "c12cfcc917f537adb121284d6c50f8db178b5d689f32f9ebd72641abf9cea6f2"
+          "normalized_png_sha256": "6425991b77739b90d0494f0bf14632a941e7d40e3e8ea200f51a096e72513b09"
         },
         {
           "page": 7,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "0e828c68a26fb2b8b22dec5c950bd24f5b575301be39265add4cd5f092972f92"
+          "normalized_png_sha256": "ddea401589ae68b3299c139b54bce7059e07ea4602cdf687ae70c0da7ba4a80e"
         },
         {
           "page": 8,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "09587d1ced5483c5326057854ce18ce2f8cbfcfd39106d7964655e5b2ed3b7e2"
+          "normalized_png_sha256": "38110b20113e6e78a0cb72d531e15577427a33e37cdb1b1f6ad02aa438012540"
         }
       ],
       "contact_sheet": {
         "width": 1048,
         "height": 712,
-        "normalized_png_sha256": "c4b3083a25ddf88852549cc296ff10cd24ed2dcb3edba47119a16b103e66048b"
+        "normalized_png_sha256": "fd86ed977e81171f8400364716b1014574d0a7836c269c85b0eee78902989fd9"
       }
     },
     {
@@ -233,55 +233,55 @@
           "page": 1,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "0cb4fd9c22fd5d5bf3cf99ac98d4ef755537e0cd2366950999ce39d4e44ef939"
+          "normalized_png_sha256": "9ea831a57f0adcc3cfc0504285e86cd22b37632fd23d7e52808dde888f6be94c"
         },
         {
           "page": 2,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "4a1e542863c3f5fafcaa13b160797b949118889160cde00d2e780b4096503e1a"
+          "normalized_png_sha256": "21bc55fc1ce15136009fd050b899627859415e14cf220730759667017e818334"
         },
         {
           "page": 3,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "0117c753f4e987ab80aa5590980ac6d10944a9b398570212eb7762e0ccf853fb"
+          "normalized_png_sha256": "5f2a5001c7040d1a1f4d093e2d776f1c81de6461b5c21209580977e5c049a40c"
         },
         {
           "page": 4,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "c1477802b355f419284e00e74e36ba55bd67680767d5da224621c862449d22d0"
+          "normalized_png_sha256": "7535e8c182774c9068253b62a3475c9e92601d89aa92b55343a15acaa02eca98"
         },
         {
           "page": 5,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "9642bbeda6ac26f51a395a89478f122b37276210bdb4c05fbc0afeca16e70588"
+          "normalized_png_sha256": "de6ce9e881c8a43a8fab9d142d9f8f9f62949e94543ec070f41f687ae0044e98"
         },
         {
           "page": 6,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "c4a1b03d3d4f053e6ac687e2b58679e1765439c6afa2007746428e5a8f412c7c"
+          "normalized_png_sha256": "5a3b193e44bbd67f11fe0f607296d34ac8c02e4d4c624bc0f0c2e558631be726"
         },
         {
           "page": 7,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "4f5caa882257eef3566e5f481bc99d9ccf0a2f3ce111a99f3c997485ad497e7d"
+          "normalized_png_sha256": "f3f9ee4a2ac7137f67e36ca17f4c840d58eb37d3560c6fcb5653f22dbc182fb8"
         },
         {
           "page": 8,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "0db088426949ab46152ff93b4eb4a962bcfeb34b1c84831355efa265b3f16c12"
+          "normalized_png_sha256": "fb22ad502143167c5712964467166ae84d5ce85949bb498e8ce354fa6d198823"
         }
       ],
       "contact_sheet": {
         "width": 1048,
         "height": 712,
-        "normalized_png_sha256": "c9c710679330efb6db66f0659489bb68959a7cf225ce4f669a90043e23b3479b"
+        "normalized_png_sha256": "adcbd101f7988f3c6767622206e71d02c98fe4eb2db9dce2ff72e952fb8f9bea"
       }
     },
     {
@@ -341,55 +341,55 @@
           "page": 1,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "90e31453a027b3553cbde79cd00a41364b0b6ea84293cfb4d0a3fd543b569a5f"
+          "normalized_png_sha256": "900f54cc94d9bb2d46eb5765a3b43af4d0311b62e66263401c05c197227bf903"
         },
         {
           "page": 2,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "6ee0a2ff633af45803bada54199601a5296f3c0d42855e7c11a24da4f10b7aa9"
+          "normalized_png_sha256": "dd125d5fe7cd5196ed40639d1abda38cfd3db0006fd51a9687d0a8b6e782d21c"
         },
         {
           "page": 3,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "5b172053e47ed7a6b786e839b701923df6d0d4c3e3bb58196b470fa3167459f3"
+          "normalized_png_sha256": "84cfe37ea3ed644415dd104da0eff94d75d2179e3af674c18a2a2ae1813b7acb"
         },
         {
           "page": 4,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "53f801e49ac6f6298a9a06e72b0a3a395acb5af40c6207c14db8929a968c076a"
+          "normalized_png_sha256": "3d1fec70939b70033488ff3ff9d2daec5852588faeb347dedbdd5af126497109"
         },
         {
           "page": 5,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "13c73d18bcabe581c3398c81461ee37b1543440ef9c0791990bc81d042371898"
+          "normalized_png_sha256": "5d6c8d9a669307fa862b357419cf4f419dd31936a50d2100bcfdc162c3bc0e89"
         },
         {
           "page": 6,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "79f21cb28829d09413d9f75faf993e2b0691e5cf5a794871cb8f35dabd002046"
+          "normalized_png_sha256": "f929f1b5e17d3cb70d06b537ed6b701e6a22eb304298306aa0bd1b5973a7e15e"
         },
         {
           "page": 7,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "3acb097a62845ce097ff1967e8ce01baaab74f943e8e26f739d8f064c49216e8"
+          "normalized_png_sha256": "ed80e8d597b38e40a9030533f734692ec1366debe43406ade069c36797da6f0e"
         },
         {
           "page": 8,
           "width": 2560,
           "height": 1440,
-          "normalized_png_sha256": "f57c5a97a1629c14798273295dfe9f0e35da14ac0977d55bfdb3c10dc134f522"
+          "normalized_png_sha256": "e1f2963d778b04334f5bd0cbd922d25842c8faf41cc8affdaf8cebbb48ab188e"
         }
       ],
       "contact_sheet": {
         "width": 1048,
         "height": 712,
-        "normalized_png_sha256": "9cfe98c09a9cd4ef6bc60bf326d67495d3d7cad25a26ea0e18d634a43ecfd05f"
+        "normalized_png_sha256": "509ce69a113b8384bb0441e279d3d61d7eae6b3ed71e960ee15f1ea35dc5a9d4"
       }
     }
   ]

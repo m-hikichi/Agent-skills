@@ -1,5 +1,8 @@
 # Shell scripts MUST stay LF on every platform. With core.autocrlf=true a
-# Windows checkout would otherwise rewrite them to CRLF, and `bash script.sh`
-# then fails ($'\r' / bad interpreter). The marp-slide Stop-hook completion
-# gate (scripts/review-gate.sh) depends on this.
+# Windows checkout would otherwise rewrite them to CRLF and break Bash launchers.
 *.sh text eol=lf
+
+# Gold regression fingerprints include the exact source bytes.
+plugins/marp-slide/evals/gold-decks/** text eol=lf
+plugins/marp-slide/evals/gold-decks.json text eol=lf
+plugins/marp-slide/skills/slide-authoring/design/themes/** text eol=lf

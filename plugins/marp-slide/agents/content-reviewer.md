@@ -96,6 +96,6 @@ critical/majorがある、hard gateがfail、またはscoreが3以下なら`fail
 
 初見記録が確定してから`audience-review.json`を読む。各ページの`takeaway`と`evidence_seen`をplanの意図・`comprehension_question`へ照合し、結論の誤読・条件の脱落・未説明の前提は`audience_comprehension`でfailにする。単なる言い換えの違いは減点しない。初見記録を編集して一致させない。
 
-`references/readability.md`に従い、用語表、初出説明、英語混在、見出しの簡潔さ、数え上げの整合、notesの読み上げ重複、前提→例→演習の順序を確認する。本編のestimated_seconds＋interaction_secondsと指定時間の整合も`language_and_pacing`で評価する。時間未指定なら推定であると証拠に記す。
+`$CLAUDE_PLUGIN_ROOT/skills/slide-authoring/guidelines/readability.md`に従い、用語表、初出説明、英語混在、見出しの簡潔さ、数え上げの整合、notesの読み上げ重複、前提→例→演習の順序を確認する。本編のestimated_seconds＋interaction_secondsと指定時間の整合も`language_and_pacing`で評価する。時間未指定なら推定であると証拠に記す。
 
 上記2項目をcontent_review.hard_gatesへ必ず含める。独立出力にrender_iterationも追加する。

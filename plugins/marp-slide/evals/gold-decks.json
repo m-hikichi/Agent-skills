@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "environment_fields": [
+    "marp_cli",
+    "marp_core",
+    "chromium",
+    "node",
+    "platform",
+    "fonts"
+  ],
+  "shared_inputs": [
+    "skills/slide-authoring/design/themes/src"
+  ],
+  "decks": [
+    {
+      "id": "executive-decision",
+      "source": "evals/gold-decks/executive-decision.md",
+      "theme": "skills/slide-authoring/design/themes/executive-clean.css",
+      "assets": "evals/gold-decks/assets",
+      "expected_slide_count": 8
+    },
+    {
+      "id": "analytical-read-ahead",
+      "source": "evals/gold-decks/analytical-read-ahead.md",
+      "theme": "skills/slide-authoring/design/themes/editorial.css",
+      "assets": "evals/gold-decks/assets",
+      "expected_slide_count": 8
+    },
+    {
+      "id": "technical-training",
+      "source": "evals/gold-decks/technical-training.md",
+      "theme": "skills/slide-authoring/design/themes/technical.css",
+      "assets": "evals/gold-decks/assets",
+      "expected_slide_count": 8
+    }
+  ]
+}

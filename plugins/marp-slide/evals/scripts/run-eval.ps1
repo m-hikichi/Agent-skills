@@ -15,7 +15,7 @@ if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
   throw 'Node.js or Docker is required to run the evaluation harness.'
 }
 
-$PluginRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..\..')).Path
+$PluginRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $HostRoot = (Get-Location).Path.TrimEnd('\')
 $PathFlags = @('--workspace', '--baseline-plugin', '--candidate-plugin', '--render-root', '--output', '--baseline', '--report')
 $ContainerArgs = @()
@@ -46,6 +46,6 @@ $Image = if ($env:MARP_SLIDE_IMAGE) { $env:MARP_SLIDE_IMAGE } else { 'marp-mcp-s
   -v "${PluginRoot}:/plugin:ro" `
   -w /workspace `
   $Image `
-  /plugin/skills/main/evals/scripts/eval-harness.mjs `
+  /plugin/evals/scripts/eval-harness.mjs `
   @ContainerArgs
 exit $LASTEXITCODE

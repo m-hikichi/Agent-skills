@@ -17,11 +17,11 @@
 まず定義とfixtureを検査します。
 
 ```powershell
-skills/main/evals/scripts/run-eval.ps1 validate
+evals/scripts/run-eval.ps1 validate
 ```
 
 ```sh
-skills/main/evals/scripts/run-eval.sh validate
+evals/scripts/run-eval.sh validate
 ```
 
 launcherはhost Nodeを優先し、なければ固定済み`marp-mcp-server` Docker imageを使います。Docker fallbackでは、plugin snapshotと評価workspaceを現在ディレクトリ配下に置いてください。
@@ -31,7 +31,7 @@ launcherはhost Nodeを優先し、なければ固定済み`marp-mcp-server` Doc
 v0.8 plugin全体を編集前の読み取り専用snapshotとして残します。candidateもiterationごとにcopyされるため、実行途中のskill変更が結果へ混ざりません。workspaceはcandidate pluginとbaseline pluginの外側に置きます。
 
 ```powershell
-plugins/marp-slide/skills/main/evals/scripts/run-eval.ps1 init `
+plugins/marp-slide/evals/scripts/run-eval.ps1 init `
   --workspace marp-slide-eval-workspace `
   --baseline-plugin marp-slide-v0.8-snapshot `
   --candidate-plugin plugins/marp-slide `
@@ -91,7 +91,7 @@ v1は全ページ2x PNG、contact sheet、QA、rubric v4、render iteration 2以
 両側の表示成果物が揃ったらpackageを作ります。
 
 ```powershell
-plugins/marp-slide/skills/main/evals/scripts/run-eval.ps1 blind `
+plugins/marp-slide/evals/scripts/run-eval.ps1 blind `
   --workspace marp-slide-eval-workspace `
   --iteration 1
 ```
@@ -113,7 +113,7 @@ plugins/marp-slide/skills/main/evals/scripts/run-eval.ps1 blind `
 `acceptance-policy.json`が単一の判定policyです。blind reviewと独立graderのformal resultsが完成した後に集計します。
 
 ```powershell
-plugins/marp-slide/skills/main/evals/scripts/run-eval.ps1 acceptance `
+plugins/marp-slide/evals/scripts/run-eval.ps1 acceptance `
   --workspace marp-slide-eval-workspace `
   --iteration 1
 ```
@@ -133,10 +133,10 @@ assertion grading後、公式viewerを使います。独自HTMLへ置き換え�
 
 ```sh
 cd /path/to/skill-creator
-python -m scripts.aggregate_benchmark /absolute/path/marp-slide-eval-workspace/iteration-1 --skill-name main
+python -m scripts.aggregate_benchmark /absolute/path/marp-slide-eval-workspace/iteration-1 --skill-name slide-authoring
 python eval-viewer/generate_review.py \
   /absolute/path/marp-slide-eval-workspace/iteration-1 \
-  --skill-name main \
+  --skill-name slide-authoring \
   --benchmark /absolute/path/marp-slide-eval-workspace/iteration-1/benchmark.json \
   --static /absolute/path/marp-slide-eval-workspace/iteration-1/review.html
 ```
@@ -164,7 +164,7 @@ gold-current/
 承認済み環境で初回baseline manifestを記録します。
 
 ```powershell
-plugins/marp-slide/skills/main/evals/scripts/run-eval.ps1 gold-record `
+plugins/marp-slide/evals/scripts/run-eval.ps1 gold-record `
   --render-root gold-current `
   --output gold-baseline.json
 ```
@@ -172,7 +172,7 @@ plugins/marp-slide/skills/main/evals/scripts/run-eval.ps1 gold-record `
 以降は同じ24ページ、3 contact sheet、render environment、source/theme/assets fingerprintを比較します。
 
 ```powershell
-plugins/marp-slide/skills/main/evals/scripts/run-eval.ps1 gold-compare `
+plugins/marp-slide/evals/scripts/run-eval.ps1 gold-compare `
   --baseline gold-baseline.json `
   --render-root gold-current
 ```
@@ -187,3 +187,15 @@ plugins/marp-slide/skills/main/evals/scripts/run-eval.ps1 gold-compare `
 - v1.1では初見読者の理解記録、用途別文字サイズ、SVG掲載時ラベル、手動検査IDの解決、日本語・所要時間の整合も確認します。初見担当にplanや期待解答を渡さず、content reviewerが後から照合します。
 - `render-gold-smoke.mjs`の2回レンダーと履歴は再実行の機械検証専用です。目視レビューや実際の改善を代行せず、完成承認に流用しません。
 - model、token、所要時間、renderer environmentはrunごとに記録し、片側だけ再実行した結果を同一pairとして扱いません。
+
+### フォルダ再編後のbaseline整合修正（2026-11-08）
+
+固定rendererで3資料・24ページを各2回レンダーし、machine QAはすべてpass。承認済みbaselineとの比較では、24ページと3 contact sheetの正規化PNG hash・寸法、および全描画環境が完全一致しました。不一致は共通テーマと素材ディレクトリの入力hashのみだったため、実測したinput_fingerprintを反映しました。承認済み画像・環境の記録と元の承認日時は変更していません。
+
+資材とcatalogの改行はリポジトリの`.gitattributes`でLFに固定し、Windows checkoutによる入力hashの変化を防ぎます。画像差分が生じた場合の目視審査と明示的な再承認の手順は従来どおりです。
+
+### 初見での理解を優先したgold改稿（2026-11-08）
+
+3資料の見出しを短くし、PoC・継続率・p95・timeoutなどの初出説明を画面へ追加。図表の読み方、判断条件、演習時間・回答例を明示しました。分析表紙の未立証な「価格より強い」という比較を除き、継続率差を表示値（23.9・23.8・26.0ポイント）に合わせて約24〜26ポイントへ修正しています。元の数値データは変更していません。
+
+図表を縮小すると掲載時の文字サイズが基準を下回ったため、図の大きさを維持して本文を整理しました。全24ページと3 contact sheetを実画像で確認し、不自然な語句分断を修正。固定rendererのmachine QA通過後、確認済み画像・現行入力をgold baselineへ記録しています。これはgold見本の保守確認であり、通常の資料制作で必要な独立三者レビューとfinalizeの代用ではありません。
