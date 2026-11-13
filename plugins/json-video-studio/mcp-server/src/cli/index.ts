@@ -8,9 +8,7 @@ import {readJson, resolveInside} from '../core/fs-safe.js';
 import {defaultProject, ProjectService} from '../core/project.js';
 import {publishResolveArtifacts, resolveProject} from '../core/resolver.js';
 import {portableWorkspaceResult, RuntimeService} from '../core/runtime.js';
-import {createWebJobQueue, createWebServiceAdapter} from '../core/web-adapter.js';
 import {inspectArtifactOutput, inspectOutput, renderProject, storyboardProject} from '../render/api.js';
-import {startWebServer} from '../web/server.js';
 import type {ProjectLock, VideoProject} from '../shared/video-types.js';
 
 interface GlobalOptions {
@@ -160,39 +158,6 @@ program.command('inspect')
       : await inspectOutput({mediaPath: inspectedPath});
     print(await portableWorkspaceResult(workspace(options), result));
   });
-
-program.command('ui')
-  .description('start the local Web UI')
-  .option('--host <host>', 'loopback host', '127.0.0.1')
-  .option('--port <port>', 'port', (value) => Number.parseInt(value, 10), 43120)
-  .action(async (local: {host: string; port: number}, command: Command) => {
-    const options = globalOptions(command);
-    const runtime = new RuntimeService({
-      workspaceRoot: workspace(options),
-      dataRoot: process.env.JSON_VIDEO_DATA_ROOT,
-      ...(options.schema === undefined ? {} : {schemaPath: options.schema}),
-    });
-    await runtime.initialize();
-    const queue = createWebJobQueue(runtime);
-    const server = await startWebServer({
-      workspaceRoot: runtime.workspaceRoot,
-      host: local.host,
-      port: local.port,
-      jobQueue: queue,
-      service: createWebServiceAdapter(runtime),
-    });
-    print({address: server.address});
-    await waitForShutdown(server.close);
-  });
-
-async function waitForShutdown(close: () => Promise<void>): Promise<void> {
-  await new Promise<void>((resolvePromise) => {
-    const done = () => resolvePromise();
-    process.once('SIGINT', done);
-    process.once('SIGTERM', done);
-  });
-  await close();
-}
 
 program.parseAsync(process.argv).catch((error: unknown) => {
   if (error instanceof CommanderError && ['commander.helpDisplayed', 'commander.version'].includes(error.code)) return;

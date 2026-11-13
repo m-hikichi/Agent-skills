@@ -13,6 +13,7 @@ import {extractReviewFrames} from './review-frames.js';
 export interface RuntimeOptions {
   workspaceRoot: string;
   dataRoot?: string;
+  jobsRoot?: string;
   schemaPath?: string;
 }
 
@@ -87,7 +88,7 @@ export class RuntimeService {
       ...(this.schemaPath === undefined ? {} : {schemaPath: this.schemaPath}),
     });
     this.jobs = new JobQueue({
-      stateRoot: resolve(this.dataRoot, 'jobs'),
+      stateRoot: resolve(options.jobsRoot ?? resolve(this.dataRoot, 'jobs')),
       handlers: {
         resolve: (request, context) => this.handleResolve(request, context),
         storyboard: (request, context) => this.handleStoryboard(request, context),

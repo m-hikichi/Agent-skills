@@ -72,7 +72,7 @@ description: 日本語の企画、台詞、ローカル素材からvideo-project
 3. `job_status`が終端状態になるまで追跡する。
    - `succeeded`: lock hash、totalFrames、warningsを記録してReviewへ
    - `failed`: 構造化エラーの`jsonPointer`と`hint`を使って修正し、Validateから再開
-   - `interrupted`: 同じproject digestなら再実行。digestが変わっていればValidateから再開
+   - `JOB_NOT_FOUND`（MCP再起動で状態が消えた）: 同じproject digestなら再実行。digestが変わっていればValidateから再開
 4. 生成した音声のSHA-256、時間、VOICEVOX versionがlockへ入っていることを確認する。
 5. 各`lock.assets[].voice.synthesisText`と`kana`を確認し、略語・固有名詞・数値の意図した読みと照合する。`kana`がない旧音声は再resolveする。警告された未指定略語を放置しない。
 

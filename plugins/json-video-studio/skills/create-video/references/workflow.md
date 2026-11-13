@@ -6,7 +6,6 @@
 - `project_get`: project、revision、digest、`missing/current/stale`のlock stateを返す。
 - `project_update`: expected revisionが一致したときだけ更新する。不一致は競合エラー。
 - `project_validate`: Schemaとsemantic検証を行い、error/warningをJSON Pointer付きで返す。
-- `ui_info`: loopback UIのURLと起動状態を返す。
 - `job_status`: jobの状態、0〜1のprogress、message、result/errorを返す。
 - `job_cancel`: 指定jobだけを安全に中断する。
 - `output_inspect`: ffprobeと成果物manifestの検査結果を返す。
@@ -18,7 +17,7 @@
 - `storyboard_start`: current lockから各scene静止画、contact sheet、サムネイル候補を作る。
 - `render_start`: current/frozen lockから最終成果物を作る。
 
-非同期ツールはすぐに`jobId`を返す。状態は`queued → running → succeeded|failed|cancelled`。サーバー再起動時に未完了だったjobは`interrupted`になる。
+非同期ツールはすぐに`jobId`を返す。状態は`queued → running → succeeded|failed|cancelled`。jobの状態はMCPサーバーのプロセス内だけに保持し、セッション間で共有しない。サーバー再起動後は以前の`jobId`を参照できないので、同じツールを再実行する。
 
 ## path契約
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import {mkdtemp} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
 import {resolve} from 'node:path';
 import {McpServer, type ToolCallback} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {StdioServerTransport} from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -7,16 +9,17 @@ import {z} from 'zod';
 import {AppError, asAppError} from '../core/errors.js';
 import {doctor} from '../core/doctor.js';
 import {RuntimeService} from '../core/runtime.js';
-import {createWebJobQueue, createWebServiceAdapter} from '../core/web-adapter.js';
 import {validateProject} from '../core/schema.js';
-import {startWebServer} from '../web/server.js';
 
 const workspaceRoot = resolve(process.env.JSON_VIDEO_WORKSPACE_ROOT ?? '/workspace');
 const dataRoot = resolve(process.env.JSON_VIDEO_DATA_ROOT ?? resolve(workspaceRoot, '.json-video-work'));
 const schemaPath = process.env.JSON_VIDEO_SCHEMA_PATH;
+// Job state is private to this server process so concurrent sessions do not
+// see or interrupt each other's jobs. The VOICEVOX cache under dataRoot is shared.
 const runtime = new RuntimeService({
   workspaceRoot,
   dataRoot,
+  jobsRoot: await mkdtemp(resolve(tmpdir(), 'json-video-jobs-')),
   ...(schemaPath === undefined ? {} : {schemaPath}),
 });
 
@@ -79,11 +82,6 @@ tool('project_validate', 'Validate a project file or an in-memory project.', {
   throw new AppError('PROJECT_INPUT_REQUIRED', 'projectPathまたはprojectが必要です', {category: 'schema'});
 });
 
-tool('ui_info', 'Return the loopback Web UI address.', {}, async () => ({
-  address: `http://127.0.0.1:${Number.parseInt(process.env.JSON_VIDEO_UI_PORT ?? '43120', 10)}`,
-  running: true,
-}));
-
 tool('resolve_start', 'Start a resolve job in the persistent single-worker queue.', {
   projectPath: z.string().min(1),
   dryRun: z.boolean().optional(),
@@ -125,20 +123,13 @@ tool('output_review_frames', 'Sample a rendered MP4 for the final visual review:
 
 async function main(): Promise<void> {
   await runtime.initialize();
-  const web = await startWebServer({
-    workspaceRoot,
-    host: process.env.JSON_VIDEO_UI_HOST ?? '127.0.0.1',
-    port: Number.parseInt(process.env.JSON_VIDEO_UI_PORT ?? '43120', 10),
-    jobQueue: createWebJobQueue(runtime),
-    service: createWebServiceAdapter(runtime),
-  });
-  const transport = new StdioServerTransport();
-  const shutdown = async () => {
-    await Promise.allSettled([web.close(), mcp.close()]);
-  };
-  process.once('SIGINT', () => void shutdown());
-  process.once('SIGTERM', () => void shutdown());
-  await mcp.connect(transport);
+  // Exit when the client disconnects (stdin closes) so the container does not outlive the session.
+  const shutdown = () => void mcp.close().finally(() => process.exit(0));
+  process.once('SIGINT', shutdown);
+  process.once('SIGTERM', shutdown);
+  process.stdin.once('end', shutdown);
+  process.stdin.once('close', shutdown);
+  await mcp.connect(new StdioServerTransport());
 }
 
 main().catch((error: unknown) => {

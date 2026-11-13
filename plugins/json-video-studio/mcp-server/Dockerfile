@@ -22,9 +22,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
     JSON_VIDEO_SCHEMA_PATH=/app/schemas/video-project.schema.json \
     JSON_VIDEO_WORKSPACE_ROOT=/workspace \
     JSON_VIDEO_DATA_ROOT=/data \
-    JSON_VIDEO_UI_HOST=0.0.0.0 \
-    JSON_VIDEO_ALLOW_CONTAINER_BIND=1 \
-    JSON_VIDEO_UI_PORT=43120 \
     JSON_VIDEO_VOICEVOX_URL=http://voicevox:50021 \
     CHROME_BIN=/usr/bin/chromium
 
@@ -50,11 +47,10 @@ ENV NODE_ENV=test
 COPY --from=build --chown=node:node /app ./
 COPY --chown=node:node schemas /schemas
 COPY --chown=node:node examples /examples
-RUN mkdir -p /app/test-results && chown -R node:node /app/test-results
 
 USER node
 ENTRYPOINT ["npm"]
-CMD ["run", "test:e2e"]
+CMD ["test"]
 
 FROM runtime-base AS runtime
 
@@ -65,6 +61,5 @@ COPY --from=build --chown=node:node /app/package.json ./package.json
 RUN mkdir -p /workspace /data && chown -R node:node /workspace /data
 
 USER node
-EXPOSE 43120
 ENTRYPOINT ["node", "/app/dist/cli/index.js"]
 CMD ["--help"]

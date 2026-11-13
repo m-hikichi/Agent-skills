@@ -78,4 +78,4 @@
 
 ## テンプレート追加境界
 
-JSONから任意React componentを読み込めない。既存の固定visual（`flow`・`table`・`statement`・`slide`を含む12種類）のテキスト・色・asset・variant・強調で表現する。さらにtypeが必要な場合は、Schema・型・renderer・Web UI form・goldenテスト・ドキュメントを同時に更新する開発作業として扱う。
+JSONから任意React componentを読み込めない。既存の固定visual（`flow`・`table`・`statement`・`slide`を含む12種類）のテキスト・色・asset・variant・強調で表現する。さらにtypeが必要な場合は、Schema・型・renderer・goldenテスト・ドキュメントを同時に更新する開発作業として扱う。

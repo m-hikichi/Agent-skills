@@ -25,7 +25,6 @@ const expectedTools = [
   'render_start',
   'resolve_start',
   'storyboard_start',
-  'ui_info',
 ] as const;
 
 async function temporaryRoot(): Promise<string> {
@@ -90,8 +89,6 @@ describe('stdio MCP server', () => {
         JSON_VIDEO_WORKSPACE_ROOT: workspaceRoot,
         JSON_VIDEO_DATA_ROOT: dataRoot,
         JSON_VIDEO_SCHEMA_PATH: schemaPath,
-        JSON_VIDEO_UI_HOST: '127.0.0.1',
-        JSON_VIDEO_UI_PORT: '0',
       },
       stderr: 'pipe',
     });

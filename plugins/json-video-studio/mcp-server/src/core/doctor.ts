@@ -87,17 +87,6 @@ export async function doctor(options: DoctorOptions = {}): Promise<DoctorReport>
       if (!Array.isArray(speakers) || speakers.length === 0) throw new Error('No VOICEVOX speakers were returned.');
       return `${speakers.length} speakers`;
     }, 'Confirm VOICEVOX models are available and review each speaker terms.'),
-    capture('ui-bind', async () => {
-      const host = process.env.JSON_VIDEO_UI_HOST ?? '127.0.0.1';
-      const port = Number.parseInt(process.env.JSON_VIDEO_UI_PORT ?? '43120', 10);
-      if (!['127.0.0.1', 'localhost', '::1', '0.0.0.0'].includes(host) || !Number.isInteger(port) || port < 1 || port > 65535) {
-        throw new Error(`Invalid UI bind: ${host}:${port}`);
-      }
-      if (host === '0.0.0.0' && process.env.JSON_VIDEO_ALLOW_CONTAINER_BIND !== '1') {
-        throw new Error('Container bind requires JSON_VIDEO_ALLOW_CONTAINER_BIND=1.');
-      }
-      return `container=${host}:${port}, publish=127.0.0.1:${port}`;
-    }, 'Publish the Docker port only as 127.0.0.1:43120.'),
   ]);
   return {ok: checks.every((check) => check.ok), checkedAt: new Date().toISOString(), checks};
 }
