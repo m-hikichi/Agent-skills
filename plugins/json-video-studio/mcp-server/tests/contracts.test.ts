@@ -4,7 +4,7 @@ import {beforeEach, describe, expect, it} from 'vitest';
 import type {VideoProject} from '../src/shared/video-types.js';
 import {clearSchemaCacheForTests, validateProject, validateProjectLock} from '../src/core/schema.js';
 
-const pluginRoot = resolve(import.meta.dirname, '..', '..', '..');
+const pluginRoot = resolve(import.meta.dirname, '..', '..');
 const schemaPath = resolve(pluginRoot, 'schemas', 'video-project.schema.json');
 const fixture = async (name: string): Promise<VideoProject> => JSON.parse(
   await readFile(['all-templates.video-project.json', 'invalid.video-project.json'].includes(name)

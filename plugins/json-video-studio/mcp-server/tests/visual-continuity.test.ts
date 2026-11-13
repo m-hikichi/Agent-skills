@@ -7,8 +7,8 @@ import {navigationState, sceneContinuity, sceneOpacity, scenePageNumbers, shortP
 import {markRuns} from '../src/render/deck.js';
 import {emphasisRuns} from '../src/render/templates.js';
 
-const schemaPath = resolve(import.meta.dirname, '../../../schemas/video-project.schema.json');
-const examplePath = resolve(import.meta.dirname, '../../../examples/minimal.video-project.json');
+const schemaPath = resolve(import.meta.dirname, '../../schemas/video-project.schema.json');
+const examplePath = resolve(import.meta.dirname, '../../examples/minimal.video-project.json');
 
 const minimal = async (): Promise<VideoProject> => JSON.parse(await readFile(examplePath, 'utf8')) as VideoProject;
 

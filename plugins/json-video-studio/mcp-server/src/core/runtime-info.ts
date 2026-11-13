@@ -1,3 +1,4 @@
+import {VERSION as REMOTION_VERSION} from 'remotion/version';
 import {BUNDLED_FONT_FAMILY, type ProjectLock} from '../shared/video-types.js';
 import {toolVersion} from './media.js';
 
@@ -10,7 +11,7 @@ export async function collectRuntimeVersions(voicevox?: string): Promise<Project
   ]);
   return {
     node: process.version,
-    remotion: process.env.REMOTION_VERSION ?? '4.0.503',
+    remotion: REMOTION_VERSION,
     ffmpeg,
     chrome,
     font,

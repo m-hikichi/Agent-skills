@@ -394,7 +394,7 @@ export const App = () => {
 
   return <div className="app-shell">
     <aside className="sidebar">
-      <div className="brand"><span className="brand-mark">▶</span><div><strong>JSON Video</strong><small>Studio v0.1.0</small></div></div>
+      <div className="brand"><span className="brand-mark">▶</span><div><strong>JSON Video</strong><small>Studio</small></div></div>
       <button className="primary full" onClick={createProject}>＋ 新規プロジェクト</button>
       <nav>{projects.map((item) => <button key={item.path} className={item.path === selectedPath ? 'project active' : 'project'} onClick={() => void load(item.path)}><strong>{item.title}</strong><small>{item.path}</small><span className={`lock ${item.lockState}`}>{item.lockState}</span></button>)}</nav>
     </aside>

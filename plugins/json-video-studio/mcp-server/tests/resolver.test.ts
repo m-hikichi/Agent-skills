@@ -6,7 +6,7 @@ import type {ProjectLock, Speaker, VideoProject} from '../src/shared/video-types
 import {digestFile, digestJson} from '../src/core/fs-safe.js';
 import {resolveProject, type VoiceProvider} from '../src/core/resolver.js';
 
-const pluginRoot = resolve(import.meta.dirname, '..', '..', '..');
+const pluginRoot = resolve(import.meta.dirname, '..', '..');
 const schemaPath = resolve(pluginRoot, 'schemas', 'video-project.schema.json');
 const roots: string[] = [];
 const runtime: ProjectLock['runtime'] = {

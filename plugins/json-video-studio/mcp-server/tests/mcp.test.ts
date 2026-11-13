@@ -9,8 +9,8 @@ import type {JobRecord} from '../src/shared/contracts.js';
 
 const temporaryRoots: string[] = [];
 const runtimeRoot = resolve(import.meta.dirname, '..');
-const schemaPath = resolve(import.meta.dirname, '../../../schemas/video-project.schema.json');
-const examplePath = resolve(import.meta.dirname, '../../../examples/minimal.video-project.json');
+const schemaPath = resolve(import.meta.dirname, '../../schemas/video-project.schema.json');
+const examplePath = resolve(import.meta.dirname, '../../examples/minimal.video-project.json');
 
 const expectedTools = [
   'doctor',

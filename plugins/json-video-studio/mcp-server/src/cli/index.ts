@@ -46,7 +46,6 @@ function service(options: GlobalOptions): ProjectService {
 const program = new Command()
   .name('json-video')
   .description('JSON Video Studio CLI')
-  .version('0.1.0')
   .option('-w, --workspace <directory>', 'workspace root', process.env.JSON_VIDEO_WORKSPACE_ROOT ?? process.cwd())
   .option('--json', 'print machine-readable JSON', true)
   .showHelpAfterError()

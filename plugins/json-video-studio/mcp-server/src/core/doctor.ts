@@ -1,5 +1,6 @@
 import {mkdtemp, mkdir, readFile, rm, writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
+import {VERSION as REMOTION_VERSION} from 'remotion/version';
 import {BUNDLED_FONT_FAMILY} from '../shared/video-types.js';
 import {lockValidator, projectValidator, resolveSchemaPath} from './schema.js';
 import {toolVersion} from './media.js';
@@ -59,10 +60,7 @@ export async function doctor(options: DoctorOptions = {}): Promise<DoctorReport>
   const dataRoot = resolve(options.dataRoot ?? process.env.JSON_VIDEO_DATA_ROOT ?? resolve(workspaceRoot, '.json-video-work'));
   const chrome = process.env.CHROME_BIN ?? process.env.REMOTION_BROWSER_EXECUTABLE ?? 'chromium';
   const checks = await Promise.all([
-    capture('node', async () => {
-      if (Number(process.versions.node.split('.')[0]) !== 24) throw new Error(`Node 24 is required; found ${process.version}`);
-      return process.version;
-    }, 'Use the pinned Node.js 24 container.'),
+    capture('node', async () => process.version, 'Use the Docker image.'),
     capture('workspace-write', () => assertWritable(workspaceRoot), 'Check the ${CLAUDE_PROJECT_DIR} Docker mount and permissions.'),
     capture('plugin-data-write', () => assertWritable(dataRoot), 'Check the ${CLAUDE_PLUGIN_DATA} Docker mount and permissions.'),
     capture('schemas', async () => {
@@ -73,18 +71,14 @@ export async function doctor(options: DoctorOptions = {}): Promise<DoctorReport>
     capture('ffmpeg', () => toolVersion(process.env.FFMPEG_PATH ?? 'ffmpeg'), 'Install FFmpeg or use the Docker image.'),
     capture('ffprobe', () => toolVersion(process.env.FFPROBE_PATH ?? 'ffprobe'), 'Install ffprobe or use the Docker image.'),
     capture('chrome', () => toolVersion(chrome, ['--version']), 'Use the image-bundled Chromium.'),
-    capture('remotion', async () => {
-      const version = process.env.REMOTION_VERSION ?? '4.0.503';
-      if (version !== '4.0.503') throw new Error(`Expected 4.0.503; found ${version}`);
-      return version;
-    }, 'Rebuild json-video-studio:0.1.0 with Remotion 4.0.503.'),
+    capture('remotion', async () => REMOTION_VERSION, 'Rebuild the json-video-studio image.'),
     capture('font', () => toolVersion('fc-match', ['--format=%{family} %{version}\n', BUNDLED_FONT_FAMILY]), `Use the image-bundled ${BUNDLED_FONT_FAMILY} font.`),
     capture('voicevox-version', async () => {
       approvedVoicevoxUrl(voicevoxUrl);
       const response = await fetch(`${voicevoxUrl}/version`, {signal: AbortSignal.timeout(3000)});
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return String(await response.json());
-    }, 'Start the pinned VOICEVOX Engine container.'),
+    }, 'Start the VOICEVOX Engine container.'),
     capture('voicevox-speakers', async () => {
       approvedVoicevoxUrl(voicevoxUrl);
       const response = await fetch(`${voicevoxUrl}/speakers`, {signal: AbortSignal.timeout(5000)});

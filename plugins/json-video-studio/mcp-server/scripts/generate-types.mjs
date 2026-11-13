@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 import {compileFromFile} from 'json-schema-to-typescript';
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
-const schemaPath = path.resolve(scriptDirectory, '..', '..', '..', 'schemas', 'video-project.schema.json');
+const schemaPath = path.resolve(scriptDirectory, '..', '..', 'schemas', 'video-project.schema.json');
 const outputDirectory = path.resolve(scriptDirectory, '..', 'src', 'generated');
 const outputPath = path.join(outputDirectory, 'video-project.ts');
 

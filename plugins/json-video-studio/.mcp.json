@@ -3,21 +3,13 @@
     "json-video-studio": {
       "command": "docker",
       "args": [
-        "run",
-        "--rm",
-        "-i",
-        "--init",
-        "--entrypoint",
-        "node",
-        "--network",
+        "run", "--rm", "-i", "--init",
+        "--entrypoint", "node",
+        "--network", "json-video-studio",
+        "-p", "127.0.0.1:43120:43120",
+        "-v", "${CLAUDE_PROJECT_DIR}:/workspace",
+        "-v", "${CLAUDE_PLUGIN_DATA}:/data",
         "json-video-studio",
-        "-p",
-        "127.0.0.1:43120:43120",
-        "-v",
-        "${CLAUDE_PROJECT_DIR}:/workspace",
-        "-v",
-        "${CLAUDE_PLUGIN_DATA}:/data",
-        "json-video-studio:0.1.0",
         "/app/dist/mcp/index.js"
       ]
     }

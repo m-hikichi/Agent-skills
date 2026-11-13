@@ -39,7 +39,6 @@ export async function resolveSchemaPath(explicitPath?: string): Promise<string> 
   return firstExisting([
     '/plugin/schemas/video-project.schema.json',
     resolve(process.cwd(), 'schemas/video-project.schema.json'),
-    resolve(moduleDir, '../../../../schemas/video-project.schema.json'),
     resolve(moduleDir, '../../../schemas/video-project.schema.json'),
   ]);
 }

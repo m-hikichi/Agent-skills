@@ -1,11 +1,12 @@
-FROM node:24.18.0-bookworm-slim AS build
+# Build context is the plugin root (schemas/ and examples/ are bundled).
+FROM node:24-bookworm-slim AS build
 
 WORKDIR /app
 
-COPY mcp-server/runtime/package.json mcp-server/runtime/package-lock.json ./
+COPY mcp-server/package.json mcp-server/package-lock.json ./
 RUN npm ci
 
-COPY mcp-server/runtime/ ./
+COPY mcp-server/ ./
 COPY schemas/ /schemas/
 
 RUN npm run build
@@ -14,13 +15,7 @@ FROM build AS production-dependencies
 
 RUN npm ci --omit=dev
 
-FROM node:24.18.0-bookworm-slim AS runtime-base
-
-ARG FFMPEG_VERSION=7:5.1.9-0+deb12u1
-ARG FONTCONFIG_VERSION=2.14.1-4
-ARG NOTO_CJK_VERSION=1:20220127+repack1-1
-ARG NOTO_MONO_VERSION=20201225-1
-ARG CA_CERTIFICATES_VERSION=20250419~deb12u2
+FROM node:24-bookworm-slim AS runtime-base
 
 ENV DEBIAN_FRONTEND=noninteractive \
     NODE_ENV=production \
@@ -31,39 +26,30 @@ ENV DEBIAN_FRONTEND=noninteractive \
     JSON_VIDEO_ALLOW_CONTAINER_BIND=1 \
     JSON_VIDEO_UI_PORT=43120 \
     JSON_VIDEO_VOICEVOX_URL=http://voicevox:50021 \
-    REMOTION_VERSION=4.0.503 \
-    JSON_VIDEO_FONT_FAMILY="Noto Sans CJK JP" \
     CHROME_BIN=/usr/bin/chromium
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        ca-certificates=${CA_CERTIFICATES_VERSION} \
+        ca-certificates \
         chromium \
-        ffmpeg=${FFMPEG_VERSION} \
-        fontconfig=${FONTCONFIG_VERSION} \
-        fonts-noto-cjk=${NOTO_CJK_VERSION} \
-        fonts-noto-mono=${NOTO_MONO_VERSION} \
+        ffmpeg \
+        fontconfig \
+        fonts-noto-cjk \
+        fonts-noto-mono \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+
+COPY --chown=node:node schemas ./schemas
+COPY --chown=node:node examples ./examples
 
 FROM runtime-base AS test
 
 ENV NODE_ENV=test
 
-COPY --from=build --chown=node:node /app/dist ./dist
-COPY --from=build --chown=node:node /app/node_modules ./node_modules
-COPY --from=build --chown=node:node /app/package.json ./package.json
-COPY --from=build --chown=node:node /app/tsconfig.json ./tsconfig.json
-COPY --from=build --chown=node:node /app/vitest.config.ts ./vitest.config.ts
-COPY --from=build --chown=node:node /app/src ./src
-COPY --from=build --chown=node:node /app/tests ./tests
-COPY --from=build --chown=node:node /app/scripts ./scripts
-COPY --chown=node:node schemas ./schemas
+COPY --from=build --chown=node:node /app ./
 COPY --chown=node:node schemas /schemas
 COPY --chown=node:node examples /examples
-COPY --chown=node:node mcp-server/runtime/playwright.config.ts ./playwright.config.ts
-COPY --chown=node:node mcp-server/runtime/e2e ./e2e
 RUN mkdir -p /app/test-results && chown -R node:node /app/test-results
 
 USER node
@@ -72,13 +58,9 @@ CMD ["run", "test:e2e"]
 
 FROM runtime-base AS runtime
 
-WORKDIR /app
-
 COPY --from=build --chown=node:node /app/dist ./dist
 COPY --from=production-dependencies --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/package.json ./package.json
-COPY --chown=node:node schemas ./schemas
-COPY --chown=node:node examples ./examples
 
 RUN mkdir -p /workspace /data && chown -R node:node /workspace /data
 

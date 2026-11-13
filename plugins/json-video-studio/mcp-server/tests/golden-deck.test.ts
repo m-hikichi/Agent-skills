@@ -24,7 +24,7 @@ describe('deck frame golden frames', () => {
     const projectRoot = path.join(root, 'deck');
     await mkdir(projectRoot, {recursive: true});
     const projectPath = path.join(projectRoot, 'video-project.json');
-    await writeFile(projectPath, await readFile(path.resolve(import.meta.dirname, 'fixtures', 'deck-slide.video-project.json')));
+    await writeFile(projectPath, await readFile(path.resolve(import.meta.dirname, '..', '..', 'examples', 'deck-slide.video-project.json')));
     const resolved = await resolveProject({
       projectPath: 'deck/video-project.json',
       workspaceRoot: root,

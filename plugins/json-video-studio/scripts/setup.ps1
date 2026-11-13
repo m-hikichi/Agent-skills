@@ -1,134 +1,53 @@
+# Builds the image, starts VOICEVOX, runs the doctor, and installs the personal plugin.
+# Pass -SkipPersonalInstall to use the repository directly with `claude --plugin-dir`.
 [CmdletBinding()]
-param(
-    [switch]$SkipVoicevox,
-    [switch]$SkipBuild,
-    [switch]$SkipPersonalInstall
-)
+param([switch]$SkipPersonalInstall)
 
 $ErrorActionPreference = 'Stop'
 $pluginRoot = Split-Path -Parent $PSScriptRoot
-$imageName = 'json-video-studio:0.1.0'
-$composeFile = Join-Path $pluginRoot 'mcp-server/compose.voicevox.yml'
+$image = 'json-video-studio'
+$doctor = @('run', '--rm', '--init', '--network', 'json-video-studio', $image, 'doctor')
 
-if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-    throw 'Docker CLI was not found. Install Docker Desktop or Docker Engine first.'
+function Invoke-Docker {
+    & docker @args
+    if ($LASTEXITCODE -ne 0) { throw "docker $($args -join ' ') failed." }
 }
 
-& docker info | Out-Null
-if ($LASTEXITCODE -ne 0) {
-    throw 'Cannot connect to the Docker daemon. Start Docker and run this script again.'
+Invoke-Docker compose version | Out-Null
+
+Write-Host "Building $image ..."
+Invoke-Docker build --tag $image --file (Join-Path $pluginRoot 'mcp-server/Dockerfile') $pluginRoot
+
+Write-Host 'Starting the VOICEVOX Engine ...'
+Invoke-Docker compose --file (Join-Path $pluginRoot 'mcp-server/compose.yml') up --detach
+
+Write-Host 'Waiting for the runtime doctor to pass ...'
+foreach ($attempt in 1..60) {
+    & docker @doctor 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) { break }
+    Start-Sleep -Seconds 2
 }
-
-& docker compose version | Out-Null
-if ($LASTEXITCODE -ne 0) {
-    throw 'Docker Compose v2 is not available.'
-}
-
-if (Get-Command claude -ErrorAction SilentlyContinue) {
-    & claude plugin validate $pluginRoot --strict
-    if ($LASTEXITCODE -ne 0) { throw 'Claude Code plugin validation failed.' }
-}
-
-if (-not $SkipBuild) {
-    Write-Host "Building $imageName ..."
-    & docker compose --file (Join-Path $pluginRoot 'mcp-server/compose.build.yml') build runtime
-    if ($LASTEXITCODE -ne 0) {
-        throw 'Failed to build the JSON Video Studio image.'
-    }
-}
-
-if (-not $SkipVoicevox) {
-    Write-Host 'Starting the pinned VOICEVOX Engine ...'
-    & docker compose --file $composeFile up --detach
-    if ($LASTEXITCODE -ne 0) {
-        throw 'Failed to start the VOICEVOX Engine.'
-    }
-
-    Write-Host 'Waiting for the VOICEVOX Engine API and speaker models ...'
-    $voicevoxProbe = @(
-        'run', '--rm', '--network', 'json-video-studio', '--entrypoint', 'node',
-        $imageName, '-e',
-        "Promise.all([fetch('http://voicevox:50021/version',{signal:AbortSignal.timeout(3000)}),fetch('http://voicevox:50021/speakers',{signal:AbortSignal.timeout(5000)})]).then(async ([version,speakers])=>{const list=await speakers.json();if(!version.ok||!speakers.ok||!Array.isArray(list)||list.length===0)process.exit(1)}).catch(()=>process.exit(1))"
-    )
-    $voicevoxReady = $false
-    foreach ($attempt in 1..60) {
-        & docker @voicevoxProbe 2>$null | Out-Null
-        if ($LASTEXITCODE -eq 0) {
-            $voicevoxReady = $true
-            break
-        }
-        if ($attempt -lt 60) { Start-Sleep -Seconds 2 }
-    }
-    if (-not $voicevoxReady) {
-        throw 'VOICEVOX Engine did not become ready after 60 probes. Check: docker compose --file mcp-server/compose.voicevox.yml logs voicevox'
-    }
-}
-
-$setupData = Join-Path $pluginRoot '.json-video-work\setup-doctor'
-New-Item -ItemType Directory -Path $setupData -Force | Out-Null
-
-Write-Host 'Running the deterministic runtime doctor ...'
-$doctorArgs = @(
-    'run', '--rm', '--init',
-    '--network', 'json-video-studio',
-    '-v', "${pluginRoot}:/workspace",
-    '-v', "${setupData}:/data",
-    $imageName, 'doctor'
-)
-& docker @doctorArgs
-if ($LASTEXITCODE -ne 0) {
-    throw 'Runtime doctor failed. Follow the troubleshooting steps in README.md.'
-}
+Invoke-Docker @doctor
 
 Write-Host 'Validating the bundled minimal project ...'
-$validateArgs = @(
-    'run', '--rm', '--init',
-    '-e', 'JSON_VIDEO_WORKSPACE_ROOT=/app/examples',
-    $imageName, 'validate', 'minimal.video-project.json'
-)
-& docker @validateArgs
-if ($LASTEXITCODE -ne 0) {
-    throw 'Schema validation failed for the bundled minimal project.'
-}
+Invoke-Docker run --rm --init -e JSON_VIDEO_WORKSPACE_ROOT=/app/examples $image validate minimal.video-project.json
 
-$personalInstallReady = $false
-if (-not $SkipPersonalInstall) {
-    $personalRoot = Join-Path ([Environment]::GetFolderPath('UserProfile')) '.claude\skills'
-    $personalPath = Join-Path $personalRoot 'json-video-studio'
-    if ([System.IO.Path]::GetFullPath($pluginRoot) -eq [System.IO.Path]::GetFullPath($personalPath)) {
-        Write-Host "Personal plugin is already running from $personalPath"
-        $personalInstallReady = $true
-    } elseif (Test-Path -LiteralPath $personalPath) {
-        Write-Warning "Personal plugin already exists at $personalPath; it was not overwritten. Remove or back it up explicitly before updating."
-    } else {
-        New-Item -ItemType Directory -Force -Path $personalRoot | Out-Null
-        $staging = Join-Path $personalRoot ('.json-video-studio.install-' + [guid]::NewGuid().ToString('N'))
-        New-Item -ItemType Directory -Path $staging | Out-Null
-        try {
-            foreach ($relativePath in Get-Content -LiteralPath (Join-Path $PSScriptRoot 'install-files.txt')) {
-                if (-not $relativePath.Trim()) { continue }
-                $destination = Join-Path $staging $relativePath
-                New-Item -ItemType Directory -Force -Path (Split-Path -Parent $destination) | Out-Null
-                Copy-Item -LiteralPath (Join-Path $pluginRoot $relativePath) -Destination $destination -Recurse
-            }
-            Move-Item -LiteralPath $staging -Destination $personalPath
-            Write-Host "Installed the personal Claude Code plugin at $personalPath"
-            $personalInstallReady = $true
-        } finally {
-            if (Test-Path -LiteralPath $staging) { Remove-Item -LiteralPath $staging -Recurse -Force }
-        }
-    }
+$personalPath = Join-Path $HOME '.claude\skills\json-video-studio'
+if ($SkipPersonalInstall -or ($pluginRoot -eq $personalPath)) {
+} elseif (Test-Path -LiteralPath $personalPath) {
+    Write-Warning "Personal plugin already exists at $personalPath; it was not overwritten."
+} else {
+    & robocopy $pluginRoot $personalPath /E /XD .git node_modules dist .json-video-work /NFL /NDL /NJH /NJS | Out-Null
+    if ($LASTEXITCODE -ge 8) { throw 'Failed to copy the personal plugin.' }
+    Write-Host "Installed the personal plugin at $personalPath"
 }
 
 Write-Host ''
 Write-Host 'Setup completed.'
-Write-Host 'Runtime doctor and minimal project validation passed without AI assistance.'
-if ($personalInstallReady) {
+if (-not $SkipPersonalInstall -and (Test-Path -LiteralPath $personalPath)) {
     Write-Host 'Start a new Claude Code session with: claude'
-    Write-Host "The personal plugin at $personalPath will auto-load as json-video-studio@skills-dir."
 } else {
-    Write-Host "Start the current source with: claude --plugin-dir `"$pluginRoot`""
+    Write-Host "Start a new Claude Code session with: claude --plugin-dir `"$pluginRoot`""
 }
-Write-Host 'The local editor will be available at http://127.0.0.1:43120 after the MCP server starts.'
-Write-Host 'Before organizational use or offering a service, re-check the current Remotion terms: https://www.remotion.dev/docs/license/pricing'
-Write-Host 'Review the selected VOICEVOX character terms before publishing a video.'
+Write-Host 'Check the Remotion license (https://www.remotion.dev/docs/license) and the VOICEVOX character terms before publishing.'
+exit 0

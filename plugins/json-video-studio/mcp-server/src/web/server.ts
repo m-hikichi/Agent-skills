@@ -336,7 +336,7 @@ export const startWebServer = async (options: StartWebServerOptions): Promise<We
   await app.register(multipart, {limits: {files: 1, fileSize: 64 * 1024 * 1024}});
   app.addHook('onRequest', async (request) => requireCsrfHeader(request));
 
-  app.get('/api/health', async () => ({ok: true, workspaceRoot, version: '0.1.0'}));
+  app.get('/api/health', async () => ({ok: true, workspaceRoot}));
   app.get('/api/schema', async () => JSON.parse(await readFile(await resolveSchemaPath(), 'utf8')) as unknown);
   app.get('/api/projects', async () => service.listProjects());
   app.post<{Body: {projectPath: string; project?: VideoProject}}>('/api/projects', async (request, reply) => reply.code(201).send(await service.createProject(request.body)));
