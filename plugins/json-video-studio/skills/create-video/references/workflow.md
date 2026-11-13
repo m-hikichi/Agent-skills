@@ -10,6 +10,7 @@
 - `job_status`: jobの状態、0〜1のprogress、message、result/errorを返す。
 - `job_cancel`: 指定jobだけを安全に中断する。
 - `output_inspect`: ffprobeと成果物manifestの検査結果を返す。
+- `output_review_frames`: 成果物ディレクトリの`video.mp4`から、各sceneの開始・中間・終了と、同じレイアウトが続く境界の前後フレームを抽出し、タイル状のシートと`index.json`を`.json-video-work/<project-id>/final-frames/<lock-hash>/`に作る（成果物ディレクトリは変更しない）。数分かかる。
 
 ## 非同期ツール
 

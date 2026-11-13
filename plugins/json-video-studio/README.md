@@ -46,12 +46,13 @@ claude --plugin-dir /absolute/path/to/json-video-studio
 
 - [音声・工程アニメーションの例](examples/animated-flow.video-project.json)
 - [最小の無音例](examples/minimal.video-project.json)
+- [資料型レイアウト（deck・slide）の無音例](examples/deck-slide.video-project.json)
 - [原稿JSONの定義](schemas/video-project.schema.json)
 - [画面の選び方](skills/create-video/references/visual-guidelines.md)
 
 出力は原稿JSONの所在ディレクトリ配下の `dist/<project-id>/<lock-hash>/` です。動画・絵コンテ・クレジット・検証情報を保存し、字幕・章・サムネイルはJSONで選択します。作業用の音声・lock・レビューは `.json-video-work/` に保存します。既存出力は上書きしません。
 
-動画は1920×1080・30fps。ローカル素材、VOICEVOXまたは提供音声、9種類の固定visualに対応します。UIは `http://127.0.0.1:43120`、VOICEVOXは `http://127.0.0.1:50021` です。同時利用は1セッション・1レンダージョブを前提にします。
+動画は1920×1080・30fps。ローカル素材、VOICEVOXまたは提供音声、12種類の固定visual（表・文章カード・複数ブロックを組むslideを含む）、章の進捗表示（`navigation`）、資料型レイアウト枠（`theme.frame`、配色は`palette`で指定）に対応します。完成動画の確認用に、`output_review_frames`でscene・境界のフレームシートを作れます。同じレイアウトが続くsceneは再フェードせず、強調だけを切り替えます。UIは `http://127.0.0.1:43120`、VOICEVOXは `http://127.0.0.1:50021` です。同時利用は1セッション・1レンダージョブを前提にします。
 
 ## 設定・診断
 

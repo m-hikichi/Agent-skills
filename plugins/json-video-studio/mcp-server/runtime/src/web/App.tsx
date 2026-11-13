@@ -32,6 +32,9 @@ const visualFor = (type: SceneVisual['type']): SceneVisual => {
     case 'metric': return {type, variant: 'number', label: '指標', value: '100'};
     case 'outro': return {type, title: 'ご視聴ありがとうございました'};
     case 'flow': return {type, title: '処理の流れ', steps: [{title: '入力'}, {title: '出力'}], activeStep: 0};
+    case 'table': return {type, title: '一覧表', columns: ['列1', '列2'], rows: [{label: '行1', cells: ['値', '値']}]};
+    case 'statement': return {type, text: '伝えたい1つの文'};
+    case 'slide': return {type, tag: '見出し', title: 'このページで伝えること', blocks: [{kind: 'text', text: '本文'}]};
   }
 };
 
@@ -48,6 +51,35 @@ const previewLock = (project: VideoProject): ProjectLock => {
     totalFrames: scenes.at(-1) ? scenes.at(-1)!.startFrame + scenes.at(-1)!.durationInFrames : 1,
     fps: 30, credits: [], warnings: [],
   };
+};
+
+/** Parse a 1-based comma list typed by a person into unique zero-based indexes; empty means no emphasis. */
+const indexList = (value: string): number[] | undefined => {
+  const indexes = [...new Set(value.split(/[,、\s]+/u).map((part) => Number.parseInt(part, 10) - 1).filter((index) => Number.isInteger(index) && index >= 0))];
+  return indexes.length ? indexes : undefined;
+};
+
+type SlideBlocks = Extract<SceneVisual, {type: 'slide'}>['blocks'];
+
+/** Blocks are nested and varied, so they are edited as JSON and applied only when they parse. */
+const SlideBlocksEditor = ({blocks, onChange}: {blocks: SlideBlocks; onChange: (blocks: SlideBlocks) => void}) => {
+  const [draft, setDraft] = useState(() => JSON.stringify(blocks, null, 2));
+  const [error, setError] = useState<string | undefined>();
+  useEffect(() => setDraft(JSON.stringify(blocks, null, 2)), [blocks]);
+  return <Field label="ブロック（JSON。text・callout・table・cards・kpis・list・steps）">
+    <TextArea className="code-input" value={draft} onChange={(e) => {
+      setDraft(e.target.value);
+      try {
+        const parsed = JSON.parse(e.target.value) as unknown;
+        if (!Array.isArray(parsed)) throw new Error('配列で指定してください');
+        setError(undefined);
+        onChange(parsed as SlideBlocks);
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : String(cause));
+      }
+    }} />
+    {error ? <span className="field-error">{error}</span> : null}
+  </Field>;
 };
 
 const Field = ({label, children}: {label: string; children: React.ReactNode}) => <label className="field"><span>{label}</span>{children}</label>;
@@ -100,7 +132,7 @@ const VisualEditor = ({visual, project, onChange}: {visual: SceneVisual; project
   return <div className="visual-editor">
     <Field label="ビジュアル">
       <select value={visual.type} onChange={(event) => onChange(visualFor(event.target.value as SceneVisual['type']))}>
-        {['title', 'bullets', 'split', 'media', 'code', 'quote', 'metric', 'outro', 'flow'].map((type) => <option key={type}>{type}</option>)}
+        {['title', 'bullets', 'split', 'media', 'code', 'quote', 'metric', 'outro', 'flow', 'table', 'statement', 'slide'].map((type) => <option key={type}>{type}</option>)}
       </select>
     </Field>
     {visual.type === 'title' || visual.type === 'outro' ? <>
@@ -110,6 +142,7 @@ const VisualEditor = ({visual, project, onChange}: {visual: SceneVisual; project
     {visual.type === 'bullets' ? <>
       <Field label="見出し"><TextInput value={visual.title ?? ''} onChange={(e) => patch({title: e.target.value || undefined})} /></Field>
       <Field label="項目（1行1件）"><TextArea value={visual.items.join('\n')} onChange={(e) => patch({items: e.target.value.split('\n')})} /></Field>
+      <Field label="強調する項目番号（1始まり、カンマ区切り）"><TextInput value={(visual.highlight ?? []).map((value) => value + 1).join(',')} onChange={(e) => patch({highlight: indexList(e.target.value)})} /></Field>
     </> : null}
     {visual.type === 'split' ? <div className="two-columns">
       <Field label="左見出し"><TextInput value={visual.leftTitle ?? ''} onChange={(e) => patch({leftTitle: e.target.value})} /></Field>
@@ -130,6 +163,34 @@ const VisualEditor = ({visual, project, onChange}: {visual: SceneVisual; project
     {visual.type === 'metric' ? <>
       <div className="two-columns"><Field label="種類"><select value={visual.variant} onChange={(e) => patch({variant: e.target.value})}><option>number</option><option>bar</option><option>line</option></select></Field><Field label="ラベル"><TextInput value={visual.label} onChange={(e) => patch({label: e.target.value})} /></Field></div>
       {visual.variant === 'number' ? <Field label="値"><TextInput value={visual.value ?? ''} onChange={(e) => patch({value: e.target.value})} /></Field> : <Field label="値（カンマ区切り）"><TextInput value={(visual.values ?? []).join(',')} onChange={(e) => patch({values: e.target.value.split(',').map(Number).filter(Number.isFinite)})} /></Field>}
+    </> : null}
+    {visual.type === 'table' ? <>
+      <Field label="見出し"><TextInput value={visual.title ?? ''} onChange={(e) => patch({title: e.target.value || undefined})} /></Field>
+      <Field label="列見出し（カンマ区切り）"><TextInput value={visual.columns.join(',')} onChange={(e) => patch({columns: e.target.value.split(',')})} /></Field>
+      <Field label="行（1行1件、「行名|値1|値2」）"><TextArea value={visual.rows.map((row) => [row.label, ...row.cells].join('|')).join('\n')} onChange={(e) => patch({rows: e.target.value.split('\n').map((line) => {
+        const [label = '', ...cells] = line.split('|');
+        return {label, cells};
+      })})} /></Field>
+      <div className="two-columns">
+        <Field label="強調する行（1始まり）"><TextInput value={(visual.highlightRows ?? []).map((value) => value + 1).join(',')} onChange={(e) => patch({highlightRows: indexList(e.target.value)})} /></Field>
+        <Field label="強調する列（1始まり）"><TextInput value={(visual.highlightColumns ?? []).map((value) => value + 1).join(',')} onChange={(e) => patch({highlightColumns: indexList(e.target.value)})} /></Field>
+      </div>
+      <Field label="注記"><TextInput value={visual.note ?? ''} onChange={(e) => patch({note: e.target.value || undefined})} /></Field>
+    </> : null}
+    {visual.type === 'statement' ? <>
+      <div className="two-columns">
+        <Field label="ラベル"><TextInput value={visual.label ?? ''} maxLength={30} onChange={(e) => patch({label: e.target.value || undefined})} /></Field>
+        <Field label="見出し"><TextInput value={visual.title ?? ''} maxLength={60} onChange={(e) => patch({title: e.target.value || undefined})} /></Field>
+      </div>
+      <Field label="本文"><TextArea value={visual.text} maxLength={200} onChange={(e) => patch({text: e.target.value})} /></Field>
+      <Field label="強調する語句（1行1件、本文と完全一致）"><TextArea value={(visual.emphasis ?? []).join('\n')} onChange={(e) => patch({emphasis: e.target.value.split('\n').filter(Boolean)})} /></Field>
+    </> : null}
+    {visual.type === 'slide' ? <>
+      <div className="two-columns">
+        <Field label="タグ"><TextInput value={visual.tag ?? ''} maxLength={16} onChange={(e) => patch({tag: e.target.value || undefined})} /></Field>
+        <Field label="タイトル"><TextInput value={visual.title} maxLength={48} onChange={(e) => patch({title: e.target.value})} /></Field>
+      </div>
+      <SlideBlocksEditor blocks={visual.blocks} onChange={(blocks) => patch({blocks})} />
     </> : null}
     {visual.type === 'flow' ? <>
       <Field label="見出し"><TextInput value={visual.title ?? ''} maxLength={60} onChange={(e) => patch({title: e.target.value || undefined})} /></Field>

@@ -41,7 +41,10 @@ export type SceneVisual =
   | QuoteVisual
   | MetricVisual
   | OutroVisual
-  | FlowVisual;
+  | FlowVisual
+  | TableVisual
+  | StatementVisual
+  | SlideVisual;
 export type MetricVisual = {
   type: 'metric';
   variant: 'number' | 'bar' | 'line';
@@ -73,6 +76,115 @@ export type MetricVisual1 =
       values: number[];
       [k: string]: any;
     };
+export type SlideBlock =
+  | {
+      kind: 'text';
+      span?: BlockSpan;
+      label?: string;
+      heading?: string;
+      text: string;
+      emphasis?: EmphasisTerms;
+    }
+  | {
+      kind: 'callout';
+      span?: BlockSpan;
+      text: string;
+      emphasis?: EmphasisTerms;
+    }
+  | {
+      kind: 'table';
+      span?: BlockSpan;
+      heading?: string;
+      labelHeader?: string;
+      /**
+       * @minItems 1
+       * @maxItems 6
+       */
+      columns: string[];
+      /**
+       * @minItems 1
+       * @maxItems 8
+       */
+      rows: {
+        label: string;
+        /**
+         * @minItems 1
+         * @maxItems 6
+         */
+        cells: string[];
+      }[];
+      highlightRows?: HighlightIndexes;
+      highlightColumns?: HighlightIndexes;
+      note?: string;
+    }
+  | {
+      kind: 'cards';
+      span?: BlockSpan;
+      /**
+       * @minItems 1
+       * @maxItems 4
+       */
+      items: {
+        title: string;
+        body: string;
+        note?: string;
+      }[];
+      highlight?: HighlightIndexes;
+    }
+  | {
+      kind: 'kpis';
+      span?: BlockSpan;
+      /**
+       * @minItems 1
+       * @maxItems 4
+       */
+      items: {
+        label: string;
+        value: string;
+        note?: string;
+      }[];
+      highlight?: HighlightIndexes;
+    }
+  | {
+      kind: 'list';
+      span?: BlockSpan;
+      heading?: string;
+      /**
+       * @minItems 1
+       * @maxItems 6
+       */
+      items: string[];
+      highlight?: HighlightIndexes;
+    }
+  | {
+      kind: 'steps';
+      span?: BlockSpan;
+      /**
+       * @minItems 2
+       * @maxItems 6
+       */
+      items: {
+        title: string;
+        detail?: string;
+      }[];
+      highlight?: HighlightIndexes;
+    };
+/**
+ * Width in a 12-column grid.
+ */
+export type BlockSpan = number;
+/**
+ * Exact substrings of the block text to emphasize.
+ *
+ * @maxItems 8
+ */
+export type EmphasisTerms = string[];
+/**
+ * Zero-based item indexes to emphasize; the other items are dimmed.
+ *
+ * @maxItems 8
+ */
+export type HighlightIndexes = number[];
 export type Scene1 =
   | {
       audioAssetId: Identifier;
@@ -109,6 +221,7 @@ export interface JSONVideoStudioProject {
    * @maxItems 100
    */
   sections: Section[];
+  navigation?: Navigation;
   audio?: AudioMix;
   /**
    * @maxItems 200
@@ -141,12 +254,36 @@ export interface Theme {
   fontFamily: 'Noto Sans CJK JP';
   spacing?: 'compact' | 'comfortable';
   subtitleStyle?: SubtitleStyle;
+  frame?: Frame;
 }
 export interface SubtitleStyle {
   fontSize?: number;
   maxLines?: 1 | 2;
   backgroundColor?: Color;
   color?: Color;
+}
+/**
+ * Slide-deck frame: gradient background, white content card, footer with logo, footer text and page number, chapter chips and progress line at the bottom, and a cover layout for title/outro visuals. Colors come from palette (brand-neutral defaults).
+ */
+export interface Frame {
+  style: 'deck';
+  /**
+   * Frame colors. Omitted keys fall back to neutral defaults.
+   */
+  palette?: {
+    gradientStart?: Color;
+    gradientEnd?: Color;
+    primary?: Color;
+    dark?: Color;
+    light?: Color;
+    text?: Color;
+    marker?: Color;
+  };
+  footerLogoAssetId?: Identifier;
+  coverLogoAssetId?: Identifier;
+  coverMarkAssetId?: Identifier;
+  footerText?: string;
+  coverCaption?: string;
 }
 export interface Asset {
   id: Identifier;
@@ -202,6 +339,12 @@ export interface BulletsVisual {
    * @maxItems 5
    */
   items: string[];
+  /**
+   * Zero-based item indexes to emphasize. Other items are dimmed. Consecutive scenes that differ only by highlight keep the layout on screen.
+   *
+   * @maxItems 5
+   */
+  highlight?: number[];
 }
 export interface SplitVisual {
   type: 'split';
@@ -245,6 +388,82 @@ export interface FlowVisual {
     detail?: string;
   }[];
   activeStep: number;
+}
+export interface TableVisual {
+  type: 'table';
+  title?: string;
+  /**
+   * @minItems 1
+   * @maxItems 5
+   */
+  columns: string[];
+  /**
+   * @minItems 1
+   * @maxItems 6
+   */
+  rows: {
+    label: string;
+    /**
+     * @minItems 1
+     * @maxItems 5
+     */
+    cells: string[];
+  }[];
+  /**
+   * Zero-based row indexes to emphasize.
+   *
+   * @maxItems 6
+   */
+  highlightRows?: number[];
+  /**
+   * Zero-based column indexes to emphasize.
+   *
+   * @maxItems 5
+   */
+  highlightColumns?: number[];
+  note?: string;
+}
+export interface StatementVisual {
+  type: 'statement';
+  label?: string;
+  title?: string;
+  text: string;
+  /**
+   * Exact substrings of text to emphasize with the accent color.
+   *
+   * @maxItems 6
+   */
+  emphasis?: string[];
+}
+/**
+ * A composed slide page: tag + title header and up to six blocks in a 12-column grid. Consecutive scenes with the same slide keep the page on screen and only move emphasis.
+ */
+export interface SlideVisual {
+  type: 'slide';
+  tag?: string;
+  title: string;
+  /**
+   * @minItems 1
+   * @maxItems 6
+   */
+  blocks: SlideBlock[];
+}
+/**
+ * Persistent chapter bar shown above every scene. Each group bundles one or more sections in order.
+ */
+export interface Navigation {
+  /**
+   * @minItems 2
+   * @maxItems 6
+   */
+  groups: {
+    title: string;
+    /**
+     * @minItems 1
+     * @maxItems 100
+     */
+    sectionIds: Identifier[];
+  }[];
 }
 export interface AudioMix {
   bgmAssetId?: Identifier;

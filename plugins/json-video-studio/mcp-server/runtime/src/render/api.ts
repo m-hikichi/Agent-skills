@@ -458,12 +458,14 @@ export const storyboardProject = async (options: CommonRenderOptions): Promise<R
       storyboard.push(previewTarget);
     }
 
-    const storyboardComposition = await selectComposition({serveUrl, id: 'JsonVideoStoryboard', inputProps, ...browserOptions()});
     const contactSheetNames: string[] = [];
     const contactPages = scenes.length ? Array.from({length: Math.ceil(scenes.length / 12)}, (_, index) => scenes.slice(index * 12, (index + 1) * 12)) : [[]];
     for (const [pageIndex, pageScenes] of contactPages.entries()) {
       const name = pageIndex === 0 ? 'contact-sheet.png' : `contact-sheet-${String(pageIndex + 1).padStart(3, '0')}.png`;
       const pageInput: RemotionRenderInput = {...inputProps, lock: {...inputProps.lock, scenes: pageScenes}};
+      // Remotion renders a selected composition with the props it was selected
+      // with, so every contact-sheet page needs its own selection.
+      const storyboardComposition = await selectComposition({serveUrl, id: 'JsonVideoStoryboard', inputProps: pageInput, ...browserOptions()});
       await renderStillWithSignal({composition: storyboardComposition, serveUrl, output: path.join(temporaryOutput, name), inputProps: pageInput, imageFormat: 'png', ...browserOptions()}, options.signal);
       contactSheetNames.push(name);
     }

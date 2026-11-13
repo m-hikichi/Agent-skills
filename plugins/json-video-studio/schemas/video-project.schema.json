@@ -52,6 +52,9 @@
       "minItems": 1,
       "maxItems": 100
     },
+    "navigation": {
+      "$ref": "#/$defs/navigation"
+    },
     "audio": {
       "$ref": "#/$defs/audioMix"
     },
@@ -186,7 +189,35 @@
         },
         "subtitleStyle": {
           "$ref": "#/$defs/subtitleStyle"
+        },
+        "frame": {
+          "$ref": "#/$defs/frame"
         }
+      }
+    },
+    "frame": {
+      "description": "Slide-deck frame: gradient background, white content card, footer with logo, footer text and page number, chapter chips and progress line at the bottom, and a cover layout for title/outro visuals. Colors come from palette (brand-neutral defaults).",
+      "type": "object", "additionalProperties": false, "required": ["style"],
+      "properties": {
+        "style": {"const": "deck"},
+        "palette": {
+          "description": "Frame colors. Omitted keys fall back to neutral defaults.",
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "gradientStart": {"$ref": "#/$defs/color"},
+            "gradientEnd": {"$ref": "#/$defs/color"},
+            "primary": {"$ref": "#/$defs/color"},
+            "dark": {"$ref": "#/$defs/color"},
+            "light": {"$ref": "#/$defs/color"},
+            "text": {"$ref": "#/$defs/color"},
+            "marker": {"$ref": "#/$defs/color"}
+          }
+        },
+        "footerLogoAssetId": {"$ref": "#/$defs/identifier"},
+        "coverLogoAssetId": {"$ref": "#/$defs/identifier"},
+        "coverMarkAssetId": {"$ref": "#/$defs/identifier"},
+        "footerText": {"type": "string", "minLength": 1, "maxLength": 60},
+        "coverCaption": {"type": "string", "minLength": 1, "maxLength": 80}
       }
     },
     "rights": {
@@ -422,6 +453,11 @@
           },
           "minItems": 1,
           "maxItems": 5
+        },
+        "highlight": {
+          "description": "Zero-based item indexes to emphasize. Other items are dimmed. Consecutive scenes that differ only by highlight keep the layout on screen.",
+          "type": "array", "uniqueItems": true, "maxItems": 5,
+          "items": {"type": "integer", "minimum": 0, "maximum": 4}
         }
       }
     },
@@ -682,6 +718,208 @@
         "activeStep": {"type": "integer", "minimum": 0, "maximum": 3}
       }
     },
+    "tableVisual": {
+      "type": "object", "additionalProperties": false, "required": ["type", "columns", "rows"],
+      "properties": {
+        "type": {"const": "table"},
+        "title": {"type": "string", "maxLength": 100},
+        "columns": {
+          "type": "array", "minItems": 1, "maxItems": 5,
+          "items": {"type": "string", "minLength": 1, "maxLength": 20}
+        },
+        "rows": {
+          "type": "array", "minItems": 1, "maxItems": 6,
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["label", "cells"],
+            "properties": {
+              "label": {"type": "string", "minLength": 1, "maxLength": 30},
+              "cells": {
+                "type": "array", "minItems": 1, "maxItems": 5,
+                "items": {"type": "string", "minLength": 1, "maxLength": 20}
+              }
+            }
+          }
+        },
+        "highlightRows": {
+          "description": "Zero-based row indexes to emphasize.",
+          "type": "array", "uniqueItems": true, "maxItems": 6,
+          "items": {"type": "integer", "minimum": 0, "maximum": 5}
+        },
+        "highlightColumns": {
+          "description": "Zero-based column indexes to emphasize.",
+          "type": "array", "uniqueItems": true, "maxItems": 5,
+          "items": {"type": "integer", "minimum": 0, "maximum": 4}
+        },
+        "note": {"type": "string", "minLength": 1, "maxLength": 120}
+      }
+    },
+    "statementVisual": {
+      "type": "object", "additionalProperties": false, "required": ["type", "text"],
+      "properties": {
+        "type": {"const": "statement"},
+        "label": {"type": "string", "minLength": 1, "maxLength": 30},
+        "title": {"type": "string", "minLength": 1, "maxLength": 60},
+        "text": {"type": "string", "minLength": 1, "maxLength": 200},
+        "emphasis": {
+          "description": "Exact substrings of text to emphasize with the accent color.",
+          "type": "array", "maxItems": 6,
+          "items": {"type": "string", "minLength": 1, "maxLength": 40}
+        }
+      }
+    },
+    "emphasisTerms": {
+      "description": "Exact substrings of the block text to emphasize.",
+      "type": "array", "maxItems": 8,
+      "items": {"type": "string", "minLength": 1, "maxLength": 60}
+    },
+    "highlightIndexes": {
+      "description": "Zero-based item indexes to emphasize; the other items are dimmed.",
+      "type": "array", "uniqueItems": true, "maxItems": 8,
+      "items": {"type": "integer", "minimum": 0, "maximum": 7}
+    },
+    "blockSpan": {"description": "Width in a 12-column grid.", "type": "integer", "minimum": 1, "maximum": 12},
+    "slideBlock": {
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false, "required": ["kind", "text"],
+          "properties": {
+            "kind": {"const": "text"},
+            "span": {"$ref": "#/$defs/blockSpan"},
+            "label": {"type": "string", "minLength": 1, "maxLength": 30},
+            "heading": {"type": "string", "minLength": 1, "maxLength": 40},
+            "text": {"type": "string", "minLength": 1, "maxLength": 300},
+            "emphasis": {"$ref": "#/$defs/emphasisTerms"}
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false, "required": ["kind", "text"],
+          "properties": {
+            "kind": {"const": "callout"},
+            "span": {"$ref": "#/$defs/blockSpan"},
+            "text": {"type": "string", "minLength": 1, "maxLength": 200},
+            "emphasis": {"$ref": "#/$defs/emphasisTerms"}
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false, "required": ["kind", "columns", "rows"],
+          "properties": {
+            "kind": {"const": "table"},
+            "span": {"$ref": "#/$defs/blockSpan"},
+            "heading": {"type": "string", "minLength": 1, "maxLength": 40},
+            "labelHeader": {"type": "string", "minLength": 1, "maxLength": 20},
+            "columns": {"type": "array", "minItems": 1, "maxItems": 6, "items": {"type": "string", "minLength": 1, "maxLength": 24}},
+            "rows": {
+              "type": "array", "minItems": 1, "maxItems": 8,
+              "items": {
+                "type": "object", "additionalProperties": false, "required": ["label", "cells"],
+                "properties": {
+                  "label": {"type": "string", "minLength": 1, "maxLength": 30},
+                  "cells": {"type": "array", "minItems": 1, "maxItems": 6, "items": {"type": "string", "minLength": 1, "maxLength": 40}}
+                }
+              }
+            },
+            "highlightRows": {"$ref": "#/$defs/highlightIndexes"},
+            "highlightColumns": {"$ref": "#/$defs/highlightIndexes"},
+            "note": {"type": "string", "minLength": 1, "maxLength": 120}
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false, "required": ["kind", "items"],
+          "properties": {
+            "kind": {"const": "cards"},
+            "span": {"$ref": "#/$defs/blockSpan"},
+            "items": {
+              "type": "array", "minItems": 1, "maxItems": 4,
+              "items": {
+                "type": "object", "additionalProperties": false, "required": ["title", "body"],
+                "properties": {
+                  "title": {"type": "string", "minLength": 1, "maxLength": 24},
+                  "body": {"type": "string", "minLength": 1, "maxLength": 120},
+                  "note": {"type": "string", "minLength": 1, "maxLength": 60}
+                }
+              }
+            },
+            "highlight": {"$ref": "#/$defs/highlightIndexes"}
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false, "required": ["kind", "items"],
+          "properties": {
+            "kind": {"const": "kpis"},
+            "span": {"$ref": "#/$defs/blockSpan"},
+            "items": {
+              "type": "array", "minItems": 1, "maxItems": 4,
+              "items": {
+                "type": "object", "additionalProperties": false, "required": ["label", "value"],
+                "properties": {
+                  "label": {"type": "string", "minLength": 1, "maxLength": 30},
+                  "value": {"type": "string", "minLength": 1, "maxLength": 20},
+                  "note": {"type": "string", "minLength": 1, "maxLength": 50}
+                }
+              }
+            },
+            "highlight": {"$ref": "#/$defs/highlightIndexes"}
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false, "required": ["kind", "items"],
+          "properties": {
+            "kind": {"const": "list"},
+            "span": {"$ref": "#/$defs/blockSpan"},
+            "heading": {"type": "string", "minLength": 1, "maxLength": 40},
+            "items": {"type": "array", "minItems": 1, "maxItems": 6, "items": {"type": "string", "minLength": 1, "maxLength": 80}},
+            "highlight": {"$ref": "#/$defs/highlightIndexes"}
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false, "required": ["kind", "items"],
+          "properties": {
+            "kind": {"const": "steps"},
+            "span": {"$ref": "#/$defs/blockSpan"},
+            "items": {
+              "type": "array", "minItems": 2, "maxItems": 6,
+              "items": {
+                "type": "object", "additionalProperties": false, "required": ["title"],
+                "properties": {
+                  "title": {"type": "string", "minLength": 1, "maxLength": 16},
+                  "detail": {"type": "string", "minLength": 1, "maxLength": 30}
+                }
+              }
+            },
+            "highlight": {"$ref": "#/$defs/highlightIndexes"}
+          }
+        }
+      ]
+    },
+    "slideVisual": {
+      "description": "A composed slide page: tag + title header and up to six blocks in a 12-column grid. Consecutive scenes with the same slide keep the page on screen and only move emphasis.",
+      "type": "object", "additionalProperties": false, "required": ["type", "title", "blocks"],
+      "properties": {
+        "type": {"const": "slide"},
+        "tag": {"type": "string", "minLength": 1, "maxLength": 16},
+        "title": {"type": "string", "minLength": 1, "maxLength": 48},
+        "blocks": {"type": "array", "minItems": 1, "maxItems": 6, "items": {"$ref": "#/$defs/slideBlock"}}
+      }
+    },
+    "navigation": {
+      "description": "Persistent chapter bar shown above every scene. Each group bundles one or more sections in order.",
+      "type": "object", "additionalProperties": false, "required": ["groups"],
+      "properties": {
+        "groups": {
+          "type": "array", "minItems": 2, "maxItems": 6,
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["title", "sectionIds"],
+            "properties": {
+              "title": {"type": "string", "minLength": 1, "maxLength": 16},
+              "sectionIds": {
+                "type": "array", "minItems": 1, "maxItems": 100, "uniqueItems": true,
+                "items": {"$ref": "#/$defs/identifier"}
+              }
+            }
+          }
+        }
+      }
+    },
     "sceneVisual": {
       "oneOf": [
         {
@@ -710,6 +948,15 @@
         },
         {
           "$ref": "#/$defs/flowVisual"
+        },
+        {
+          "$ref": "#/$defs/tableVisual"
+        },
+        {
+          "$ref": "#/$defs/statementVisual"
+        },
+        {
+          "$ref": "#/$defs/slideVisual"
         }
       ]
     },

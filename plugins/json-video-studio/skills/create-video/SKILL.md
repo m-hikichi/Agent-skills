@@ -46,13 +46,15 @@ description: 日本語の企画、台詞、ローカル素材からvideo-project
 ## S2. Draft
 
 1. 新規プロジェクトは`project_create`を使い、直接の無検証書き込みを避ける。
-2. `references/visual-guidelines.md`からsceneごとにvisualを選ぶ。レイアウト・scene JSONだけの依頼もこの手順で扱い、一時的なvalid projectに組み込んで検証し、該当sceneを絵コンテで確認して返す。
+2. `references/visual-guidelines.md`からsceneごとにvisualを選ぶ。資料・規程・研修の解説では、`theme.frame.style: "deck"`と`slide`で、関連内容を1ページにまとめた資料型にする（1ページ20〜40秒、ページ内は強調だけを切り替える）。見本資料が与えられたら、その配色・ロゴ・文字配置を作業プロジェクトの`palette`・`assets`で再現する。原典（規程など）がある場合は、条文を`text`ブロックに原文どおり引用し、金額表は`table`にする。レイアウト・scene JSONだけの依頼もこの手順で扱い、一時的なvalid projectに組み込んで検証し、該当sceneを絵コンテで確認して返す。
 3. sceneは次のいずれか1方式だけを使う。
    - ユーザー音声: `audioAssetId`。`durationMs`を書かない
    - VOICEVOX: `speakerId`と`text`。`audioAssetId`と`durationMs`を書かない
    - 無音: `durationMs`。`speakerId`と`audioAssetId`を書かない
 4. 発話は字幕2行に収まる短さへ分割する。1 sceneに複数の論点を詰めない。
    - 略語・製品名・人名・数字・単位の読みを先に棚卸しする。画面表示は`text`/`subtitle`に残し、共通語は`pronunciations: [{term: "JSON", reading: "ジェーソン"}]`、文脈依存の発話はsceneの`speechText`で指定する。`speechText`は辞書より優先される完全な発話原稿なので、必要な読みをすべて含める。
+   - 辞書は、エンジンが誤読した語だけに登録する。英数字を含む語（GM職、A地区、23区内など）はカタカナ、漢字の語（日当など）はひらがなで登録する。漢字語をカタカナにすると未知語扱いでアクセント句が割れ、ひらがなの語が助詞と隣接すると助詞の読みが崩れる（例: 「はべっぴょう」→ハ）。複合語は長い語（例: 23区内）を短い語（23区）より先に置く。登録後は必ずresolveして`kana`で区切りまで確認する。
+   - 社内の職位・固有名詞など利用者しか知らない読みは、仮の読みで進めてよいが、最終報告で必ず確認を求める。
    - 単に全文字を順番にfadeさせて動的解説としない。処理の流れは`flow`の共通stepsを保ち、発話単位で`activeStep`を進めて、入力・移動・到着・結果を対応させる。比較・変化を説明する動きには、その動きで理解できる内容をrequestへ記録する。
 5. 更新時は`project_update`へ読み取り時のrevisionを渡す。競合したら再読込し、利用者の変更を保持して再適用する。
 
@@ -101,9 +103,10 @@ description: 日本語の企画、台詞、ローカル素材からvideo-project
 ## S7. Inspect
 
 1. `output_inspect`でMP4と成果物manifestを検査する。
+   - `output_review_frames`（成果物ディレクトリを渡す）で、完成MP4から各sceneの開始・中間・終了フレームと、同じページが続く境界の前後7フレームを抽出したシートを作る。出力は`.json-video-work/<project-id>/final-frames/<lock-hash>/`（`index.json`にシートとsceneの対応）。ホストでFFmpeg等を使わない。
 2. `captions.srt`の最終cueが動画尺を超えないこと、`chapters.txt`がsection順であること、サムネイルが1280×720であることを確認する。
 3. `credits.txt`の既知素材・VOICEVOX表記と`render-report.json`のlock hashを確認する。
-   - 完成MP4の全sceneの中間画像と、移動の開始・途中・到着・scene境界を抽出し、別agentへ再レビューを依頼する。強調対象と台詞の一致、前後での状態のつながり、表示時間を確認する。
+   - `output_review_frames`のシートを別agentへ渡して再レビューを依頼する。強調対象と台詞の一致、同じページが続く境界でフェード・再入場・字幕の点滅がないこと、前後での状態のつながり、表示時間を確認する。
    - 完成MP4音声がレビューしたWAVに対応することを確認する。音声を聴ける環境では完成MP4を聴き、略語の読み・抑揚・音切れを検査する。聴けない場合、かな照合と波形検査までであることを報告し、「音声品質すべて確認済み」としない。
 4. 利用者へ出力ディレクトリ、動画尺、警告、クレジット上の注意だけを簡潔に報告する。
 

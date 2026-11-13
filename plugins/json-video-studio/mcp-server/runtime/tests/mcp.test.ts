@@ -17,6 +17,7 @@ const expectedTools = [
   'job_cancel',
   'job_status',
   'output_inspect',
+  'output_review_frames',
   'project_create',
   'project_get',
   'project_update',

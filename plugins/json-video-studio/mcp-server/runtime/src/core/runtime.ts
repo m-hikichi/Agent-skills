@@ -8,6 +8,7 @@ import {JobQueue} from './jobs.js';
 import {ProjectService} from './project.js';
 import {publishResolveArtifacts, resolveProject} from './resolver.js';
 import {storyboardProject, renderProject, inspectArtifactOutput, inspectOutput} from '../render/api.js';
+import {extractReviewFrames} from './review-frames.js';
 
 export interface RuntimeOptions {
   workspaceRoot: string;
@@ -129,6 +130,13 @@ export class RuntimeService {
       ...(expectedLockHash === undefined ? {} : {expectedLockHash}),
       ...(signal === undefined ? {} : {signal}),
     });
+    return this.portableResult(result);
+  }
+
+  /** Sample the rendered MP4 into review sheets under .json-video-work (never inside dist). */
+  async reviewFrames(outputDirectory: string, signal?: AbortSignal) {
+    const safe = await resolveInside(this.workspaceRoot, outputDirectory, {mustExist: true});
+    const result = await extractReviewFrames({outputDirectory: safe, ...(signal === undefined ? {} : {signal})});
     return this.portableResult(result);
   }
 

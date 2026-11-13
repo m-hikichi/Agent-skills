@@ -170,6 +170,26 @@ function semanticValidation(project: VideoProject): void {
     pronunciationTerms.add(term);
   });
 
+  const frame = project.theme.frame;
+  requireAsset(frame?.footerLogoAssetId, '/theme/frame/footerLogoAssetId', ['image']);
+  requireAsset(frame?.coverLogoAssetId, '/theme/frame/coverLogoAssetId', ['image']);
+  requireAsset(frame?.coverMarkAssetId, '/theme/frame/coverMarkAssetId', ['image']);
+
+  const sectionIds = new Set(project.sections.map((section) => section.id));
+  const navigatedSections = new Set<string>();
+  project.navigation?.groups.forEach((group, groupIndex) => {
+    group.sectionIds.forEach((sectionId, index) => {
+      const pointer = `/navigation/groups/${groupIndex}/sectionIds/${index}`;
+      if (!sectionIds.has(sectionId)) {
+        throw new AppError('UNKNOWN_SECTION', `Navigation references unknown section id: ${sectionId}`, {category: 'schema', jsonPointer: pointer});
+      }
+      if (navigatedSections.has(sectionId)) {
+        throw new AppError('DUPLICATE_NAVIGATION_SECTION', `Section ${sectionId} belongs to more than one navigation group.`, {category: 'schema', jsonPointer: pointer});
+      }
+      navigatedSections.add(sectionId);
+    });
+  });
+
   project.speakers.forEach((speaker, index) => {
     requireAsset(speaker.avatar?.defaultAssetId, `/speakers/${index}/avatar/defaultAssetId`, ['image', 'avatar']);
     requireAsset(speaker.avatar?.mouthOpenAssetId, `/speakers/${index}/avatar/mouthOpenAssetId`, ['image', 'avatar']);
@@ -203,6 +223,69 @@ function semanticValidation(project: VideoProject): void {
       if (scene.visual.type === 'media') requireAsset(scene.visual.assetId, `${base}/visual/assetId`, ['image', 'avatar', 'video']);
       if (scene.visual.type === 'flow' && scene.visual.activeStep >= scene.visual.steps.length) {
         throw new AppError('FLOW_ACTIVE_STEP_INVALID', `Flow activeStep must select an existing step in scene ${scene.id}.`, {category: 'schema', jsonPointer: `${base}/visual/activeStep`});
+      }
+      if (scene.visual.type === 'bullets') {
+        const itemCount = scene.visual.items.length;
+        scene.visual.highlight?.forEach((value, index) => {
+          if (value >= itemCount) {
+            throw new AppError('HIGHLIGHT_OUT_OF_RANGE', `Bullet highlight ${value} has no item in scene ${scene.id}.`, {category: 'schema', jsonPointer: `${base}/visual/highlight/${index}`});
+          }
+        });
+      }
+      if (scene.visual.type === 'table') {
+        const columnCount = scene.visual.columns.length;
+        const rowCount = scene.visual.rows.length;
+        scene.visual.rows.forEach((row, index) => {
+          if (row.cells.length !== columnCount) {
+            throw new AppError('TABLE_SHAPE_MISMATCH', `Table row ${index} must have ${columnCount} cells in scene ${scene.id}.`, {category: 'schema', jsonPointer: `${base}/visual/rows/${index}/cells`});
+          }
+        });
+        scene.visual.highlightRows?.forEach((value, index) => {
+          if (value >= rowCount) throw new AppError('HIGHLIGHT_OUT_OF_RANGE', `Table highlight row ${value} does not exist in scene ${scene.id}.`, {category: 'schema', jsonPointer: `${base}/visual/highlightRows/${index}`});
+        });
+        scene.visual.highlightColumns?.forEach((value, index) => {
+          if (value >= columnCount) throw new AppError('HIGHLIGHT_OUT_OF_RANGE', `Table highlight column ${value} does not exist in scene ${scene.id}.`, {category: 'schema', jsonPointer: `${base}/visual/highlightColumns/${index}`});
+        });
+      }
+      if (scene.visual.type === 'slide') {
+        scene.visual.blocks.forEach((block, blockIndex) => {
+          const blockBase = `${base}/visual/blocks/${blockIndex}`;
+          const checkIndexes = (values: readonly number[] | undefined, count: number, field: string) => {
+            values?.forEach((value, index) => {
+              if (value >= count) throw new AppError('HIGHLIGHT_OUT_OF_RANGE', `Highlight ${value} does not exist in block ${blockIndex} of scene ${scene.id}.`, {category: 'schema', jsonPointer: `${blockBase}/${field}/${index}`});
+            });
+          };
+          const checkEmphasis = (text: string, terms: readonly string[] | undefined) => {
+            terms?.forEach((term, index) => {
+              if (!text.includes(term)) throw new AppError('EMPHASIS_NOT_FOUND', `Emphasis must be an exact substring of the block text in scene ${scene.id}.`, {category: 'schema', jsonPointer: `${blockBase}/emphasis/${index}`});
+            });
+          };
+          switch (block.kind) {
+            case 'text':
+            case 'callout':
+              checkEmphasis(block.text, block.emphasis);
+              break;
+            case 'table':
+              block.rows.forEach((row, index) => {
+                if (row.cells.length !== block.columns.length) {
+                  throw new AppError('TABLE_SHAPE_MISMATCH', `Table row ${index} must have ${block.columns.length} cells in scene ${scene.id}.`, {category: 'schema', jsonPointer: `${blockBase}/rows/${index}/cells`});
+                }
+              });
+              checkIndexes(block.highlightRows, block.rows.length, 'highlightRows');
+              checkIndexes(block.highlightColumns, block.columns.length, 'highlightColumns');
+              break;
+            default:
+              checkIndexes(block.highlight, block.items.length, 'highlight');
+          }
+        });
+      }
+      if (scene.visual.type === 'statement') {
+        const {text} = scene.visual;
+        scene.visual.emphasis?.forEach((value, index) => {
+          if (!text.includes(value)) {
+            throw new AppError('EMPHASIS_NOT_FOUND', `Statement emphasis must be an exact substring of text in scene ${scene.id}.`, {category: 'schema', jsonPointer: `${base}/visual/emphasis/${index}`});
+          }
+        });
       }
       if (scene.visual.type === 'metric' && scene.visual.variant !== 'number' && scene.visual.labels && scene.visual.values && scene.visual.labels.length !== scene.visual.values.length) {
         throw new AppError('METRIC_LENGTH_MISMATCH', `Metric labels and values must have the same length in scene ${scene.id}.`, {

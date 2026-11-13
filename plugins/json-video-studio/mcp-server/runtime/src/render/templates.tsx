@@ -1,7 +1,7 @@
 import React from 'react';
 import {Img, OffthreadVideo, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import type {SceneVisual, VideoAsset, VideoProject} from '../shared/video-types.js';
-import {metricPolylinePoints} from './layout.js';
+import {metricPolylinePoints, type NavigationState} from './layout.js';
 import {flowProgress} from './flow.js';
 
 export interface TemplateProps {
@@ -9,7 +9,41 @@ export interface TemplateProps {
   project: VideoProject;
   assetUrls: Record<string, string>;
   staticPreview?: boolean;
+  /** The previous scene showed the same layout: keep it in place and animate only emphasis. */
+  continuing?: boolean;
+  /** Visual of the previous scene when continuing, used to ease emphasis changes. */
+  previousVisual?: SceneVisual;
 }
+
+const EMPHASIS_TRANSITION_FRAMES = 8;
+
+/**
+ * Break Japanese body text between phrases (Chromium's auto-phrase segmentation)
+ * instead of in the middle of a word. Requires lang="ja" on the element.
+ */
+const phraseWrap = {wordBreak: 'auto-phrase', lineBreak: 'strict'} as unknown as React.CSSProperties;
+
+/** Ease an emphasis weight from the previous scene's state to this scene's state. */
+const useEmphasisWeight = (current: number, previous: number | undefined, staticPreview = false): number => {
+  const frame = useCurrentFrame();
+  if (staticPreview || previous === undefined || previous === current) return current;
+  return interpolate(frame, [0, EMPHASIS_TRANSITION_FRAMES], [previous, current], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+};
+
+/** 0 = dimmed, 0.5 = normal (nothing highlighted), 1 = highlighted. */
+const emphasisLevel = (selected: readonly number[] | undefined, index: number): number => {
+  if (!selected?.length) return 0.5;
+  return selected.includes(index) ? 1 : 0;
+};
+
+const emphasisOpacity = (weight: number): number => (weight >= 0.5 ? 1 : 0.4 + weight * 1.2);
+const emphasisStrength = (weight: number): number => Math.max(0, (weight - 0.5) * 2);
+
+const withAlpha = (hex: string, alpha: number): string => {
+  const value = hex.replace('#', '').slice(0, 6);
+  const channel = (offset: number) => Number.parseInt(value.slice(offset, offset + 2), 16);
+  return `rgba(${channel(0)}, ${channel(2)}, ${channel(4)}, ${Math.max(0, Math.min(1, alpha)).toFixed(3)})`;
+};
 
 const panel: React.CSSProperties = {
   background: 'rgba(10, 15, 29, 0.80)',
@@ -18,10 +52,10 @@ const panel: React.CSSProperties = {
   boxShadow: '0 28px 80px rgba(0,0,0,.28)',
 };
 
-const useEntrance = (staticPreview = false): React.CSSProperties => {
+const useEntrance = (staticPreview = false, continuing = false): React.CSSProperties => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-  if (staticPreview) return {opacity: 1, transform: 'none'};
+  if (staticPreview || continuing) return {opacity: 1, transform: 'none'};
   const value = spring({frame, fps, config: {damping: 18, stiffness: 120}});
   return {
     opacity: interpolate(value, [0, 1], [0, 1]),
@@ -33,9 +67,9 @@ const Heading = ({children}: {children: React.ReactNode}) => (
   <h1 style={{fontSize: 78, lineHeight: 1.14, margin: 0, letterSpacing: '-0.035em'}}>{children}</h1>
 );
 
-const TitleTemplate = ({visual, staticPreview}: TemplateProps) => {
+const TitleTemplate = ({visual, staticPreview, continuing}: TemplateProps) => {
   if (visual.type !== 'title') return null;
-  const entrance = useEntrance(staticPreview);
+  const entrance = useEntrance(staticPreview, continuing);
   return (
     <div style={{...entrance, textAlign: 'center', maxWidth: 1500}}>
       <div style={{fontSize: 24, fontWeight: 800, letterSpacing: '.22em', opacity: 0.7}}>JSON VIDEO STUDIO</div>
@@ -45,30 +79,41 @@ const TitleTemplate = ({visual, staticPreview}: TemplateProps) => {
   );
 };
 
-const BulletsTemplate = ({visual, project, staticPreview}: TemplateProps) => {
+const BulletItem = ({item, index, weight, previousWeight, entrance, project, staticPreview}: {item: string; index: number; weight: number; previousWeight: number | undefined; entrance: number; project: VideoProject; staticPreview?: boolean}) => {
+  const eased = useEmphasisWeight(weight, previousWeight, staticPreview);
+  const strength = emphasisStrength(eased);
+  const accent = project.theme.accentColor;
+  return (
+    <div style={{...panel, opacity: entrance * emphasisOpacity(eased), display: 'flex', gap: 24, alignItems: 'center', padding: '22px 30px', fontSize: 38,
+      border: `${2 + strength * 2}px solid ${strength > 0 ? withAlpha(accent, 0.25 + strength * 0.75) : 'rgba(255,255,255,0.14)'}`,
+      background: strength > 0 ? withAlpha(accent, 0.08 + strength * 0.1) : panel.background}}>
+      <span style={{display: 'grid', placeItems: 'center', flex: '0 0 auto', width: 48, height: 48, borderRadius: 24, background: accent, color: '#06101f', fontWeight: 900}}>{index + 1}</span>
+      <span lang="ja" style={{fontWeight: strength > 0.5 ? 800 : 400, ...phraseWrap}}>{item}</span>
+    </div>
+  );
+};
+
+const BulletsTemplate = ({visual, project, staticPreview, continuing, previousVisual}: TemplateProps) => {
   if (visual.type !== 'bullets') return null;
   const frame = useCurrentFrame();
+  const previous = continuing && previousVisual?.type === 'bullets' ? previousVisual : undefined;
   return (
     <div style={{width: 1500}}>
       {visual.title ? <Heading>{visual.title}</Heading> : null}
       <div style={{display: 'grid', gap: 20, marginTop: 46}}>
         {visual.items.map((item, index) => {
-          const opacity = staticPreview ? 1 : interpolate(frame, [index * 5, index * 5 + 10], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
-          return (
-            <div key={`${index}-${item}`} style={{...panel, opacity, display: 'flex', gap: 24, alignItems: 'center', padding: '22px 30px', fontSize: 38}}>
-              <span style={{display: 'grid', placeItems: 'center', width: 48, height: 48, borderRadius: 24, background: project.theme.accentColor, color: '#06101f', fontWeight: 900}}>{index + 1}</span>
-              <span>{item}</span>
-            </div>
-          );
+          const entrance = staticPreview || continuing ? 1 : interpolate(frame, [index * 5, index * 5 + 10], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+          return <BulletItem key={`${index}-${item}`} item={item} index={index} entrance={entrance} project={project} staticPreview={staticPreview}
+            weight={emphasisLevel(visual.highlight, index)} previousWeight={previous ? emphasisLevel(previous.highlight, index) : undefined} />;
         })}
       </div>
     </div>
   );
 };
 
-const SplitTemplate = ({visual, project, staticPreview}: TemplateProps) => {
+const SplitTemplate = ({visual, project, staticPreview, continuing}: TemplateProps) => {
   if (visual.type !== 'split') return null;
-  const entrance = useEntrance(staticPreview);
+  const entrance = useEntrance(staticPreview, continuing);
   return (
     <div style={{...entrance, width: 1560, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 34}}>
       {[
@@ -77,7 +122,7 @@ const SplitTemplate = ({visual, project, staticPreview}: TemplateProps) => {
       ].map((side, index) => (
         <div key={side.title} style={{...panel, padding: 44, minHeight: 480, borderTop: `8px solid ${index === 0 ? project.theme.accentColor : project.theme.foregroundColor}`}}>
           <h2 style={{fontSize: 40, margin: '0 0 26px', opacity: 0.78}}>{side.title}</h2>
-          <div style={{fontSize: 42, lineHeight: 1.55, whiteSpace: 'pre-wrap'}}>{side.body}</div>
+          <div lang="ja" style={{fontSize: 42, lineHeight: 1.55, whiteSpace: 'pre-wrap', ...phraseWrap}}>{side.body}</div>
         </div>
       ))}
     </div>
@@ -124,9 +169,9 @@ const CodeTemplate = ({visual, project}: TemplateProps) => {
   );
 };
 
-const QuoteTemplate = ({visual, project, staticPreview}: TemplateProps) => {
+const QuoteTemplate = ({visual, project, staticPreview, continuing}: TemplateProps) => {
   if (visual.type !== 'quote') return null;
-  const entrance = useEntrance(staticPreview);
+  const entrance = useEntrance(staticPreview, continuing);
   return (
     <figure style={{...panel, ...entrance, maxWidth: 1450, padding: '70px 86px', margin: 0, borderLeft: `12px solid ${project.theme.accentColor}`}}>
       <blockquote style={{fontSize: 60, lineHeight: 1.42, margin: 0}}>“{visual.quote}”</blockquote>
@@ -161,9 +206,9 @@ const MetricTemplate = ({visual, project}: TemplateProps) => {
   );
 };
 
-const OutroTemplate = ({visual, project, staticPreview}: TemplateProps) => {
+const OutroTemplate = ({visual, project, staticPreview, continuing}: TemplateProps) => {
   if (visual.type !== 'outro') return null;
-  const entrance = useEntrance(staticPreview);
+  const entrance = useEntrance(staticPreview, continuing);
   return (
     <div style={{...entrance, textAlign: 'center', maxWidth: 1500}}>
       <div style={{width: 120, height: 10, background: project.theme.accentColor, borderRadius: 5, margin: '0 auto 45px'}} />
@@ -223,6 +268,139 @@ const FlowTemplate = ({visual, project, staticPreview}: TemplateProps) => {
   );
 };
 
+const TableCell = ({children, weight, previousWeight, header, project, staticPreview, align = 'center'}: {children: React.ReactNode; weight: number; previousWeight: number | undefined; header?: boolean; project: VideoProject; staticPreview?: boolean; align?: 'left' | 'center'}) => {
+  const eased = useEmphasisWeight(weight, previousWeight, staticPreview);
+  const strength = emphasisStrength(eased);
+  const accent = project.theme.accentColor;
+  return (
+    <div style={{display: 'flex', alignItems: 'center', justifyContent: align === 'left' ? 'flex-start' : 'center', padding: '0 22px', minHeight: header ? 74 : 88, borderRadius: 14,
+      fontSize: header ? 32 : 38, fontWeight: header || strength > 0.5 ? 800 : 500, opacity: emphasisOpacity(eased), overflowWrap: 'anywhere', lineHeight: 1.25,
+      color: header && strength > 0.5 ? '#06101f' : project.theme.foregroundColor,
+      background: header ? (strength > 0 ? withAlpha(accent, 0.35 + strength * 0.65) : 'rgba(255,255,255,0.10)') : (strength > 0 ? withAlpha(accent, 0.12 + strength * 0.18) : 'rgba(10, 15, 29, 0.80)'),
+      boxShadow: !header && strength > 0 ? `inset 0 0 0 ${2 + strength}px ${withAlpha(accent, 0.4 + strength * 0.6)}` : 'inset 0 0 0 1px rgba(255,255,255,0.10)'}}>
+      {children}
+    </div>
+  );
+};
+
+/** A cell is emphasized when it lies on every highlighted axis that is specified. */
+const tableCellLevel = (rows: readonly number[] | undefined, columns: readonly number[] | undefined, row: number, column: number): number => {
+  const hasRows = Boolean(rows?.length);
+  const hasColumns = Boolean(columns?.length);
+  if (!hasRows && !hasColumns) return 0.5;
+  const rowMatch = !hasRows || rows!.includes(row);
+  const columnMatch = !hasColumns || columns!.includes(column);
+  return rowMatch && columnMatch ? 1 : 0;
+};
+
+const TableTemplate = ({visual, project, staticPreview, continuing, previousVisual}: TemplateProps) => {
+  if (visual.type !== 'table') return null;
+  const entrance = useEntrance(staticPreview, continuing);
+  const previous = continuing && previousVisual?.type === 'table' ? previousVisual : undefined;
+  const headerLevel = (rows: readonly number[] | undefined, columns: readonly number[] | undefined, column: number) =>
+    columns?.length ? (columns.includes(column) ? 1 : 0) : rows?.length ? 0.5 : 0.5;
+  const labelLevel = (rows: readonly number[] | undefined, row: number) => (rows?.length ? (rows.includes(row) ? 1 : 0) : 0.5);
+  const template = `minmax(260px, 1.25fr) repeat(${visual.columns.length}, minmax(0, 1fr))`;
+  return (
+    <div style={{...entrance, width: 1560}}>
+      {visual.title ? <Heading>{visual.title}</Heading> : null}
+      <div style={{display: 'grid', gridTemplateColumns: template, gap: 10, marginTop: visual.title ? 40 : 0}}>
+        <div />
+        {visual.columns.map((column, columnIndex) => (
+          <TableCell key={`h-${columnIndex}`} header project={project} staticPreview={staticPreview}
+            weight={headerLevel(visual.highlightRows, visual.highlightColumns, columnIndex)}
+            previousWeight={previous ? headerLevel(previous.highlightRows, previous.highlightColumns, columnIndex) : undefined}>{column}</TableCell>
+        ))}
+        {visual.rows.map((row, rowIndex) => (
+          <React.Fragment key={`r-${rowIndex}`}>
+            <TableCell project={project} staticPreview={staticPreview} align="left"
+              weight={labelLevel(visual.highlightRows, rowIndex)}
+              previousWeight={previous ? labelLevel(previous.highlightRows, rowIndex) : undefined}>
+              <span style={{fontSize: 32}}>{row.label}</span>
+            </TableCell>
+            {row.cells.map((cell, columnIndex) => (
+              <TableCell key={`c-${rowIndex}-${columnIndex}`} project={project} staticPreview={staticPreview}
+                weight={tableCellLevel(visual.highlightRows, visual.highlightColumns, rowIndex, columnIndex)}
+                previousWeight={previous ? tableCellLevel(previous.highlightRows, previous.highlightColumns, rowIndex, columnIndex) : undefined}>{cell}</TableCell>
+            ))}
+          </React.Fragment>
+        ))}
+      </div>
+      {visual.note ? <div style={{fontSize: 30, opacity: 0.78, marginTop: 26}}>{visual.note}</div> : null}
+    </div>
+  );
+};
+
+/** Split text into plain and emphasized runs; the first listed match wins at each position. */
+export const emphasisRuns = (text: string, emphasis: readonly string[] = []): Array<{text: string; emphasized: boolean}> => {
+  const terms = emphasis.filter((term) => term.length > 0);
+  const runs: Array<{text: string; emphasized: boolean}> = [];
+  let cursor = 0;
+  while (cursor < text.length) {
+    let next: {index: number; term: string} | undefined;
+    for (const term of terms) {
+      const index = text.indexOf(term, cursor);
+      if (index >= 0 && (!next || index < next.index || (index === next.index && term.length > next.term.length))) next = {index, term};
+    }
+    if (!next) {
+      runs.push({text: text.slice(cursor), emphasized: false});
+      break;
+    }
+    if (next.index > cursor) runs.push({text: text.slice(cursor, next.index), emphasized: false});
+    runs.push({text: next.term, emphasized: true});
+    cursor = next.index + next.term.length;
+  }
+  return runs;
+};
+
+const StatementTemplate = ({visual, project, staticPreview, continuing}: TemplateProps) => {
+  if (visual.type !== 'statement') return null;
+  const entrance = useEntrance(staticPreview, continuing);
+  const accent = project.theme.accentColor;
+  return (
+    <div style={{...panel, ...entrance, width: 1500, padding: '56px 72px', boxSizing: 'border-box', borderLeft: `14px solid ${accent}`}}>
+      {visual.label || visual.title ? (
+        <div style={{display: 'flex', alignItems: 'center', gap: 24, marginBottom: 34}}>
+          {visual.label ? <span style={{fontSize: 30, fontWeight: 900, color: '#06101f', background: accent, borderRadius: 999, padding: '8px 26px'}}>{visual.label}</span> : null}
+          {visual.title ? <span style={{fontSize: 46, fontWeight: 900}}>{visual.title}</span> : null}
+        </div>
+      ) : null}
+      <div lang="ja" style={{fontSize: 52, lineHeight: 1.6, fontWeight: 500, ...phraseWrap}}>
+        {emphasisRuns(visual.text, visual.emphasis).map((run, index) => run.emphasized
+          ? <span key={index} style={{color: accent, fontWeight: 900}}>{run.text}</span>
+          : <React.Fragment key={index}>{run.text}</React.Fragment>)}
+      </div>
+    </div>
+  );
+};
+
+export const NavigationBar = ({state, project}: {state: NavigationState; project: VideoProject}) => {
+  const accent = project.theme.accentColor;
+  return (
+    <div style={{position: 'absolute', left: 140, right: 140, top: 26, display: 'grid', gap: 12}}>
+      <div style={{display: 'grid', gridTemplateColumns: `repeat(${state.groups.length}, minmax(0, 1fr))`, gap: 12}}>
+        {state.groups.map((group, index) => {
+          const current = group.status === 'current';
+          const done = group.status === 'done';
+          return (
+            <div key={`${index}-${group.title}`} style={{display: 'flex', alignItems: 'center', gap: 12, height: 56, padding: '0 18px', borderRadius: 14, boxSizing: 'border-box',
+              background: current ? accent : done ? 'rgba(255,255,255,0.10)' : 'rgba(10, 15, 29, 0.80)',
+              border: `2px solid ${current ? accent : 'rgba(255,255,255,0.16)'}`,
+              color: current ? '#06101f' : project.theme.foregroundColor, opacity: current ? 1 : done ? 0.82 : 0.62}}>
+              <span style={{flex: '0 0 auto', display: 'grid', placeItems: 'center', width: 32, height: 32, borderRadius: 16, fontSize: 20, fontWeight: 900,
+                background: current ? '#06101f' : done ? accent : 'rgba(255,255,255,0.16)', color: current ? accent : '#06101f'}}>{done ? '✓' : index + 1}</span>
+              <span style={{fontSize: 24, fontWeight: current ? 900 : 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'clip'}}>{group.title}</span>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.14)', overflow: 'hidden'}}>
+        <div style={{width: `${(state.progress * 100).toFixed(2)}%`, height: '100%', background: accent}} />
+      </div>
+    </div>
+  );
+};
+
 export const VisualTemplate = (props: TemplateProps) => {
   switch (props.visual.type) {
     case 'title': return <TitleTemplate {...props} />;
@@ -234,5 +412,7 @@ export const VisualTemplate = (props: TemplateProps) => {
     case 'metric': return <MetricTemplate {...props} />;
     case 'outro': return <OutroTemplate {...props} />;
     case 'flow': return <FlowTemplate {...props} />;
+    case 'table': return <TableTemplate {...props} />;
+    case 'statement': return <StatementTemplate {...props} />;
   }
 };

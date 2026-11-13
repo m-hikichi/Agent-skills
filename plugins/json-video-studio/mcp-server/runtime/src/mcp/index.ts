@@ -119,6 +119,10 @@ tool('output_inspect', 'Inspect a rendered media file with ffprobe.', {
   throw new AppError('INSPECT_INPUT_REQUIRED', 'mediaPathまたはoutputDirectoryが必要です', {category: 'schema'});
 });
 
+tool('output_review_frames', 'Sample a rendered MP4 for the final visual review: 3 frames per scene (entry, middle, end) and 7 frames around every boundary where the same layout continues, tiled into sheets under .json-video-work/<project-id>/final-frames/<lock-hash>/.', {
+  outputDirectory: z.string().min(1),
+}, async ({outputDirectory}) => runtime.reviewFrames(outputDirectory));
+
 async function main(): Promise<void> {
   await runtime.initialize();
   const web = await startWebServer({
