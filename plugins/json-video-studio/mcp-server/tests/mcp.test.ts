@@ -1,4 +1,6 @@
 import {readFile, mkdtemp, mkdir, rm, writeFile} from 'node:fs/promises';
+import {createServer, type Server} from 'node:http';
+import type {AddressInfo} from 'node:net';
 import {tmpdir} from 'node:os';
 import {resolve} from 'node:path';
 import {Client} from '@modelcontextprotocol/sdk/client/index.js';
@@ -24,6 +26,8 @@ const expectedTools = [
   'project_validate',
   'render_start',
   'resolve_start',
+  'speakers_list',
+  'speech_synthesize',
   'storyboard_start',
 ] as const;
 
@@ -161,6 +165,92 @@ describe('stdio MCP server', () => {
       expect(JSON.stringify(inspected)).not.toContain(workspaceRoot);
     } finally {
       await client.close();
+    }
+  });
+
+  it('lists speakers and synthesizes a single utterance through the shared cache', async () => {
+    const root = await temporaryRoot();
+    const workspaceRoot = resolve(root, 'workspace');
+    const dataRoot = resolve(root, 'plugin-data');
+    await Promise.all([mkdir(workspaceRoot, {recursive: true}), mkdir(dataRoot, {recursive: true})]);
+
+    const speakerUuid = '11111111-2222-4333-8444-555555555555';
+    const requests: string[] = [];
+    const voicevox: Server = createServer((request, response) => {
+      request.resume();
+      const {pathname} = new URL(request.url ?? '/', 'http://127.0.0.1');
+      requests.push(pathname);
+      const json = (value: unknown) => {
+        response.writeHead(200, {'content-type': 'application/json'});
+        response.end(JSON.stringify(value));
+      };
+      if (pathname === '/version') json('test-engine');
+      else if (pathname === '/speakers') json([{speaker_uuid: speakerUuid, name: '話者', styles: [{id: 3, name: 'ノーマル'}]}]);
+      else if (pathname === '/audio_query') json({kana: "/コンニチワ'"});
+      else if (pathname === '/synthesis') {
+        response.writeHead(200, {'content-type': 'audio/wav'});
+        response.end(silentWav());
+      } else {
+        response.writeHead(404);
+        response.end();
+      }
+    });
+    await new Promise<void>((done) => voicevox.listen(0, '127.0.0.1', done));
+    const {port} = voicevox.address() as AddressInfo;
+
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', 'tsx', 'src/mcp/index.ts'],
+      cwd: runtimeRoot,
+      env: {
+        ...getDefaultEnvironment(),
+        JSON_VIDEO_WORKSPACE_ROOT: workspaceRoot,
+        JSON_VIDEO_DATA_ROOT: dataRoot,
+        JSON_VIDEO_SCHEMA_PATH: schemaPath,
+        VOICEVOX_URL: `http://127.0.0.1:${port}`,
+      },
+      stderr: 'pipe',
+    });
+    const client = new Client({name: 'json-video-studio-integration-test', version: '0.1.0'});
+
+    try {
+      await client.connect(transport);
+
+      expect(textJson(await client.callTool({name: 'speakers_list', arguments: {}}))).toEqual({
+        engineVersion: 'test-engine',
+        speakers: [{speakerUuid, name: '話者', styles: [{id: 3, name: 'ノーマル'}]}],
+      });
+
+      // A leading slash must stay text, never be treated as a path.
+      const input = {text: '/こんにちは', speakerUuid, styleId: 3, speedScale: 1.2};
+      const first = textJson<{audioPath: string; cacheKey: string; sha256: string}>(
+        await client.callTool({name: 'speech_synthesize', arguments: input}),
+      );
+      expect(first).toMatchObject({
+        synthesisText: '/こんにちは',
+        kana: "/コンニチワ'",
+        durationMs: 100,
+        cacheHit: false,
+        engineVersion: 'test-engine',
+        speakerName: '話者',
+        styleName: 'ノーマル',
+      });
+      expect(first.audioPath).toBe(`.json-video-work/speech/${first.cacheKey}.wav`);
+      expect((await readFile(resolve(workspaceRoot, first.audioPath))).equals(silentWav())).toBe(true);
+
+      const second = textJson<{audioPath: string}>(await client.callTool({name: 'speech_synthesize', arguments: input}));
+      expect(second).toMatchObject({cacheHit: true, audioPath: first.audioPath, kana: "/コンニチワ'"});
+      expect(requests.filter((path) => path === '/synthesis')).toHaveLength(1);
+
+      const unknown = await client.callTool({
+        name: 'speech_synthesize',
+        arguments: {...input, speakerUuid: '99999999-2222-4333-8444-555555555555'},
+      });
+      expect(unknown.isError).toBe(true);
+      expect(textJson(unknown)).toMatchObject({code: 'VOICEVOX_SPEAKER_NOT_FOUND'});
+    } finally {
+      await client.close();
+      await new Promise((done) => voicevox.close(done));
     }
   });
 });

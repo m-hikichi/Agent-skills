@@ -105,7 +105,20 @@ for (const [name, kind] of [
   }));
 }
 
-tool('job_status', 'Get a persistent job record.', {jobId: z.string().uuid()}, async ({jobId}) => runtime.jobs.get(jobId));
+tool('speakers_list', 'List the VOICEVOX speakers and styles (speakerUuid, styleId) the Engine offers.', {}, async () =>
+  runtime.listSpeakers());
+
+tool('speech_synthesize', 'Synthesize one utterance with VOICEVOX without a project and return the WAV path, the Engine kana reading, and the duration. text is the exact synthesis text (no pronunciation dictionary is applied). The cache is shared with resolve.', {
+  text: z.string().min(1).max(2000).regex(/\S/u),
+  speakerUuid: z.string().regex(/^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$/u),
+  styleId: z.number().int().min(0),
+  speedScale: z.number().min(0.5).max(2).optional(),
+  volumeScale: z.number().min(0).max(2).optional(),
+  pitchScale: z.number().min(-0.15).max(0.15).optional(),
+  intonationScale: z.number().min(0).max(2).optional(),
+}, async (input) => runtime.synthesizeSpeech(input));
+
+tool('job_status','Get a persistent job record.', {jobId: z.string().uuid()}, async ({jobId}) => runtime.jobs.get(jobId));
 tool('job_cancel', 'Cancel a queued or running job.', {jobId: z.string().uuid()}, async ({jobId}) => runtime.jobs.cancel(jobId));
 tool('output_inspect', 'Inspect a rendered media file with ffprobe.', {
   mediaPath: z.string().min(1).optional(),

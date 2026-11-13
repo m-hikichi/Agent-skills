@@ -1,12 +1,13 @@
 import {isAbsolute, posix, relative, resolve, sep, win32} from 'node:path';
-import {realpath} from 'node:fs/promises';
+import {readFile, realpath} from 'node:fs/promises';
 import type {JobRequest} from './jobs.js';
-import type {ProjectLock, RenderArtifacts, VideoProject} from '../shared/video-types.js';
-import {relativePortable, readJson, resolveInside} from './fs-safe.js';
+import type {ProjectLock, RenderArtifacts, Speaker, VideoProject, VoicevoxVoice} from '../shared/video-types.js';
+import {atomicWrite, digestFile, ensureSafeDirectory, relativePortable, readJson, resolveInside} from './fs-safe.js';
 import {AppError} from './errors.js';
 import {JobQueue} from './jobs.js';
 import {ProjectService} from './project.js';
 import {publishResolveArtifacts, resolveProject} from './resolver.js';
+import {VoicevoxClient} from './voicevox.js';
 import {storyboardProject, renderProject, inspectArtifactOutput, inspectOutput} from '../render/api.js';
 import {extractReviewFrames} from './review-frames.js';
 
@@ -16,6 +17,19 @@ export interface RuntimeOptions {
   jobsRoot?: string;
   schemaPath?: string;
 }
+
+export interface SpeechRequest {
+  /** Exact synthesis text, i.e. what a scene's speechText or dictionary-expanded text would be. */
+  text: string;
+  speakerUuid: string;
+  styleId: number;
+  speedScale?: number | undefined;
+  volumeScale?: number | undefined;
+  pitchScale?: number | undefined;
+  intonationScale?: number | undefined;
+}
+
+const SPEECH_PREVIEW_DIRECTORY = '.json-video-work/speech';
 
 function escapesRoot(root: string, target: string): boolean {
   const fromRoot = relative(root, target);
@@ -141,8 +155,73 @@ export class RuntimeService {
     return this.portableResult(result);
   }
 
+  async listSpeakers(signal?: AbortSignal) {
+    const client = this.voicevox();
+    const [engineVersion, speakers] = await Promise.all([client.version(signal), client.speakers(signal)]);
+    return {
+      engineVersion,
+      speakers: speakers.map((speaker) => ({
+        speakerUuid: speaker.speaker_uuid,
+        name: speaker.name,
+        styles: speaker.styles.map(({id, name}) => ({id, name})),
+      })),
+    };
+  }
+
+  /**
+   * Synthesize one utterance without a project. It shares the resolve cache, so
+   * the same text and voice parameters are a cache hit in a later resolve.
+   */
+  async synthesizeSpeech(request: SpeechRequest, signal?: AbortSignal) {
+    const voice: VoicevoxVoice = {
+      provider: 'voicevox',
+      speakerUuid: request.speakerUuid,
+      styleId: request.styleId,
+      ...(request.speedScale === undefined ? {} : {speedScale: request.speedScale}),
+      ...(request.volumeScale === undefined ? {} : {volumeScale: request.volumeScale}),
+      ...(request.pitchScale === undefined ? {} : {pitchScale: request.pitchScale}),
+      ...(request.intonationScale === undefined ? {} : {intonationScale: request.intonationScale}),
+    };
+    const speaker: Speaker = {id: 'speech', displayName: 'speech', voice};
+    const synthesized = await this.voicevox().synthesize(request.text, speaker, signal);
+    // The cache may live outside the workspace (plugin data), so the WAV is
+    // copied to a workspace path the caller can open.
+    const directory = await ensureSafeDirectory(this.workspaceRoot, SPEECH_PREVIEW_DIRECTORY);
+    const target = resolve(directory, `${synthesized.cacheKey}.wav`);
+    let materialized = false;
+    try {
+      materialized = await digestFile(target) === synthesized.sha256;
+    } catch {
+      // Not materialized yet.
+    }
+    if (!materialized) await atomicWrite(target, await readFile(synthesized.path), {overwrite: true});
+    // Built by hand instead of portableResult: the text and kana are free-form
+    // strings that must never be interpreted as paths.
+    return {
+      audioPath: `${SPEECH_PREVIEW_DIRECTORY}/${synthesized.cacheKey}.wav`,
+      synthesisText: request.text,
+      kana: synthesized.kana ?? null,
+      durationMs: synthesized.durationMs,
+      cacheHit: synthesized.cacheHit,
+      cacheKey: synthesized.cacheKey,
+      sha256: synthesized.sha256,
+      sizeBytes: synthesized.sizeBytes,
+      engineVersion: synthesized.engineVersion,
+      speakerName: synthesized.speakerName,
+      styleName: synthesized.styleName,
+    };
+  }
+
   async portableResult<T>(value: T): Promise<T> {
     return portableWorkspaceResult(this.workspaceRoot, value);
+  }
+
+  private get voiceCacheRoot(): string {
+    return resolve(this.dataRoot, 'cache', 'voicevox');
+  }
+
+  private voicevox(): VoicevoxClient {
+    return new VoicevoxClient({cacheRoot: this.voiceCacheRoot, workspaceRoot: this.workspaceRoot});
   }
 
   private async absoluteProject(request: JobRequest): Promise<string> {

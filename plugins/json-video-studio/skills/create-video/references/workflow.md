@@ -6,6 +6,8 @@
 - `project_get`: project、revision、digest、`missing/current/stale`のlock stateを返す。
 - `project_update`: expected revisionが一致したときだけ更新する。不一致は競合エラー。
 - `project_validate`: Schemaとsemantic検証を行い、error/warningをJSON Pointer付きで返す。
+- `speakers_list`: VOICEVOX Engineの話者とstyle（`speakerUuid`、`styleId`）を返す。
+- `speech_synthesize`: projectなしで一文を合成し、WAV（`.json-video-work/speech/<cacheKey>.wav`）、Engineの`kana`、長さを返す。`text`は合成原稿そのもので、辞書は適用しない。cacheは`resolve`と共有する。
 - `job_status`: jobの状態、0〜1のprogress、message、result/errorを返す。
 - `job_cancel`: 指定jobだけを安全に中断する。
 - `output_inspect`: ffprobeと成果物manifestの検査結果を返す。
@@ -44,7 +46,7 @@
 
 ## 再現性
 
-- `resolve`だけがVOICEVOXへ接続できる。Remotion componentとmetadata計算からネットワークへアクセスしない。
+- VOICEVOXへ接続できるのは`resolve`、`speakers_list`、`speech_synthesize`、`doctor`だけである。Remotion componentとmetadata計算からネットワークへアクセスしない。
 - 同じテキスト、speaker UUID、style ID、速度、音量、pitch、intonation、VOICEVOX Engine versionなら`${CLAUDE_PLUGIN_DATA}/cache/voicevox/`のcontent-addressed cacheをproject間で再利用する。
 - current reviewは`.json-video-work/<project-id>/review.json`、各判定の不変な履歴は`reviews/<lock-hash>-<iteration>.json`へ保存する。
 - renderは`--frozen-lock`で、hash不一致や欠落素材を検出したら失敗する。
