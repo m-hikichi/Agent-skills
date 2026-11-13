@@ -16,7 +16,6 @@ RUN npm ci --omit=dev
 
 FROM node:24.18.0-bookworm-slim AS runtime-base
 
-ARG CHROMIUM_VERSION=156.0.8078.79-1~deb12u1
 ARG FFMPEG_VERSION=7:5.1.9-0+deb12u1
 ARG FONTCONFIG_VERSION=2.14.1-4
 ARG NOTO_CJK_VERSION=1:20220127+repack1-1
@@ -39,7 +38,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates=${CA_CERTIFICATES_VERSION} \
-        chromium=${CHROMIUM_VERSION} \
+        chromium \
         ffmpeg=${FFMPEG_VERSION} \
         fontconfig=${FONTCONFIG_VERSION} \
         fonts-noto-cjk=${NOTO_CJK_VERSION} \

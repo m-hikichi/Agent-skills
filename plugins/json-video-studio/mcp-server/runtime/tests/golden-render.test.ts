@@ -81,18 +81,15 @@ describe('pinned Remotion golden frames', () => {
     )));
     for (const [index, comparison] of comparisons.entries()) {
       expect(comparison.sameSize, `${GOLDEN_FILES[index]} dimensions`).toBe(true);
-      // Pinned Chromium is exact on the reference platform. Small Skia/font
-      // rasterization differences on another CPU architecture are tolerated;
+      // Chromium updates and CPU architectures can change Skia/font rasterization.
+      // Small pixel differences are tolerated;
       // movement, clipping, overlap, and color/layout regressions are not.
       expect(comparison.meanAbsoluteError, `${GOLDEN_FILES[index]} mean pixel error`).toBeLessThanOrEqual(0.75);
       expect(comparison.changedPixelRatio, `${GOLDEN_FILES[index]} changed pixel ratio`).toBeLessThanOrEqual(0.015);
     }
     if (process.env.JSON_VIDEO_UPDATE_GOLDEN === '1') {
       process.stderr.write(`JSON_VIDEO_GOLDEN_HASHES=${JSON.stringify(firstHashes)}\n`);
-    } else if (
-      process.env.JSON_VIDEO_REQUIRE_EXACT_GOLDEN === '1'
-      || (process.platform === 'linux' && process.arch === 'x64')
-    ) {
+    } else if (process.env.JSON_VIDEO_REQUIRE_EXACT_GOLDEN === '1') {
       expect(firstHashes).toEqual(GOLDEN_HASHES);
     }
   }, 300_000);

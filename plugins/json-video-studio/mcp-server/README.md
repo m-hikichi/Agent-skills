@@ -36,3 +36,7 @@ docker build -f Dockerfile --target test -t json-video-studio-test:0.1.0 ..
 ```
 
 イメージ変更後はMCPを再起動してください。VOICEVOXイメージの既定版はComposeに固定され、必要な場合だけ`VOICEVOX_IMAGE`環境変数で変更できます。
+
+Chromiumはバージョンを固定せず、ビルド時にDebian bookwormの設定済みリポジトリで提供される最新の候補版をインストールします。キャッシュを使わず更新する場合は、このディレクトリで `docker compose -f compose.build.yml build --no-cache runtime` を実行してください。実際のバージョンはproject lockに記録されるため、更新後はlock生成とレビューをやり直します。
+
+画像比較テストはChromium更新による軽微な描画差を許容し、同じ環境での再描画結果は完全一致を検査します。基準画像のハッシュとの完全一致も必要な場合は、`JSON_VIDEO_REQUIRE_EXACT_GOLDEN=1`を指定してください。
