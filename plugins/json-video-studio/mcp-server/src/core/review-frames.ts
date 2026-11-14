@@ -16,14 +16,41 @@ export const sceneSampleFrames = (startFrame: number, durationInFrames: number):
 /** Offsets around a scene boundary used to see whether a continuing page fades or re-enters. */
 export const BOUNDARY_OFFSETS = [-6, -3, -1, 0, 1, 3, 6] as const;
 
+/**
+ * Offsets across a page change (a boundary where the layout does not continue):
+ * the last frames of the old page, then the first frames of the new one, to see
+ * that the new page is readable by the time its narration is under way.
+ */
+export const TRANSITION_OFFSETS = [-3, -1, 0, 2, 4, 8, 15] as const;
+
+/** Offsets from a scene start used to see the states of an animated scene (packet travel, cursor move). */
+export const MOTION_OFFSETS = [0, 6, 12, 18, 24, 32, 45] as const;
+
+/** Offsets from the start of a subtitle cue: the frame before the switch and the cue once shown. */
+export const CUE_OFFSETS = [-1, 1, 8] as const;
+
 export interface ReviewFramePlan {
   scenes: Array<{sceneId: string; frames: [number, number, number]}>;
   boundaries: Array<{beforeSceneId: string; afterSceneId: string; boundaryFrame: number; frames: number[]}>;
+  /** Page changes, including the first frames of the video. */
+  transitions: Array<{beforeSceneId: string | null; afterSceneId: string; boundaryFrame: number; frames: number[]}>;
+  /** Scenes with motion that carries meaning. */
+  motion: Array<{sceneId: string; frames: number[]}>;
+  /** Subtitle cue switches inside a scene (the first cue is covered by the scene samples). */
+  cues: Array<{sceneId: string; cueIndex: number; text: string; frames: number[]}>;
   uniqueFrames: number[];
 }
 
+const isMotionScene = (scene: ProjectLock['scenes'][number]): boolean => {
+  const visual = scene.visual;
+  return visual.type === 'flow'
+    || (visual.type === 'diagram' && visual.active?.packet !== undefined)
+    || (visual.type === 'timeline' && visual.cursor !== undefined);
+};
+
 export const planReviewFrames = (lock: Pick<ProjectLock, 'scenes' | 'totalFrames'>): ReviewFramePlan => {
   const lastFrame = Math.max(0, lock.totalFrames - 1);
+  const clampAll = (frame: number) => Math.min(lastFrame, Math.max(0, frame));
   const scenes = lock.scenes.map((scene) => ({sceneId: scene.id, frames: sceneSampleFrames(scene.startFrame, scene.durationInFrames)}));
   const continuity = sceneContinuity(lock.scenes);
   const boundaries = lock.scenes.flatMap((scene, index) => {
@@ -33,11 +60,31 @@ export const planReviewFrames = (lock: Pick<ProjectLock, 'scenes' | 'totalFrames
       beforeSceneId: previous.id,
       afterSceneId: scene.id,
       boundaryFrame: scene.startFrame,
-      frames: BOUNDARY_OFFSETS.map((offset) => Math.min(lastFrame, Math.max(0, scene.startFrame + offset))),
+      frames: BOUNDARY_OFFSETS.map((offset) => clampAll(scene.startFrame + offset)),
     }];
   });
-  const uniqueFrames = [...new Set([...scenes.flatMap((item) => item.frames), ...boundaries.flatMap((item) => item.frames)])].sort((a, b) => a - b);
-  return {scenes, boundaries, uniqueFrames};
+  const transitions = lock.scenes.flatMap((scene, index) => {
+    if (continuity[index]?.fromPrevious) return [];
+    return [{
+      beforeSceneId: lock.scenes[index - 1]?.id ?? null,
+      afterSceneId: scene.id,
+      boundaryFrame: scene.startFrame,
+      frames: TRANSITION_OFFSETS.map((offset) => clampAll(scene.startFrame + offset)),
+    }];
+  });
+  const inScene = (scene: ProjectLock['scenes'][number], frame: number) => Math.min(scene.startFrame + Math.max(0, scene.durationInFrames - 1), Math.max(scene.startFrame, frame));
+  const motion = lock.scenes.filter(isMotionScene).map((scene) => ({sceneId: scene.id, frames: MOTION_OFFSETS.map((offset) => inScene(scene, scene.startFrame + offset))}));
+  const cues = lock.scenes.flatMap((scene) => (scene.subtitleCues ?? []).slice(1).map((cue, index) => ({
+    sceneId: scene.id,
+    cueIndex: index + 1,
+    text: cue.text,
+    frames: CUE_OFFSETS.map((offset) => inScene(scene, scene.startFrame + cue.startFrame + offset)),
+  })));
+  const uniqueFrames = [...new Set([
+    ...scenes.flatMap((item) => item.frames), ...boundaries.flatMap((item) => item.frames), ...transitions.flatMap((item) => item.frames),
+    ...motion.flatMap((item) => item.frames), ...cues.flatMap((item) => item.frames),
+  ])].sort((a, b) => a - b);
+  return {scenes, boundaries, transitions, motion, cues, uniqueFrames};
 };
 
 const ffmpeg = () => process.env.FFMPEG_PATH ?? 'ffmpeg';
@@ -91,8 +138,19 @@ export interface ReviewFramesResult {
   index: string;
   sceneSheets: Array<{path: string; scenes: string[]; layout: string}>;
   boundarySheets: Array<{path: string; boundaries: Array<{beforeSceneId: string; afterSceneId: string; boundaryFrame: number}>; layout: string}>;
+  /** Page changes. Absent in indexes written before these sheets existed. */
+  transitionSheets?: Array<{path: string; transitions: Array<{beforeSceneId: string | null; afterSceneId: string; boundaryFrame: number}>; layout: string}>;
+  motionSheets?: Array<{path: string; scenes: string[]; layout: string}>;
+  cueSheets?: Array<{path: string; cues: Array<{sceneId: string; cueIndex: number; text: string}>; layout: string}>;
+  /**
+   * Individual 640x360 frames (one third of the canvas) for judging legibility
+   * at reduced size: the middle frame of every scene, relative to the index.
+   */
+  scaledFrames?: Array<{sceneId: string; path: string; timeSeconds: number}>;
   frameCount: number;
   continuingBoundaries: number;
+  /** What the sheets cannot establish. */
+  limits?: string[];
 }
 
 /**
@@ -118,6 +176,10 @@ export async function extractReviewFrames(options: {outputDirectory: string; sig
     index: indexPath,
     sceneSheets: stored.sceneSheets.map((sheet) => ({...sheet, path: join(directory, sheet.path)})),
     boundarySheets: stored.boundarySheets.map((sheet) => ({...sheet, path: join(directory, sheet.path)})),
+    ...(stored.transitionSheets ? {transitionSheets: stored.transitionSheets.map((sheet) => ({...sheet, path: join(directory, sheet.path)}))} : {}),
+    ...(stored.motionSheets ? {motionSheets: stored.motionSheets.map((sheet) => ({...sheet, path: join(directory, sheet.path)}))} : {}),
+    ...(stored.cueSheets ? {cueSheets: stored.cueSheets.map((sheet) => ({...sheet, path: join(directory, sheet.path)}))} : {}),
+    ...(stored.scaledFrames ? {scaledFrames: stored.scaledFrames.map((item) => ({...item, path: join(directory, item.path)}))} : {}),
   });
   try {
     await access(indexPath);
@@ -139,6 +201,15 @@ export async function extractReviewFrames(options: {outputDirectory: string; sig
   const BOUNDARIES_PER_SHEET = 6;
   const boundaryCells = plan.boundaries.flatMap((boundary) => boundary.frames.map(framePath));
   const boundaryPaths = boundaryCells.length ? await tileSheets(boundaryCells, BOUNDARY_OFFSETS.length, BOUNDARIES_PER_SHEET, directory, 'continuing', options.signal) : [];
+  const TRANSITIONS_PER_SHEET = 6;
+  const transitionCells = plan.transitions.flatMap((item) => item.frames.map(framePath));
+  const transitionPaths = transitionCells.length ? await tileSheets(transitionCells, TRANSITION_OFFSETS.length, TRANSITIONS_PER_SHEET, directory, 'page-change', options.signal) : [];
+  const MOTION_PER_SHEET = 6;
+  const motionCells = plan.motion.flatMap((item) => item.frames.map(framePath));
+  const motionPaths = motionCells.length ? await tileSheets(motionCells, MOTION_OFFSETS.length, MOTION_PER_SHEET, directory, 'motion', options.signal) : [];
+  const CUES_PER_SHEET = 6;
+  const cueCells = plan.cues.flatMap((item) => item.frames.map(framePath));
+  const cuePaths = cueCells.length ? await tileSheets(cueCells, CUE_OFFSETS.length, CUES_PER_SHEET, directory, 'cues', options.signal) : [];
   await rm(join(directory, 'blank.png'), {force: true});
 
   // The index stores paths relative to its own directory so it stays valid outside the container.
@@ -156,8 +227,30 @@ export async function extractReviewFrames(options: {outputDirectory: string; sig
       boundaries: plan.boundaries.slice(page * BOUNDARIES_PER_SHEET, (page + 1) * BOUNDARIES_PER_SHEET)
         .map(({beforeSceneId, afterSceneId, boundaryFrame}) => ({beforeSceneId, afterSceneId, boundaryFrame})),
     })),
+    transitionSheets: transitionPaths.map((path, page) => ({
+      path: basename(path),
+      layout: `rows = page changes; columns = frame offsets ${TRANSITION_OFFSETS.join(', ')} from the first frame of the new page`,
+      transitions: plan.transitions.slice(page * TRANSITIONS_PER_SHEET, (page + 1) * TRANSITIONS_PER_SHEET)
+        .map(({beforeSceneId, afterSceneId, boundaryFrame}) => ({beforeSceneId, afterSceneId, boundaryFrame})),
+    })),
+    motionSheets: motionPaths.map((path, page) => ({
+      path: basename(path),
+      layout: `rows = animated scenes; columns = frame offsets ${MOTION_OFFSETS.join(', ')} from the scene start`,
+      scenes: plan.motion.slice(page * MOTION_PER_SHEET, (page + 1) * MOTION_PER_SHEET).map((item) => item.sceneId),
+    })),
+    cueSheets: cuePaths.map((path, page) => ({
+      path: basename(path),
+      layout: `rows = subtitle cue switches; columns = frame offsets ${CUE_OFFSETS.join(', ')} from the cue start`,
+      cues: plan.cues.slice(page * CUES_PER_SHEET, (page + 1) * CUES_PER_SHEET).map(({sceneId, cueIndex, text}) => ({sceneId, cueIndex, text})),
+    })),
+    scaledFrames: plan.scenes.map((scene) => ({sceneId: scene.sceneId, path: `frames/f${scene.frames[1]}.png`, timeSeconds: Math.round((scene.frames[1] / lock.fps) * 100) / 100})),
     frameCount: plan.uniqueFrames.length,
     continuingBoundaries: plan.boundaries.length,
+    limits: [
+      'Still frames show states, not smoothness: judder, easing and timing between samples are not verified.',
+      'No audio is examined: reading, volume, clipped word endings and pauses need listening.',
+      'Sheets are tiled thumbnails; judge small text on the individual files listed in scaledFrames.',
+    ],
   };
   await writeFile(indexPath, `${JSON.stringify(stored, null, 2)}\n`, 'utf8');
   return absolute(stored);

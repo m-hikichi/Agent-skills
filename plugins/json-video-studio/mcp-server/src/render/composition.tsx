@@ -9,9 +9,10 @@ import {
   useVideoConfig,
 } from 'remotion';
 import {BUNDLED_FONT_FAMILY, type ProjectLock, type RenderInput, type ResolvedScene, type SceneVisual, type Speaker, type VideoProject} from '../shared/video-types.js';
-import {DECK_FRAME, NAVIGATION_BAR_HEIGHT, clampVolume, createSubtitleLayoutStyles, effectiveDurationInFrames, effectiveScenes, isDeckFrame, isCoverVisual, navigationState, sceneContinuity, sceneOpacity, scenePageNumbers, storyboardCellLayout, type SceneContinuity} from './layout.js';
+import {NAVIGATION_BAR_HEIGHT, clampVolume, createSubtitleLayoutStyles, deckGeometry, effectiveDurationInFrames, effectiveScenes, isDeckDiagramVisual, isDeckFrame, isCoverVisual, navigationState, pageOpacity, sceneContinuity, scenePageNumbers, storyboardCellLayout, subtitleAtFrame, type SceneContinuity} from './layout.js';
 import {NavigationBar, VisualTemplate} from './templates.js';
-import {DECK, DeckCover, DeckFooter, DeckThumbnail, SlideTemplate, deckVariables} from './deck.js';
+import {DECK, DeckCover, DeckFooter, DeckPageHeader, DeckThumbnail, SlideTemplate, deckVariables} from './deck.js';
+import {DiagramVisualTemplate, deckTone} from './diagrams.js';
 
 // Remotion requires an index signature for composition props. The shared contract
 // deliberately stays a closed interface, so the renderer adds it at this boundary.
@@ -46,7 +47,9 @@ const SceneNavigation = ({scene, project, totalFrames, staticPreview = false}: {
   return state ? <NavigationBar state={state} project={project} /> : null;
 };
 
-const deckSubtitleText = {wordBreak: 'auto-phrase', lineBreak: 'strict'} as unknown as React.CSSProperties;
+// Phrase-aware, balanced wrapping: a two-line subtitle splits near its middle at a phrase
+// boundary instead of filling the first line to the edge and cutting a phrase.
+const deckSubtitleText = {wordBreak: 'auto-phrase', lineBreak: 'strict', textWrap: 'balance'} as unknown as React.CSSProperties;
 
 /**
  * Deck frame body: gradient, white card with the slide (or a cover page),
@@ -58,8 +61,10 @@ const DeckBody = ({scene, project, assetUrls, staticPreview, continuity, previou
   const cover = isCoverVisual(scene.visual);
   const absoluteFrame = scene.startFrame + (staticPreview ? 0 : frame);
   const navigation = navigationState(project, scene.sectionId, absoluteFrame, totalFrames);
-  const {card, subtitleTop, subtitleWidth} = DECK_FRAME;
+  const {card, subtitleTop, subtitleHeight, subtitleWidth} = deckGeometry(project);
   const subtitleLayout = createSubtitleLayoutStyles(subtitleFontSize, subtitleMaxLines);
+  const diagram = isDeckDiagramVisual(scene.visual);
+  const diagramHeader = diagram && 'title' in scene.visual ? {tag: (scene.visual as {tag?: string}).tag, title: scene.visual.title} : undefined;
   return (
     <AbsoluteFill style={{...deckVariables(project), background: DECK.gradient, color: DECK.text}}>
       {cover ? (
@@ -70,6 +75,13 @@ const DeckBody = ({scene, project, assetUrls, staticPreview, continuity, previou
             <div style={{position: 'absolute', inset: 0, opacity: fade}}>
               {scene.visual.type === 'slide'
                 ? <SlideTemplate visual={scene.visual} staticPreview={staticPreview} {...(continuity.fromPrevious && previousVisual ? {previousVisual} : {})} />
+                : diagram
+                ? <div style={{position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', color: DECK.text}}>
+                    <DeckPageHeader tag={diagramHeader?.tag} title={diagramHeader?.title} />
+                    <div style={{flex: 1, minHeight: 0, display: 'grid', placeItems: 'center', padding: '10px 40px'}}>
+                      <DiagramVisualTemplate visual={scene.visual} tone={deckTone} staticPreview={staticPreview} showTitle={false} previousVisual={continuity.fromPrevious ? previousVisual : undefined} />
+                    </div>
+                  </div>
                 : <AbsoluteFill style={{display: 'grid', placeItems: 'center', padding: 40, background: project.theme.backgroundColor, color: project.theme.foregroundColor}}>
                     <VisualTemplate visual={scene.visual} project={project} assetUrls={assetUrls} staticPreview={staticPreview} continuing={continuity.fromPrevious} {...(continuity.fromPrevious && previousVisual ? {previousVisual} : {})} />
                   </AbsoluteFill>}
@@ -79,16 +91,18 @@ const DeckBody = ({scene, project, assetUrls, staticPreview, continuity, previou
         </>
       )}
       {showSubtitle ? (
-        <div style={{position: 'absolute', left: (1920 - subtitleWidth) / 2, width: subtitleWidth, top: cover ? 740 : subtitleTop, borderRadius: 12, textAlign: 'center', fontSize: subtitleFontSize, fontWeight: 700,
-          color: project.theme.subtitleStyle?.color ?? '#fff', background: project.theme.subtitleStyle?.backgroundColor ?? 'rgba(0, 0, 0, 0.75)', ...subtitleLayout.box, minHeight: 0, padding: '12px 30px'}}>
-          <div lang="ja" style={{...subtitleLayout.text, ...deckSubtitleText}}>{scene.subtitleText}</div>
+        <div style={{position: 'absolute', left: (1920 - subtitleWidth) / 2, width: subtitleWidth, top: cover ? Math.min(740, subtitleTop) : subtitleTop, borderRadius: 12, textAlign: 'center', fontSize: subtitleFontSize, fontWeight: 700,
+          color: project.theme.subtitleStyle?.color ?? '#fff', background: project.theme.subtitleStyle?.backgroundColor ?? 'rgba(0, 0, 0, 0.75)', ...subtitleLayout.box, minHeight: 0, maxHeight: subtitleHeight,
+          // On content pages the box keeps the height reserved for it, so it neither jumps between cues nor leaves a gap above the footer.
+          ...(cover ? {} : {height: subtitleHeight}), padding: '12px 30px'}}>
+          <div lang="ja" style={{...subtitleLayout.text, ...deckSubtitleText}}>{subtitleAtFrame(scene, frame, staticPreview)}</div>
         </div>
       ) : null}
     </AbsoluteFill>
   );
 };
 
-const SceneLayer = ({scene, project, assetUrls, staticPreview = false, continuity = NO_CONTINUITY, previousVisual, page = 1, totalFrames = 1}: {scene: ResolvedScene; project: VideoProject; assetUrls: Record<string, string>; staticPreview?: boolean; continuity?: SceneContinuity; previousVisual?: SceneVisual; page?: number; totalFrames?: number}) => {
+const SceneLayer = ({scene, project, assetUrls, staticPreview = false, continuity = NO_CONTINUITY, previousVisual, page = 1, totalFrames = 1, finalScene = false}: {scene: ResolvedScene; project: VideoProject; assetUrls: Record<string, string>; staticPreview?: boolean; continuity?: SceneContinuity; previousVisual?: SceneVisual; page?: number; totalFrames?: number; finalScene?: boolean}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const speaker = resolveSpeaker(project, scene.speakerId);
@@ -100,7 +114,8 @@ const SceneLayer = ({scene, project, assetUrls, staticPreview = false, continuit
   const subtitleFontSize = project.theme.subtitleStyle?.fontSize ?? 48;
   const subtitleMaxLines = project.theme.subtitleStyle?.maxLines ?? 2;
   const subtitleLayout = createSubtitleLayoutStyles(subtitleFontSize, subtitleMaxLines);
-  const fade = staticPreview ? 1 : sceneOpacity(frame, scene.durationInFrames, continuity);
+  const fade = staticPreview ? 1 : pageOpacity(frame, scene.durationInFrames, continuity, finalScene);
+  const subtitle = subtitleAtFrame(scene, frame, staticPreview);
   const topPadding = project.navigation?.groups.length ? 70 + NAVIGATION_BAR_HEIGHT : 70;
   const audio = (
     <>
@@ -137,7 +152,7 @@ const SceneLayer = ({scene, project, assetUrls, staticPreview = false, continuit
       ) : null}
       {scene.subtitleText && (staticPreview || continuity.toNext || frame < speakingFrames) ? (
         <div style={{position: 'absolute', opacity: scene.visual.type === 'flow' ? fade : 1, left: 190, right: 190, bottom: 44, borderRadius: 18, textAlign: 'center', fontSize: subtitleFontSize, fontWeight: 800, color: project.theme.subtitleStyle?.color ?? '#fff', background: project.theme.subtitleStyle?.backgroundColor ?? 'rgba(0,0,0,.78)', textShadow: '0 3px 8px rgba(0,0,0,.8)', ...subtitleLayout.box}}>
-          <div style={subtitleLayout.text}>{scene.subtitleText}</div>
+          <div lang="ja" style={{...subtitleLayout.text, ...deckSubtitleText}}>{subtitle}</div>
         </div>
       ) : null}
       {audio}
@@ -174,7 +189,7 @@ export const VideoComposition = ({project, lock, assetUrls}: RemotionRenderInput
         return (
           <Sequence key={scene.id} from={scene.startFrame} durationInFrames={scene.durationInFrames} name={scene.id}>
             {background ? <Img src={background} style={{position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.27}} /> : null}
-            <SceneLayer scene={scene} project={project} assetUrls={resolvedAssetUrls} continuity={continuity[index] ?? NO_CONTINUITY} page={pages[index] ?? 1} totalFrames={totalFrames} {...(previousVisual ? {previousVisual} : {})} />
+            <SceneLayer scene={scene} project={project} assetUrls={resolvedAssetUrls} continuity={continuity[index] ?? NO_CONTINUITY} page={pages[index] ?? 1} totalFrames={totalFrames} finalScene={index === scenes.length - 1} {...(previousVisual ? {previousVisual} : {})} />
             {deck ? null : <SceneNavigation scene={scene} project={project} totalFrames={totalFrames} />}
           </Sequence>
         );

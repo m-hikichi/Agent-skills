@@ -71,6 +71,8 @@ export type ResolvedScene = Scene & {
   audioAssetId?: string;
   resolvedAudioAssetId?: string;
   subtitleText: string;
+  /** Sentence cues with frames relative to the scene start; absent when the subtitle is shown whole. */
+  subtitleCues?: Array<{text: string; startFrame: number; endFrame: number}>;
 };
 
 export interface ProjectLock {

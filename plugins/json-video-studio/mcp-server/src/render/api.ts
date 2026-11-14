@@ -7,7 +7,9 @@ import {spawn} from 'node:child_process';
 import {bundle} from '@remotion/bundler';
 import {makeCancelSignal, renderMedia, renderStill, selectComposition} from '@remotion/renderer';
 import type {ProjectLock, RenderArtifacts, VideoProject} from '../shared/video-types.js';
-import {hasCompletePassingReviewGates, hasNoReviewErrors} from '../shared/review.js';
+import {isReviewSchemaV2, reviewGatesPass, reviewIssuesPass} from '../shared/review.js';
+import {blankLayoutWarnings, measureDeckLayout, type LayoutMetric} from './layout-metrics.js';
+import {lintProject, type LintFinding} from '../core/lint.js';
 import {hasPassingNarrationReview} from '../shared/narration-review.js';
 import {resolveSafeAssetPath, stageRenderAssets} from './assets.js';
 import type {RemotionRenderInput} from './composition.js';
@@ -129,11 +131,15 @@ export const assertPassingReview = async (
   if (typeof review.iteration !== 'number' || !Number.isInteger(review.iteration) || review.iteration < 1 || review.iteration > 3) {
     throw new AppError('REVIEW_INVALID', 'review iterationは1〜3の整数である必要があります', {category: 'schema'});
   }
-  if (!hasCompletePassingReviewGates(review.gates)) {
-    throw new AppError('REVIEW_GATES_NOT_PASSED', '8つのreview hard gateがすべて明示的にtrueである必要があります', {category: 'schema'});
+  if (!reviewGatesPass(review)) {
+    throw new AppError('REVIEW_GATES_NOT_PASSED', isReviewSchemaV2(review)
+      ? 'review 2.0.0のhard gate（視認性・説明・映像）がすべてtrueである必要があります。not_applicableは許可されたgateに理由を添えた場合だけ有効です'
+      : '8つのreview hard gateがすべて明示的にtrueである必要があります', {category: 'schema'});
   }
-  if (!hasNoReviewErrors(review.issues)) {
-    throw new AppError('REVIEW_ISSUES_PRESENT', 'pass reviewのissuesはwarningだけを含む配列である必要があります', {category: 'schema'});
+  if (!reviewIssuesPass(review)) {
+    throw new AppError('REVIEW_ISSUES_PRESENT', isReviewSchemaV2(review)
+      ? 'pass reviewのissuesはwarningだけを含み、各issueに場面または時刻・problem・impact・evidence・fixが必要です'
+      : 'pass reviewのissuesはwarningだけを含む配列である必要があります', {category: 'schema'});
   }
 };
 
@@ -223,6 +229,21 @@ export const assertCurrentProjectLock = (project: VideoProject, lock: ProjectLoc
 };
 
 export const representativeStoryboardFrame = (
+  scene: Pick<ProjectLock['scenes'][number], 'startFrame' | 'durationInFrames'> & Partial<Pick<ProjectLock['scenes'][number], 'visual' | 'subtitleCues'>>,
+  compositionDurationInFrames: number,
+): number => {
+  const base = representativeFrameWithoutCues(scene, compositionDurationInFrames);
+  const cues = scene.subtitleCues;
+  if (!cues?.length) return base;
+  // Show the longest cue: it is the one most likely to overflow the subtitle box.
+  const longest = cues.reduce((best, cue) => (cue.text.length > best.text.length ? cue : best));
+  const first = scene.startFrame + longest.startFrame;
+  const last = Math.min(scene.startFrame + Math.max(0, scene.durationInFrames - 1), scene.startFrame + longest.endFrame - 1);
+  // Stay late enough in the scene for entrance and packet motion to have settled.
+  return Math.min(Math.max(0, compositionDurationInFrames - 1), Math.min(last, Math.max(first, base)));
+};
+
+const representativeFrameWithoutCues = (
   scene: Pick<ProjectLock['scenes'][number], 'startFrame' | 'durationInFrames'> & Partial<Pick<ProjectLock['scenes'][number], 'visual'>>,
   compositionDurationInFrames: number,
 ): number => Math.min(
@@ -231,7 +252,7 @@ export const representativeStoryboardFrame = (
     Math.max(0, scene.durationInFrames - 1),
     scene.visual?.type === 'bullets'
       ? Math.max(12, (scene.visual.items.length - 1) * 5 + 10)
-      : scene.visual?.type === 'flow' ? 40
+      : scene.visual?.type === 'flow' || scene.visual?.type === 'diagram' || scene.visual?.type === 'timeline' ? 40
       : Math.min(12, Math.max(0, Math.floor(scene.durationInFrames / 2))),
   ),
 );
@@ -414,7 +435,7 @@ export const commitOutputDirectory = async (
   }
 };
 
-export const storyboardProject = async (options: CommonRenderOptions): Promise<RenderArtifacts & {warnings: ReturnType<typeof collectLayoutWarnings>}> => {
+export const storyboardProject = async (options: CommonRenderOptions): Promise<RenderArtifacts & {warnings: ReturnType<typeof collectLayoutWarnings>; layoutMetrics: LayoutMetric[]; lint: LintFinding[]}> => {
   throwIfAborted(options.signal);
   notify(options, 'prepare', 0.01, 'プロジェクトを読み込んでいます');
   const {project, lock, projectRoot} = await loadInputs(options, false);
@@ -472,6 +493,8 @@ export const storyboardProject = async (options: CommonRenderOptions): Promise<R
     const thumbnailComposition = await selectComposition({serveUrl, id: 'JsonVideoThumbnail', inputProps, ...browserOptions()});
     const thumbnailPreviewTemp = path.join(temporaryOutput, 'thumbnail-preview.png');
     await renderStillWithSignal({composition: thumbnailComposition, serveUrl, output: thumbnailPreviewTemp, inputProps, imageFormat: 'png', ...browserOptions()}, options.signal);
+    // Measured before the directory is committed, so no scratch file can end up in the storyboard.
+    const layoutMetrics = scenes.length ? await measureDeckLayout(project, scenes, storyboard, options.signal) : [];
 
     await commitOutputDirectory(temporaryOutput, outputDirectory, options.signal);
     committed = true;
@@ -480,7 +503,12 @@ export const storyboardProject = async (options: CommonRenderOptions): Promise<R
     const contactSheets = contactSheetNames.map((name) => path.join(outputDirectory, name));
     const thumbnailPreview = path.join(outputDirectory, 'thumbnail-preview.png');
     notify(options, 'complete', 1, 'storyboardを生成しました');
-    return {outputDirectory, storyboard: committedStoryboard, contactSheet, contactSheets, thumbnailPreview, warnings: collectLayoutWarnings(project)};
+    return {
+      outputDirectory, storyboard: committedStoryboard, contactSheet, contactSheets, thumbnailPreview,
+      warnings: [...collectLayoutWarnings(project), ...blankLayoutWarnings(layoutMetrics)],
+      layoutMetrics,
+      lint: lintProject(project),
+    };
   } finally {
     await Promise.allSettled([staged.cleanup(), ...(committed ? [] : [rm(temporaryOutput, {recursive: true, force: true})])]);
   }

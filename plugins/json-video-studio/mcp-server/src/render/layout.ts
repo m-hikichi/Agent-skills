@@ -39,7 +39,26 @@ export const sceneOpacity = (
   return Math.max(0, Math.min(1, fadeIn, fadeOut));
 };
 
-const EMPHASIS_KEYS = new Set(['highlight', 'highlightRows', 'highlightColumns', 'emphasis']);
+/**
+ * Page changes cut to the next page with a short fade-in: the outgoing page
+ * stays fully readable until its last frame, and the incoming page is readable
+ * within PAGE_FADE_IN_FRAMES of its narration starting. Only the final scene of
+ * the video fades out.
+ */
+export const PAGE_FADE_IN_FRAMES = 5;
+export const pageOpacity = (
+  frame: number,
+  durationInFrames: number,
+  continuity: SceneContinuity = {fromPrevious: false, toNext: false},
+  finalScene = false,
+): number => {
+  if (durationInFrames <= 2) return 1;
+  const fadeIn = continuity.fromPrevious ? 1 : (frame + 1) / Math.min(PAGE_FADE_IN_FRAMES, Math.max(1, Math.floor((durationInFrames - 1) / 2)));
+  const fadeOut = finalScene ? (durationInFrames - frame) / Math.min(8, Math.floor((durationInFrames - 1) / 2)) : 1;
+  return Math.max(0, Math.min(1, fadeIn, fadeOut));
+};
+
+const EMPHASIS_KEYS = new Set(['highlight', 'highlightRows', 'highlightColumns', 'emphasis', 'highlightLines', 'active', 'cursor']);
 
 /**
  * Layout identity of a visual: equal keys mean the same panels appear in the
@@ -79,6 +98,122 @@ export const DECK_FRAME = {
 } as const;
 
 export const isDeckFrame = (project: Pick<VideoProject, 'theme'>): boolean => project.theme.frame?.style === 'deck';
+
+export type DeckFooterMode = 'full' | 'progress' | 'none';
+export const deckFooterMode = (project: Pick<VideoProject, 'theme'>): DeckFooterMode => project.theme.frame?.footer ?? 'full';
+
+/**
+ * Deck geometry for the chosen footer mode. Without the footer row the card
+ * and the subtitle take over its 64px instead of leaving an empty band.
+ */
+export const deckGeometry = (project: Pick<VideoProject, 'theme'>) => {
+  const mode = deckFooterMode(project);
+  const fontSize = project.theme.subtitleStyle?.fontSize ?? 48;
+  const maxLines = project.theme.subtitleStyle?.maxLines ?? 2;
+  // The subtitle box is sized for its font and line limit, and the card ends
+  // just above it, so a larger subtitle never runs into the footer.
+  const subtitleHeight = Math.ceil(fontSize * 1.25) * maxLines + 24;
+  const chromeTop = mode === 'full' ? DECK_FRAME.footerTop : 1080 - DECK_FRAME.progressHeight - 6;
+  const subtitleTop = chromeTop - 10 - subtitleHeight;
+  return {
+    mode,
+    card: {...DECK_FRAME.card, bottom: 1080 - subtitleTop + 12},
+    subtitleTop,
+    subtitleHeight,
+    subtitleWidth: DECK_FRAME.subtitleWidth,
+  };
+};
+
+/** Visuals that the deck frame draws on the white card with the slide header (light tone). */
+export const isDeckDiagramVisual = (visual: SceneVisual): boolean =>
+  visual.type === 'diagram' || visual.type === 'nest' || visual.type === 'timeline';
+
+export interface SubtitleCue {
+  text: string;
+  /** Frames relative to the scene start; endFrame is exclusive. */
+  startFrame: number;
+  endFrame: number;
+}
+
+/** Characters that fit one subtitle line; wide characters count 1 and ASCII 0.5 (see estimateTextLines). */
+export const subtitleLineUnits = (project: Pick<VideoProject, 'theme'>): number => {
+  const fontSize = project.theme.subtitleStyle?.fontSize ?? 48;
+  const usableWidth = isDeckFrame(project) ? DECK_FRAME.subtitleWidth - 60 : 1540 - 68;
+  return Math.max(8, Math.floor(usableWidth / fontSize));
+};
+
+/**
+ * Font size of the full-screen code visual. Short snippets are drawn large
+ * instead of leaving small text in an empty panel; long ones shrink to fit the
+ * panel width and height. In the bundled monospace font an ASCII character is
+ * about 0.6em wide and a wide character 1em; the line-number column is 2.2em.
+ */
+export const CODE_PANEL = {textWidth: 1400, textHeight: 650, lineHeight: 1.42, minFont: 22, maxFont: 46} as const;
+export const codeFontSize = (code: string): number => {
+  const lines = code.split(/\r?\n/u);
+  // 0.62em per ASCII character: emphasized lines are drawn bold, which is slightly wider.
+  const widest = Math.max(1, ...lines.map((line) => Array.from(line).reduce((sum, character) => sum + (/[　-ヿ㐀-鿿豈-﫿＀-￯]/u.test(character) ? 1 : 0.62), 0)));
+  const byWidth = CODE_PANEL.textWidth / (widest + 2.2);
+  const byHeight = CODE_PANEL.textHeight / (lines.length * CODE_PANEL.lineHeight);
+  return Math.round(Math.max(CODE_PANEL.minFont, Math.min(CODE_PANEL.maxFont, byWidth, byHeight)));
+};
+
+export const textUnits = (text: string): number => Array.from(text).reduce((sum, character) => sum + (/[　-ヿ㐀-鿿豈-﫿＀-￯]/u.test(character) ? 1 : 0.5), 0);
+
+/**
+ * Split a subtitle into sentence cues when it does not fit on one line.
+ * Sentences are kept whole; neighbours are merged while they still fit one
+ * line, and a sentence longer than the line limit is cut at the comma nearest
+ * its middle. Returns a single element when no split is needed or possible.
+ */
+export const splitSubtitle = (text: string, lineUnits: number, maxLines = 2): string[] => {
+  const whole = text.trim();
+  if (!whole || whole.includes('\n') || textUnits(whole) <= lineUnits) return [whole];
+  const sentences = whole.match(/[^。！？!?]+[。！？!?]*[」』）)]*/gu)?.map((part) => part.trim()).filter(Boolean) ?? [whole];
+  const pieces = sentences.flatMap((sentence) => {
+    if (textUnits(sentence) <= lineUnits * maxLines) return [sentence];
+    const commas = [...sentence.matchAll(/、/gu)].map((match) => match.index + 1).filter((index) => index < sentence.length);
+    if (!commas.length) return [sentence];
+    const middle = sentence.length / 2;
+    const cut = commas.reduce((best, index) => (Math.abs(index - middle) < Math.abs(best - middle) ? index : best));
+    return [sentence.slice(0, cut).trim(), sentence.slice(cut).trim()];
+  });
+  const cues: string[] = [];
+  for (const piece of pieces) {
+    const last = cues.at(-1);
+    if (last !== undefined && textUnits(last) + textUnits(piece) <= lineUnits) cues[cues.length - 1] = `${last}${piece}`;
+    else cues.push(piece);
+  }
+  return cues.length > 12 ? [whole] : cues;
+};
+
+/**
+ * Time cues inside the spoken part of a scene in proportion to their weights
+ * (measured speech length when available, otherwise character count).
+ */
+export const timeSubtitleCues = (texts: readonly string[], weights: readonly number[], speakingFrames: number): SubtitleCue[] | undefined => {
+  if (texts.length < 2 || speakingFrames < texts.length * 6) return undefined;
+  const safe = texts.map((text, index) => Math.max(1e-6, Number.isFinite(weights[index]) && weights[index]! > 0 ? weights[index]! : textUnits(text)));
+  const total = safe.reduce((sum, value) => sum + value, 0);
+  let consumed = 0;
+  let start = 0;
+  return texts.map((text, index) => {
+    consumed += safe[index]!;
+    const end = index === texts.length - 1 ? speakingFrames : Math.max(start + 1, Math.round((consumed / total) * speakingFrames));
+    const cue = {text, startFrame: start, endFrame: end};
+    start = end;
+    return cue;
+  });
+};
+
+/** Subtitle text to show at a frame of the scene; the last cue stays until the scene ends. */
+export const subtitleAtFrame = (scene: Pick<ResolvedScene, 'subtitleText'> & {subtitleCues?: readonly SubtitleCue[] | undefined}, frame: number, staticPreview = false): string => {
+  const cues = scene.subtitleCues;
+  if (!cues?.length) return scene.subtitleText;
+  // A still preview shows the longest cue: that is the one most likely to overflow.
+  if (staticPreview) return cues.reduce((longest, cue) => (textUnits(cue.text) > textUnits(longest.text) ? cue : longest)).text;
+  return (cues.find((cue) => frame < cue.endFrame) ?? cues.at(-1)!).text;
+};
 
 /** Cover pages use the full gradient instead of the white card. */
 export const isCoverVisual = (visual: SceneVisual): boolean => visual.type === 'title' || visual.type === 'outro';
@@ -208,7 +343,9 @@ export const collectLayoutWarnings = (project: VideoProject): LayoutWarning[] =>
   for (const section of project.sections) {
     for (const scene of section.scenes) {
       const subtitle = scene.subtitle ?? scene.text ?? '';
-      if (estimateTextLines(subtitle, 1540, subtitleFontSize) > subtitleMaxLines) {
+      // A subtitle that is split into cues is judged by its longest cue, as it is shown.
+      const shown = (project.theme.subtitleStyle?.split ?? 'auto') === 'auto' ? splitSubtitle(subtitle, subtitleLineUnits(project), subtitleMaxLines) : [subtitle];
+      if (shown.some((cue) => estimateTextLines(cue, 1540, subtitleFontSize) > subtitleMaxLines)) {
         warnings.push({
           sceneId: scene.id,
           field: 'subtitle',
@@ -257,6 +394,9 @@ export const MIN_PAGE_SECONDS = 10;
  * before resolve; cover pages (title/outro) are exempt.
  */
 export const shortPageWarnings = (project: VideoProject): LayoutWarning[] => {
+  // The 20-40 second page guideline is for deck (document-style) videos; a short
+  // how-to or a scene-by-scene video changes its picture more often on purpose.
+  if (!isDeckFrame(project)) return [];
   const scenes = buildPreviewScenes(project);
   const continuity = sceneContinuity(scenes);
   const warnings: LayoutWarning[] = [];

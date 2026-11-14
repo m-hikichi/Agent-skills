@@ -74,7 +74,13 @@ const level = (selected: readonly number[] | undefined, index: number): number =
   if (!selected?.length) return 0.5;
   return selected.includes(index) ? 1 : 0;
 };
-const dimOpacity = (weight: number): number => (weight >= 0.5 ? 1 : 0.5 + weight);
+/**
+ * Items outside the emphasis stay readable: at 0.75 the default body text on
+ * white keeps a contrast above 4.5:1, so emphasis is carried by the ring,
+ * weight and marker rather than by fading the rest away.
+ */
+export const DIMMED_OPACITY = 0.75;
+const dimOpacity = (weight: number): number => (weight >= 0.5 ? 1 : DIMMED_OPACITY + weight * (1 - DIMMED_OPACITY) * 2);
 const strengthOf = (weight: number): number => Math.max(0, (weight - 0.5) * 2);
 
 /** Split text into runs, marking every occurrence of the emphasized terms. */
@@ -263,7 +269,7 @@ const ListBlock = ({block, previous, staticPreview}: BlockProps<'list'>) => (
   </div>
 );
 
-const Step = ({item, index, weight, previousWeight, staticPreview}: {item: {title: string; detail?: string}; index: number; weight: number; previousWeight: number | undefined; staticPreview: boolean}) => {
+const Step = ({item, index, numbering, weight, previousWeight, staticPreview}: {item: {title: string; detail?: string}; index: number; numbering: 'number' | 'chapter' | 'none'; weight: number; previousWeight: number | undefined; staticPreview: boolean}) => {
   const eased = useWeight(weight, previousWeight, staticPreview);
   const strength = strengthOf(eased);
   const filled = strength > 0.5;
@@ -271,16 +277,47 @@ const Step = ({item, index, weight, previousWeight, staticPreview}: {item: {titl
     <div style={{border: `2px solid ${filled ? DECK.main : DECK.line}`, borderRadius: 10, padding: '14px 18px', opacity: dimOpacity(eased),
       background: filled ? DECK.main : '#fff', color: filled ? '#fff' : DECK.text}}>
       <div style={{fontSize: 31, fontWeight: 900, color: filled ? '#fff' : DECK.darkMid}}>
-        <span style={{fontSize: 24, marginRight: 10, opacity: 0.85}}>第{index + 1}章</span>{item.title}
+        {numbering === 'chapter' ? <span style={{fontSize: 24, marginRight: 10, opacity: 0.85}}>第{index + 1}章</span> : null}
+        {numbering === 'number' ? <span style={{marginRight: 12, opacity: 0.85}}>{index + 1}</span> : null}
+        {item.title}
       </div>
       {item.detail ? <div lang="ja" style={{fontSize: 26, marginTop: 6, ...phraseWrap}}>{item.detail}</div> : null}
     </div>
   );
 };
 
+/** Up to four steps share one row; five or six wrap evenly instead of leaving one orphan. */
+export const stepColumns = (count: number): number => (count <= 4 ? count : Math.ceil(count / 2));
+
 const StepsBlock = ({block, previous, staticPreview}: BlockProps<'steps'>) => (
-  <div style={{display: 'grid', gridTemplateColumns: `repeat(${Math.min(block.items.length, 3)}, minmax(0, 1fr))`, gap: 16}}>
-    {block.items.map((item, index) => <Step key={index} item={item} index={index} staticPreview={staticPreview} weight={level(block.highlight, index)} previousWeight={previous ? level(previous.highlight, index) : undefined} />)}
+  <div style={{display: 'grid', gridTemplateColumns: `repeat(${stepColumns(block.items.length)}, minmax(0, 1fr))`, gap: 16}}>
+    {block.items.map((item, index) => <Step key={index} item={item} index={index} numbering={block.numbering ?? 'number'} staticPreview={staticPreview} weight={level(block.highlight, index)} previousWeight={previous ? level(previous.highlight, index) : undefined} />)}
+  </div>
+);
+
+const CodeLine = ({line, number, weight, previousWeight, staticPreview}: {line: string; number: number; weight: number; previousWeight: number | undefined; staticPreview: boolean}) => {
+  const eased = useWeight(weight, previousWeight, staticPreview);
+  const strength = strengthOf(eased);
+  return (
+    <div style={{display: 'flex', opacity: dimOpacity(eased), fontWeight: strength > 0.5 ? 800 : 500,
+      background: strength > 0 ? `color-mix(in srgb, ${DECK.marker} ${(strength * 100).toFixed(0)}%, transparent)` : 'transparent',
+      boxShadow: strength > 0 ? `inset ${(strength * 6).toFixed(1)}px 0 0 ${DECK.markerLine}` : 'none'}}>
+      <span style={{flex: '0 0 auto', width: 54, textAlign: 'right', paddingRight: 18, color: DECK.textSub, userSelect: 'none'}}>{number}</span>
+      <span style={{whiteSpace: 'pre', color: DECK.text}}>{line || ' '}</span>
+    </div>
+  );
+};
+
+const CodeBlock = ({block, previous, staticPreview}: BlockProps<'code'>) => (
+  <div>
+    {block.heading ? <BlockHeading>{block.heading}</BlockHeading> : null}
+    <div style={{border: `2px solid ${DECK.line}`, borderRadius: 12, background: DECK.lighter, padding: '18px 8px', fontFamily: '"Noto Sans Mono CJK JP", "Noto Sans Mono", monospace', fontSize: 30, lineHeight: 1.5, overflow: 'hidden'}}>
+      {block.code.split(/\r?\n/u).map((line, index) => (
+        <CodeLine key={index} line={line} number={index + 1} staticPreview={staticPreview}
+          weight={level(block.highlightLines?.map((value) => value - 1), index)}
+          previousWeight={previous ? level(previous.highlightLines?.map((value) => value - 1), index) : undefined} />
+      ))}
+    </div>
   </div>
 );
 
@@ -294,32 +331,49 @@ const SlideBlockView = ({block, previous, staticPreview}: {block: SlideBlock; pr
     case 'kpis': return <KpisBlock block={block} previous={same as typeof block | undefined} staticPreview={staticPreview} />;
     case 'list': return <ListBlock block={block} previous={same as typeof block | undefined} staticPreview={staticPreview} />;
     case 'steps': return <StepsBlock block={block} previous={same as typeof block | undefined} staticPreview={staticPreview} />;
+    case 'code': return <CodeBlock block={block} previous={same as typeof block | undefined} staticPreview={staticPreview} />;
   }
 };
+
+/** Zoom factors of slide.scale; the grid is laid out at the reduced width so blocks reflow instead of overflowing. */
+export const SLIDE_SCALE = {normal: 1, large: 1.2, xlarge: 1.4} as const;
+
+/** Tag chip + title + gradient rule shared by slide pages and the diagram visuals in the deck frame. */
+export const DeckPageHeader = ({tag, title}: {tag?: string | undefined; title?: string | undefined}) => (tag || title ? (
+  <>
+    <div style={{display: 'flex', alignItems: 'center', gap: 22, padding: '20px 40px 16px'}}>
+      {tag ? <span style={{flex: '0 0 auto', fontSize: 32, fontWeight: 800, color: '#fff', background: DECK.darkMid, borderRadius: 6, padding: '6px 20px'}}>{tag}</span> : null}
+      {title ? <span lang="ja" style={{fontSize: 46, fontWeight: 900, color: DECK.text, lineHeight: 1.2, letterSpacing: '-0.01em', ...phraseWrap}}>{title}</span> : null}
+    </div>
+    <div style={{height: 4, background: DECK.rule}} />
+  </>
+) : null);
 
 /** Header (tag chip + title + gradient rule) and the 12-column block grid of a slide page. */
 export const SlideTemplate = ({visual, previousVisual, staticPreview = false}: {visual: SceneVisual; previousVisual?: SceneVisual | undefined; staticPreview?: boolean}) => {
   if (visual.type !== 'slide') return null;
   const previous = previousVisual?.type === 'slide' ? previousVisual : undefined;
+  const zoom = SLIDE_SCALE[visual.scale ?? 'normal'];
   return (
     <div style={{position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', fontFamily: 'inherit', color: DECK.text}}>
-      <div style={{display: 'flex', alignItems: 'center', gap: 22, padding: '20px 40px 16px'}}>
-        {visual.tag ? <span style={{flex: '0 0 auto', fontSize: 32, fontWeight: 800, color: '#fff', background: DECK.darkMid, borderRadius: 6, padding: '6px 20px'}}>{visual.tag}</span> : null}
-        <span lang="ja" style={{fontSize: 46, fontWeight: 900, color: DECK.text, lineHeight: 1.2, letterSpacing: '-0.01em', ...phraseWrap}}>{visual.title}</span>
-      </div>
-      <div style={{height: 4, background: DECK.rule}} />
-      <div style={{flex: 1, padding: '26px 40px 26px', display: 'grid', gridTemplateColumns: 'repeat(12, minmax(0, 1fr))', gap: 24, alignContent: 'start', alignItems: 'stretch'}}>
-        {visual.blocks.map((block, index) => (
-          <div key={index} style={{gridColumn: `span ${block.span ?? 12}`, minWidth: 0}}>
-            <SlideBlockView block={block} previous={previous?.blocks[index]} staticPreview={staticPreview} />
-          </div>
-        ))}
+      <DeckPageHeader tag={visual.tag} title={visual.title} />
+      <div style={{flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: visual.align === 'center' ? 'center' : 'flex-start', padding: '26px 40px 26px'}}>
+        <div style={{zoom, display: 'grid', gridTemplateColumns: 'repeat(12, minmax(0, 1fr))', gap: 24, alignContent: 'start', alignItems: 'stretch'}}>
+          {visual.blocks.map((block, index) => (
+            <div key={index} style={{gridColumn: `span ${block.span ?? 12}`, minWidth: 0}}>
+              <SlideBlockView block={block} previous={previous?.blocks[index]} staticPreview={staticPreview} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 };
 
-/** Cover page: gradient with the title, and a white band at the bottom for the logo. */
+/**
+ * Cover page: the gradient fills the whole frame. The white band at the
+ * bottom exists only to carry the cover logo, so it is drawn only with one.
+ */
 export const DeckCover = ({visual, project, assetUrls}: {visual: SceneVisual; project: VideoProject; assetUrls: Record<string, string>}) => {
   if (visual.type !== 'title' && visual.type !== 'outro') return null;
   const frame = project.theme.frame;
@@ -327,11 +381,11 @@ export const DeckCover = ({visual, project, assetUrls}: {visual: SceneVisual; pr
   const logo = frame?.coverLogoAssetId ? assetUrls[frame.coverLogoAssetId] : undefined;
   return (
     <div style={{position: 'absolute', inset: 0}}>
-      <div style={{position: 'absolute', left: 0, right: 0, top: 0, height: '85.66%', background: DECK.gradient}} />
-      <div style={{position: 'absolute', left: 0, right: 0, bottom: 0, height: '14.34%', background: '#fff'}} />
+      <div style={{position: 'absolute', inset: 0, background: DECK.gradient}} />
+      {logo ? <div style={{position: 'absolute', left: 0, right: 0, bottom: 0, height: '14.34%', background: '#fff'}} /> : null}
       {mark ? <Img src={mark} style={{position: 'absolute', left: 84, top: 72, height: 96}} /> : null}
       {logo ? <Img src={logo} style={{position: 'absolute', right: 70, bottom: 26, height: 100}} /> : null}
-      <div style={{position: 'absolute', left: 120, right: 120, top: 250, textAlign: 'center', color: '#fff'}}>
+      <div style={{position: 'absolute', left: 120, right: 120, top: logo ? 250 : 300, textAlign: 'center', color: '#fff'}}>
         <div lang="ja" style={{fontSize: 84, fontWeight: 900, lineHeight: 1.25, ...phraseWrap}}>{visual.title}</div>
         {visual.subtitle ? <div lang="ja" style={{fontSize: 40, fontWeight: 700, marginTop: 30, opacity: 0.96, ...phraseWrap}}>{visual.subtitle}</div> : null}
         {frame?.coverCaption ? <div lang="ja" style={{fontSize: 30, marginTop: 44, opacity: 0.9}}>{frame.coverCaption}</div> : null}
@@ -345,6 +399,14 @@ export const DeckFooter = ({project, assetUrls, navigation, page, progress}: {pr
   const frame = project.theme.frame;
   const logo = frame?.footerLogoAssetId ? assetUrls[frame.footerLogoAssetId] : undefined;
   const {footerTop, footerHeight, progressHeight} = DECK_FRAME;
+  const mode = frame?.footer ?? 'full';
+  if (mode === 'none') return null;
+  const progressLine = (
+    <div style={{position: 'absolute', left: 0, right: 0, bottom: 0, height: progressHeight, background: 'rgba(0,0,0,0.22)'}}>
+      <div style={{width: `${(progress * 100).toFixed(2)}%`, height: '100%', background: '#fff'}} />
+    </div>
+  );
+  if (mode === 'progress') return progressLine;
   return (
     <>
       <div style={{position: 'absolute', left: 44, right: 44, top: footerTop, height: footerHeight, display: 'flex', alignItems: 'center', gap: 24, color: '#fff'}}>
@@ -368,9 +430,7 @@ export const DeckFooter = ({project, assetUrls, navigation, page, progress}: {pr
         </div>
         <div style={{flex: '0 0 auto', width: 120, textAlign: 'right', fontSize: 34, fontWeight: 800}}>{page}</div>
       </div>
-      <div style={{position: 'absolute', left: 0, right: 0, bottom: 0, height: progressHeight, background: 'rgba(0,0,0,0.22)'}}>
-        <div style={{width: `${(progress * 100).toFixed(2)}%`, height: '100%', background: '#fff'}} />
-      </div>
+      {progressLine}
     </>
   );
 };
@@ -382,11 +442,11 @@ export const DeckThumbnail = ({project, assetUrls}: {project: VideoProject; asse
   const mark = frame?.coverMarkAssetId ? assetUrls[frame.coverMarkAssetId] : undefined;
   return (
     <div style={{position: 'absolute', inset: 0, fontFamily: 'Noto Sans CJK JP', ...deckVariables(project)}}>
-      <div style={{position: 'absolute', left: 0, right: 0, top: 0, height: '82%', background: DECK.gradient}} />
-      <div style={{position: 'absolute', left: 0, right: 0, bottom: 0, height: '18%', background: '#fff'}} />
+      <div style={{position: 'absolute', inset: 0, background: DECK.gradient}} />
+      {logo ? <div style={{position: 'absolute', left: 0, right: 0, bottom: 0, height: '18%', background: '#fff'}} /> : null}
       {mark ? <Img src={mark} style={{position: 'absolute', left: 46, top: 40, height: 70}} /> : null}
       {logo ? <Img src={logo} style={{position: 'absolute', right: 44, bottom: 22, height: 84}} /> : null}
-      <div style={{position: 'absolute', left: 60, right: 60, top: 150, bottom: '20%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', color: '#fff'}}>
+      <div style={{position: 'absolute', left: 60, right: 60, top: logo ? 150 : 60, bottom: logo ? '20%' : 60, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', color: '#fff'}}>
         {project.thumbnail.textLines.map((line, index) => (
           <div key={line} lang="ja" style={{fontSize: index === 0 ? 64 : 96, fontWeight: 900, lineHeight: 1.15, marginTop: index ? 18 : 0,
             color: index === 0 ? DECK.marker : '#fff', textShadow: '0 6px 24px rgba(0, 0, 0, 0.35)', ...phraseWrap}}>{line}</div>

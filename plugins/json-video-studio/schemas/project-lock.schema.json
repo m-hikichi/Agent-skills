@@ -203,15 +203,23 @@
         {
           "if": {
             "properties": {
-              "type": {"const": "voice"}
+              "type": {
+                "const": "voice"
+              }
             },
-            "required": ["type"]
+            "required": [
+              "type"
+            ]
           },
           "then": {
             "properties": {
-              "voice": {"$ref": "#/$defs/voiceParameters"}
+              "voice": {
+                "$ref": "#/$defs/voiceParameters"
+              }
             },
-            "required": ["voice"]
+            "required": [
+              "voice"
+            ]
           }
         }
       ]
@@ -234,20 +242,68 @@
         "textSha256"
       ],
       "properties": {
-        "provider": {"const": "voicevox"},
-        "engineVersion": {"type": "string", "minLength": 1, "maxLength": 100},
-        "speakerUuid": {"type": "string", "minLength": 1, "maxLength": 100},
-        "speakerName": {"type": "string", "minLength": 1, "maxLength": 200},
-        "styleId": {"type": "integer", "minimum": 0},
-        "styleName": {"type": "string", "minLength": 1, "maxLength": 200},
-        "speedScale": {"type": "number", "minimum": 0.5, "maximum": 2},
-        "volumeScale": {"type": "number", "minimum": 0, "maximum": 2},
-        "pitchScale": {"type": "number", "minimum": -0.15, "maximum": 0.15},
-        "intonationScale": {"type": "number", "minimum": 0, "maximum": 2},
-        "cacheKey": {"$ref": "#/$defs/sha256"},
-        "textSha256": {"$ref": "#/$defs/sha256"},
-        "synthesisText": {"type": "string", "minLength": 1, "maxLength": 400000},
-        "kana": {"type": "string", "maxLength": 1000000}
+        "provider": {
+          "const": "voicevox"
+        },
+        "engineVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "speakerUuid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "speakerName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "styleId": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "styleName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "speedScale": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2
+        },
+        "volumeScale": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "pitchScale": {
+          "type": "number",
+          "minimum": -0.15,
+          "maximum": 0.15
+        },
+        "intonationScale": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "cacheKey": {
+          "$ref": "#/$defs/sha256"
+        },
+        "textSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "synthesisText": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400000
+        },
+        "kana": {
+          "type": "string",
+          "maxLength": 1000000
+        }
       }
     },
     "resolvedScene": {
@@ -280,7 +336,11 @@
           "minLength": 1,
           "maxLength": 240
         },
-        "speechText": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "speechText": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
         "emotion": {
           "$ref": "#/$defs/identifier"
         },
@@ -333,6 +393,36 @@
         "subtitleText": {
           "type": "string",
           "maxLength": 240
+        },
+        "subtitleCues": {
+          "description": "Sentence cues of the subtitle with frames relative to the scene start. Absent when the subtitle is shown whole, and in locks created before cue splitting.",
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 12,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "text",
+              "startFrame",
+              "endFrame"
+            ],
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 240
+              },
+              "startFrame": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "endFrame": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
         }
       }
     }

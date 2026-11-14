@@ -58,6 +58,22 @@ function validateCacheMetadata(
   };
 }
 
+/** Sum of the mora and pause lengths of a VOICEVOX audio query, in milliseconds at the given speed. */
+export const speechMilliseconds = (query: unknown, speedScale: number): number => {
+  const phrases = (query as {accent_phrases?: unknown} | null)?.accent_phrases;
+  if (!Array.isArray(phrases)) return 0;
+  const length = (mora: unknown): number => {
+    if (!mora || typeof mora !== 'object') return 0;
+    const {consonant_length: consonant, vowel_length: vowel} = mora as {consonant_length?: unknown; vowel_length?: unknown};
+    return (typeof consonant === 'number' ? consonant : 0) + (typeof vowel === 'number' ? vowel : 0);
+  };
+  const seconds = phrases.reduce((total: number, phrase: unknown) => {
+    const {moras, pause_mora: pause} = (phrase ?? {}) as {moras?: unknown; pause_mora?: unknown};
+    return total + (Array.isArray(moras) ? moras.reduce((sum: number, mora: unknown) => sum + length(mora), 0) : 0) + length(pause);
+  }, 0);
+  return (seconds / Math.max(0.1, speedScale)) * 1000;
+};
+
 export interface SynthesizedVoice extends ResolvedVoicevoxIdentity {
   synthesisText?: string;
   kana?: string;
@@ -221,6 +237,19 @@ export class VoicevoxClient {
     await atomicWriteJson(metadataPath, metadata, {overwrite: true});
     const {kana, ...voiceMetadata} = metadata;
     return {...voiceMetadata, ...(kana === null ? {} : {kana}), path: audioPath, relativePath: relativePortable(this.workspaceRoot, audioPath), cacheHit: false};
+  }
+
+  /**
+   * Spoken length of a text in milliseconds from the Engine's audio_query
+   * (mora and pause lengths, without the silent lead-in/out), with no
+   * synthesis. Used to time subtitle cues in proportion to the narration.
+   */
+  async measure(text: string, speaker: Speaker, signal?: AbortSignal): Promise<number> {
+    const voice = speaker.voice;
+    if (!voice) throw new AppError('VOICE_NOT_CONFIGURED', `Speaker ${speaker.id} has no VOICEVOX voice.`, {category: 'schema'});
+    const params = new URLSearchParams({text, speaker: String(voice.styleId)});
+    const response = await this.request(`/audio_query?${params.toString()}`, {method: 'POST'}, signal);
+    return speechMilliseconds(await response.json(), voice.speedScale ?? speaker.speed ?? 1);
   }
 
   async plan(text: string, speaker: Speaker, signal?: AbortSignal): Promise<VoiceSynthesisPlan> {

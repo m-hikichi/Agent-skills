@@ -1,4 +1,5 @@
-import {isAbsolute, posix, relative, resolve, sep, win32} from 'node:path';
+import {dirname, isAbsolute, posix, relative, resolve, sep, win32} from 'node:path';
+import {lintBrief, lintProject} from './lint.js';
 import {readFile, realpath} from 'node:fs/promises';
 import type {JobRequest} from './jobs.js';
 import type {ProjectLock, RenderArtifacts, Speaker, VideoProject, VoicevoxVoice} from '../shared/video-types.js';
@@ -130,6 +131,30 @@ export class RuntimeService {
 
   async validateProjectPath(path: string) {
     return this.projects.get(path);
+  }
+
+  /**
+   * Advisory quality findings for a project: what a machine can tell from the
+   * JSON (subtitle size, speech rate, repeated text, uniform layouts, absolute
+   * claims) plus whether the production brief in request.json is filled in.
+   */
+  async lintProjectPath(path: string) {
+    const envelope = await this.projects.get(path);
+    const projectFile = await this.projects.projectPath(path, true);
+    let request: unknown;
+    try {
+      request = await readJson<unknown>(await resolveInside(dirname(projectFile), `.json-video-work/${envelope.project.meta.id}/request.json`, {mustExist: true}));
+    } catch {
+      request = undefined;
+    }
+    const findings = [...lintBrief(request), ...lintProject(envelope.project)];
+    return {
+      projectId: envelope.project.meta.id,
+      digest: envelope.digest,
+      briefFound: request !== undefined,
+      findings,
+      counts: {warning: findings.filter((item) => item.severity === 'warning').length, info: findings.filter((item) => item.severity === 'info').length},
+    };
   }
 
   async inspect(mediaPath: string, signal?: AbortSignal) {

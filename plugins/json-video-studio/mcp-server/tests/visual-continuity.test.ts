@@ -158,6 +158,9 @@ describe('short page warning', () => {
       narration('long-2', {...page, highlight: [1]}),
       narration('long-3', page),
     ];
+    // The guideline belongs to deck (document-style) videos only.
+    expect(shortPageWarnings(project)).toEqual([]);
+    project.theme.frame = {style: 'deck'};
     const warnings = shortPageWarnings(project);
     expect(warnings.map((warning) => warning.sceneId)).toEqual(['short-page']);
   });

@@ -1,19 +1,38 @@
 {
   "projectId": "example-video",
-  "goal": "視聴後に何を理解・判断・実行してほしいか",
-  "audience": "対象視聴者",
-  "targetDurationMinutes": 5,
+  "brief": {
+    "kind": "explainer",
+    "audience": "誰が見るか",
+    "priorKnowledge": "視聴者が知っていること／知らないこと",
+    "viewerQuestion": "視聴者が抱えている疑問や困りごと（視聴者の言葉で1文）",
+    "outcome": "見終わったあと、何を理解・判断・実行できるようになるか",
+    "coreMessage": "動画全体で伝える中心の1文",
+    "example": "説明に使う具体例（最初から最後まで追える1つの例）",
+    "inScope": ["本編で扱うこと"],
+    "deferred": ["補足や別の動画へ回すこと"],
+    "assumed": ["利用者の指定がなく、依頼文から補って決めた項目"]
+  },
+  "userDirectives": ["利用者が明示した対象者・尺・表現方針（このスキルの推奨より優先する）"],
+  "targetDurationMinutes": 3,
   "title": "動画タイトル",
-  "sections": [
+  "scenePlan": [
     {
-      "title": "導入",
-      "purpose": "課題と結論を短く示す"
+      "page": "page-id",
+      "message": "この場面で伝える1つのこと",
+      "narration": "ナレーションが説明する内容（画面の読み上げにしない）",
+      "show": "映像で見せると理解しやすくなること（関係・順序・変化・実物）",
+      "focus": "視聴者がどこを見ればよいか",
+      "order": "何をどの順番で表示・強調するか",
+      "form": "diagram | nest | timeline | flow | split | code | table | slide など、上の内容から選んだ形式と理由"
     }
   ],
   "speakerPreference": "VOICEVOXの候補を確認して決定",
   "assets": [],
-  "themeNotes": "濃色背景、読みやすい日本語字幕",
+  "themeNotes": "配色、フッターの要否、字幕サイズ",
   "thumbnailMessage": "最大2行",
+  "lintDecisions": [
+    {"code": "ABSOLUTE_CLAIM", "decision": "fixed | kept", "reason": "直した内容、または残す理由"}
+  ],
   "openQuestions": [],
   "lastProjectRevision": 0,
   "lastJobId": null,

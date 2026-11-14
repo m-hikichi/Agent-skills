@@ -1,28 +1,46 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "2.0.0",
   "projectId": "example-video",
   "lockHash": "64-character-lowercase-sha256",
   "iteration": 1,
   "status": "fail",
   "reviewedAt": "2026-01-01T00:00:00.000Z",
   "gates": {
-    "noOverflowOrClipping": false,
+    "noOverflowOrClipping": true,
     "noUnintendedOverlap": true,
     "safeMargins": true,
     "readableContrast": true,
     "subtitleReadable": true,
-    "visualMatchesContent": true,
     "consistentTypography": true,
-    "thumbnailReadable": true
+    "thumbnailReadable": true,
+    "readableWhenScaledDown": true,
+    "balancedLayout": false,
+    "visualMatchesContent": true,
+    "claimsAccurate": true,
+    "fitsAudience": true,
+    "formFitsMeaning": true,
+    "clearFocus": true,
+    "variedPresentation": true
+  },
+  "notApplicableReasons": {},
+  "measurements": {
+    "layoutMetrics": "storyboardジョブのlayoutMetricsのうち、判断に使った値",
+    "lint": "project_lintの指摘コードと、制作者の対応（request.jsonのlintDecisions）"
   },
   "issues": [
     {
       "severity": "error",
+      "gate": "balancedLayout",
       "sceneId": "scene-id",
-      "framePath": "relative/storyboard/path.png",
-      "problem": "何が、どこで、どう崩れているか",
-      "fix": "JSONのどの値をどう変えるか"
+      "problem": "何が、どこで、どうなっているか",
+      "impact": "視聴者にとって何が困るか",
+      "evidence": "relative/storyboard/path.png、実測値、台詞の引用、原典の該当箇所",
+      "fix": "JSON Pointerと変更後の姿（構成の問題はscenePlanのどこをどう変えるか）"
     }
   ],
+  "previousIssues": [
+    {"problem": "前のiterationの指摘", "recheck": "resolved | remaining", "evidence": "確認した画像や値"}
+  ],
+  "notChecked": ["このレビューで確認できなかったこと（動きの滑らかさ、音声など）"],
   "questionsForUser": []
 }

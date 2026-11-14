@@ -17,11 +17,14 @@ import {VoicevoxClient, type SynthesizedVoice, type VoiceSynthesisPlan} from './
 import {validateProjectLock} from './schema.js';
 import {collectRuntimeVersions} from './runtime-info.js';
 import {pronunciationWarnings, resolveSpeechText} from './speech.js';
+import {splitSubtitle, subtitleLineUnits, timeSubtitleCues} from '../render/layout.js';
 
 export interface VoiceProvider {
   synthesize(text: string, speaker: Speaker, signal?: AbortSignal): Promise<SynthesizedVoice>;
   version(signal?: AbortSignal): Promise<string>;
   plan?(text: string, speaker: Speaker, signal?: AbortSignal): Promise<VoiceSynthesisPlan>;
+  /** Spoken length of a text in milliseconds without synthesizing it. */
+  measure?(text: string, speaker: Speaker, signal?: AbortSignal): Promise<number>;
 }
 
 export interface ResolveProgress {
@@ -95,11 +98,13 @@ function makeSrt(scenes: ResolvedScene[], fps: number): string {
   let index = 1;
   return scenes.flatMap((scene) => {
     if (!scene.subtitleText.trim()) return [];
-    const start = (scene.startFrame / fps) * 1000;
+    const frameTime = (frame: number) => ((scene.startFrame + frame) / fps) * 1000;
+    if (scene.subtitleCues?.length) {
+      return scene.subtitleCues.map((cue) => `${index++}\n${timestamp(frameTime(cue.startFrame), true)} --> ${timestamp(frameTime(cue.endFrame), true)}\n${cue.text}\n`);
+    }
     const contentDuration = scene.audioDurationMs > 0 ? scene.audioDurationMs : (scene.durationMs ?? 0);
     const contentFrames = millisecondsToFrames(contentDuration, fps);
-    const end = ((scene.startFrame + Math.min(scene.durationInFrames, contentFrames)) / fps) * 1000;
-    return [`${index++}\n${timestamp(start, true)} --> ${timestamp(end, true)}\n${scene.subtitleText}\n`];
+    return [`${index++}\n${timestamp(frameTime(0), true)} --> ${timestamp(frameTime(Math.min(scene.durationInFrames, contentFrames)), true)}\n${scene.subtitleText}\n`];
   }).join('\n');
 }
 
@@ -333,6 +338,28 @@ export async function resolveProject(options: ResolveOptions): Promise<ResolvePl
         });
       }
       const durationInFrames = millisecondsToFrames(baseDurationMs + (scene.holdAfterMs ?? 0), project.canvas.fps);
+      const subtitleText = scene.subtitle ?? scene.text ?? '';
+      let subtitleCues: ResolvedScene['subtitleCues'];
+      if (subtitleText && (project.theme.subtitleStyle?.split ?? 'auto') === 'auto') {
+        const cueTexts = splitSubtitle(subtitleText, subtitleLineUnits(project), project.theme.subtitleStyle?.maxLines ?? 2);
+        if (cueTexts.length > 1) {
+          // When the subtitle is the narration itself, each cue is weighted by
+          // the Engine's spoken length of that sentence; otherwise (separate
+          // subtitle, explicit speechText, supplied audio) by its length in characters.
+          const speaker = scene.speakerId ? speakers.get(scene.speakerId) : undefined;
+          const measurable = !scene.audioAssetId && scene.subtitle === undefined && scene.speechText === undefined && speaker?.voice && voiceProvider.measure;
+          let weights: number[] = [];
+          if (measurable) {
+            try {
+              weights = await Promise.all(cueTexts.map((cue) => voiceProvider.measure!(resolveSpeechText({text: cue}, project.pronunciations), speaker, options.signal)));
+            } catch (error) {
+              throwIfAborted(options.signal);
+              weights = [];
+            }
+          }
+          subtitleCues = timeSubtitleCues(cueTexts, weights, Math.min(durationInFrames, millisecondsToFrames(baseDurationMs, project.canvas.fps)));
+        }
+      }
       resolvedScenes.push({
         ...scene,
         sectionId: section.id,
@@ -340,7 +367,8 @@ export async function resolveProject(options: ResolveOptions): Promise<ResolvePl
         startFrame: currentFrame,
         durationInFrames,
         audioDurationMs,
-        subtitleText: scene.subtitle ?? scene.text ?? '',
+        subtitleText,
+        ...(subtitleCues === undefined ? {} : {subtitleCues}),
         ...(resolvedAudioAssetId === undefined ? {} : {resolvedAudioAssetId}),
       });
       currentFrame += durationInFrames;

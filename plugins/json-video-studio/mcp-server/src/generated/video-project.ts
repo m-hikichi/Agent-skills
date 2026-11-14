@@ -44,7 +44,10 @@ export type SceneVisual =
   | FlowVisual
   | TableVisual
   | StatementVisual
-  | SlideVisual;
+  | SlideVisual
+  | DiagramVisual
+  | NestVisual
+  | TimelineVisual;
 export type MetricVisual = {
   type: 'metric';
   variant: 'number' | 'bar' | 'line';
@@ -168,6 +171,20 @@ export type SlideBlock =
         detail?: string;
       }[];
       highlight?: HighlightIndexes;
+      /**
+       * Label drawn before each step title: number (default: 1, 2, 3), chapter (第1章 …) or none.
+       */
+      numbering?: 'number' | 'chapter' | 'none';
+    }
+  | {
+      kind: 'code';
+      span?: BlockSpan;
+      heading?: string;
+      code: string;
+      /**
+       * @maxItems 24
+       */
+      highlightLines?: number[];
     };
 /**
  * Width in a 12-column grid.
@@ -261,6 +278,10 @@ export interface SubtitleStyle {
   maxLines?: 1 | 2;
   backgroundColor?: Color;
   color?: Color;
+  /**
+   * auto (default) splits a subtitle that does not fit one line into sentence cues timed to the narration; none always shows the whole subtitle.
+   */
+  split?: 'auto' | 'none';
 }
 /**
  * Slide-deck frame: gradient background, white content card, footer with logo, footer text and page number, chapter chips and progress line at the bottom, and a cover layout for title/outro visuals. Colors come from palette (brand-neutral defaults).
@@ -284,6 +305,10 @@ export interface Frame {
   coverMarkAssetId?: Identifier;
   footerText?: string;
   coverCaption?: string;
+  /**
+   * Bottom chrome of the deck frame. full (default) = logo/footer text, chapter chips and page number; progress = only the thin progress line, and the content card and subtitle get the freed space; none = no chrome.
+   */
+  footer?: 'full' | 'progress' | 'none';
 }
 export interface Asset {
   id: Identifier;
@@ -365,6 +390,12 @@ export interface CodeVisual {
   code: string;
   language?: string;
   title?: string;
+  /**
+   * One-based line numbers to emphasize; other lines stay readable. Consecutive scenes that differ only by highlightLines keep the code on screen.
+   *
+   * @maxItems 24
+   */
+  highlightLines?: number[];
 }
 export interface QuoteVisual {
   type: 'quote';
@@ -447,6 +478,144 @@ export interface SlideVisual {
    * @maxItems 6
    */
   blocks: SlideBlock[];
+  /**
+   * Enlarges every block of the page. Use large/xlarge when the page has little content instead of leaving small text in a mostly empty card.
+   */
+  scale?: 'normal' | 'large' | 'xlarge';
+  /**
+   * Vertical placement of the blocks inside the card (default top).
+   */
+  align?: 'top' | 'center';
+}
+/**
+ * Connection diagram: 2-5 nodes in a row, optional groups enclosing adjacent nodes, links between nodes, and an active state (emphasized nodes/links and a labelled packet moving along one link). Consecutive scenes that differ only by active keep the diagram on screen.
+ */
+export interface DiagramVisual {
+  type: 'diagram';
+  tag?: string;
+  title?: string;
+  /**
+   * @minItems 2
+   * @maxItems 5
+   */
+  nodes: {
+    id: Identifier;
+    label: string;
+    detail?: string;
+    group?: Identifier;
+  }[];
+  /**
+   * @maxItems 3
+   */
+  groups?: {
+    id: Identifier;
+    label: string;
+  }[];
+  /**
+   * @minItems 1
+   * @maxItems 6
+   */
+  links: {
+    from: Identifier;
+    to: Identifier;
+    label?: string;
+  }[];
+  /**
+   * Emphasis for this scene. nodes and groups are ids to emphasize; links and packet.link are zero-based indexes into links; packet.reverse sends the packet from `to` back to `from`.
+   */
+  active?: {
+    /**
+     * @maxItems 5
+     */
+    nodes?: Identifier[];
+    /**
+     * @maxItems 6
+     */
+    links?: number[];
+    packet?: {
+      link: number;
+      label?: string;
+      reverse?: boolean;
+    };
+    /**
+     * @maxItems 3
+     */
+    groups?: Identifier[];
+  };
+  note?: string;
+}
+/**
+ * Containment diagram: one outer box that contains up to four boxes, each of which may contain up to four boxes. highlight lists the ids to emphasize.
+ */
+export interface NestVisual {
+  type: 'nest';
+  tag?: string;
+  title?: string;
+  root: {
+    id: Identifier;
+    label: string;
+    detail?: string;
+    /**
+     * @minItems 1
+     * @maxItems 4
+     */
+    children?: {
+      id: Identifier;
+      label: string;
+      detail?: string;
+      /**
+       * @minItems 1
+       * @maxItems 4
+       */
+      children?: {
+        id: Identifier;
+        label: string;
+        detail?: string;
+      }[];
+    }[];
+  };
+  /**
+   * @maxItems 8
+   */
+  highlight?: Identifier[];
+  note?: string;
+}
+/**
+ * Timeline: 1-4 tracks of segments on one shared axis from 0 to end. highlight lists segment ids to emphasize and cursor draws a position line that moves between scenes. Consecutive scenes that differ only by highlight/cursor keep the timeline on screen.
+ */
+export interface TimelineVisual {
+  type: 'timeline';
+  tag?: string;
+  title?: string;
+  unit?: string;
+  end: number;
+  /**
+   * @maxItems 12
+   */
+  ticks?: number[];
+  /**
+   * @minItems 1
+   * @maxItems 4
+   */
+  tracks: {
+    label: string;
+    /**
+     * @minItems 1
+     * @maxItems 8
+     */
+    segments: {
+      id: Identifier;
+      label: string;
+      start: number;
+      end: number;
+    }[];
+  }[];
+  /**
+   * @maxItems 16
+   */
+  highlight?: Identifier[];
+  cursor?: number;
+  note?: string;
 }
 /**
  * Persistent chapter bar shown above every scene. Each group bundles one or more sections in order.

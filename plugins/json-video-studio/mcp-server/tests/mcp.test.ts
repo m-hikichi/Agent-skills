@@ -22,6 +22,7 @@ const expectedTools = [
   'output_review_frames',
   'project_create',
   'project_get',
+  'project_lint',
   'project_update',
   'project_validate',
   'render_start',
@@ -44,7 +45,8 @@ function textJson<T>(result: Awaited<ReturnType<Client['callTool']>>): T {
 }
 
 async function waitForJob(client: Client, jobId: string): Promise<JobRecord> {
-  const deadline = Date.now() + 5_000;
+  // Generous: the golden-frame tests render with Chromium in parallel and can starve this process for seconds.
+  const deadline = Date.now() + 20_000;
   for (;;) {
     const result = textJson<JobRecord>(await client.callTool({name: 'job_status', arguments: {jobId}}));
     if (['succeeded', 'failed', 'cancelled', 'interrupted'].includes(result.status)) return result;

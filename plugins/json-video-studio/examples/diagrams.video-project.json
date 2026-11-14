@@ -1,0 +1,211 @@
+{
+  "schemaVersion": "1.0.0",
+  "meta": {
+    "id": "diagrams",
+    "title": "図解の見本",
+    "description": "接続図・入れ子・タイムライン・コードの行強調と、フッターを省いた資料型レイアウトの無音例。",
+    "language": "ja-JP"
+  },
+  "canvas": {
+    "preset": "youtube-1080p",
+    "fps": 30
+  },
+  "theme": {
+    "backgroundColor": "#34506B",
+    "foregroundColor": "#FFFFFF",
+    "accentColor": "#7FE8DA",
+    "fontFamily": "Noto Sans CJK JP",
+    "spacing": "comfortable",
+    "subtitleStyle": {
+      "fontSize": 44,
+      "maxLines": 1,
+      "backgroundColor": "#000000C0",
+      "color": "#FFFFFF"
+    },
+    "frame": {
+      "style": "deck",
+      "footer": "progress"
+    }
+  },
+  "assets": [],
+  "speakers": [],
+  "sections": [
+    {
+      "id": "forms",
+      "title": "意味に合う形",
+      "scenes": [
+        {
+          "id": "diagram-request",
+          "durationMs": 2500,
+          "subtitle": "注文がレジから厨房へ渡る。",
+          "visual": {
+            "type": "diagram",
+            "tag": "受け渡し",
+            "title": "注文が料理になるまで",
+            "nodes": [
+              {"id": "guest", "label": "お客さん", "detail": "注文する"},
+              {"id": "register", "label": "レジ", "detail": "注文を受ける", "group": "shop"},
+              {"id": "kitchen", "label": "厨房", "detail": "料理を作る", "group": "shop"}
+            ],
+            "groups": [{"id": "shop", "label": "店の中"}],
+            "links": [
+              {"from": "guest", "to": "register", "label": "注文"},
+              {"from": "register", "to": "kitchen", "label": "伝票"},
+              {"from": "kitchen", "to": "register", "label": "料理"}
+            ],
+            "active": {"nodes": ["register", "kitchen"], "packet": {"link": 1, "label": "伝票"}}
+          }
+        },
+        {
+          "id": "diagram-response",
+          "durationMs": 2500,
+          "subtitle": "料理が厨房からレジへ戻る。",
+          "visual": {
+            "type": "diagram",
+            "tag": "受け渡し",
+            "title": "注文が料理になるまで",
+            "nodes": [
+              {"id": "guest", "label": "お客さん", "detail": "注文する"},
+              {"id": "register", "label": "レジ", "detail": "注文を受ける", "group": "shop"},
+              {"id": "kitchen", "label": "厨房", "detail": "料理を作る", "group": "shop"}
+            ],
+            "groups": [{"id": "shop", "label": "店の中"}],
+            "links": [
+              {"from": "guest", "to": "register", "label": "注文"},
+              {"from": "register", "to": "kitchen", "label": "伝票"},
+              {"from": "kitchen", "to": "register", "label": "料理"}
+            ],
+            "active": {"nodes": ["kitchen", "register"], "packet": {"link": 2, "label": "料理"}}
+          }
+        },
+        {
+          "id": "nest-menu",
+          "durationMs": 2500,
+          "subtitle": "メニューの中にコース、その中に料理がある。",
+          "visual": {
+            "type": "nest",
+            "tag": "包含",
+            "title": "メニューの入れ子",
+            "root": {
+              "id": "menu",
+              "label": "メニュー",
+              "detail": "店が出すもの全体",
+              "children": [
+                {
+                  "id": "lunch",
+                  "label": "昼のコース",
+                  "children": [
+                    {"id": "soup", "label": "スープ"},
+                    {"id": "pasta", "label": "パスタ", "detail": "日替わり"}
+                  ]
+                },
+                {
+                  "id": "dinner",
+                  "label": "夜のコース",
+                  "children": [
+                    {"id": "salad", "label": "前菜"},
+                    {"id": "steak", "label": "肉料理"},
+                    {"id": "cake", "label": "デザート"}
+                  ]
+                }
+              ]
+            },
+            "highlight": ["lunch", "pasta"]
+          }
+        },
+        {
+          "id": "timeline-service",
+          "durationMs": 2500,
+          "subtitle": "前菜を食べている間に、主菜を焼き始める。",
+          "visual": {
+            "type": "timeline",
+            "tag": "時間",
+            "title": "厨房と客席の時間",
+            "unit": "分",
+            "end": 30,
+            "ticks": [0, 10, 20, 30],
+            "tracks": [
+              {"label": "厨房", "segments": [
+                {"id": "cook-starter", "label": "前菜を作る", "start": 0, "end": 8},
+                {"id": "cook-main", "label": "主菜を焼く", "start": 8, "end": 20}
+              ]},
+              {"label": "客席", "segments": [
+                {"id": "eat-starter", "label": "前菜を食べる", "start": 8, "end": 20},
+                {"id": "eat-main", "label": "主菜を食べる", "start": 20, "end": 30}
+              ]}
+            ],
+            "highlight": ["cook-main", "eat-starter"],
+            "cursor": 14
+          }
+        },
+        {
+          "id": "slide-code",
+          "durationMs": 2500,
+          "subtitle": "2行目の指定が、右の結果になる。",
+          "visual": {
+            "type": "slide",
+            "tag": "実物",
+            "title": "設定と結果の対応",
+            "scale": "large",
+            "align": "center",
+            "blocks": [
+              {
+                "kind": "code",
+                "span": 7,
+                "heading": "注文票",
+                "code": "{\n  \"course\": \"lunch\",\n  \"guests\": 2\n}",
+                "highlightLines": [2]
+              },
+              {
+                "kind": "kpis",
+                "span": 5,
+                "items": [
+                  {"label": "出るコース", "value": "昼のコース"}
+                ],
+                "highlight": [0]
+              },
+              {
+                "kind": "steps",
+                "span": 12,
+                "items": [
+                  {"title": "注文", "detail": "票を書く"},
+                  {"title": "調理", "detail": "厨房で作る"},
+                  {"title": "配膳", "detail": "席へ運ぶ"},
+                  {"title": "会計", "detail": "レジで払う"}
+                ],
+                "highlight": [0]
+              }
+            ]
+          }
+        },
+        {
+          "id": "outro",
+          "durationMs": 2000,
+          "visual": {
+            "type": "outro",
+            "title": "意味に合う形で見せる",
+            "subtitle": "受け渡し・包含・時間・実物"
+          }
+        }
+      ]
+    }
+  ],
+  "thumbnail": {
+    "textLines": [
+      "図解の見本",
+      "意味に合う形"
+    ],
+    "layout": "center"
+  },
+  "outputs": {
+    "video": true,
+    "captions": true,
+    "chapters": true,
+    "thumbnail": true,
+    "storyboard": true
+  },
+  "policies": {
+    "allowUnknownRights": false,
+    "maxDurationMinutes": 5
+  }
+}

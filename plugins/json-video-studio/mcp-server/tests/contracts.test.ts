@@ -18,6 +18,8 @@ describe('authoring Schema and semantic policy', () => {
   it('accepts all canonical valid fixtures and rejects the canonical invalid fixture', async () => {
     await expect(validateProject(await fixture('minimal.video-project.json'), {schemaPath})).resolves.toBeTruthy();
     await expect(validateProject(await fixture('dialogue.video-project.json'), {schemaPath})).resolves.toBeTruthy();
+    await expect(validateProject(await fixture('deck-slide.video-project.json'), {schemaPath})).resolves.toBeTruthy();
+    await expect(validateProject(await fixture('diagrams.video-project.json'), {schemaPath})).resolves.toBeTruthy();
     await expect(validateProject(await fixture('all-templates.video-project.json'), {schemaPath})).resolves.toBeTruthy();
     await expect(validateProject(await fixture('invalid.video-project.json'), {schemaPath})).rejects.toMatchObject({code: 'SCHEMA_VALIDATION_FAILED'});
   });

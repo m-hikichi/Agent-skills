@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "example-video",
+  "lockHash": "64-character-lowercase-sha256",
+  "status": "pass",
+  "reviewedAt": "2026-01-01T00:00:00.000Z",
+  "checked": {
+    "sceneSheets": 0,
+    "continuingBoundarySheets": 0,
+    "pageChangeSheets": 0,
+    "cueSheets": 0,
+    "motionSheets": 0,
+    "scaledFramesOpened": 0
+  },
+  "pageDurationsSeconds": {"page-or-first-scene-id": 0},
+  "findings": {
+    "emphasisMatchesNarration": true,
+    "pagesReadableAfterChange": true,
+    "noFadeOrBlinkInsidePage": true,
+    "motionMatchesNarration": "true | false | not_applicable",
+    "titleAndEndScreensComplete": true,
+    "readableAt640px": true
+  },
+  "issues": [
+    {
+      "severity": "warning",
+      "sceneId": "scene-id",
+      "timeSeconds": 12.5,
+      "problem": "何が、どこで、どうなっているか",
+      "impact": "視聴者にとって何が困るか",
+      "evidence": "final-frames/<lock-hash>/page-change-001.png の3行目、frames/f345.png",
+      "fix": "推奨する修正"
+    }
+  ],
+  "listeningPerformed": false,
+  "notVerified": [
+    "動きの滑らかさ・速さの体感（静止フレームは状態だけを示す）",
+    "音声の読み・音量・語尾の切れ・間（聴取していない場合）"
+  ]
+}

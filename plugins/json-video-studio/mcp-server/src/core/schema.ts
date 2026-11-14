@@ -273,9 +273,85 @@ function semanticValidation(project: VideoProject): void {
               checkIndexes(block.highlightRows, block.rows.length, 'highlightRows');
               checkIndexes(block.highlightColumns, block.columns.length, 'highlightColumns');
               break;
+            case 'code':
+              checkIndexes(block.highlightLines?.map((value) => value - 1), block.code.split(/\r?\n/u).length, 'highlightLines');
+              break;
             default:
               checkIndexes(block.highlight, block.items.length, 'highlight');
           }
+        });
+      }
+      const fail = (code: string, message: string, pointer: string): never => {
+        throw new AppError(code, `${message} (scene ${scene.id})`, {category: 'schema', jsonPointer: `${base}/visual/${pointer}`});
+      };
+      if (scene.visual.type === 'code') {
+        const lineCount = scene.visual.code.split(/\r?\n/u).length;
+        scene.visual.highlightLines?.forEach((value, index) => {
+          if (value > lineCount) fail('HIGHLIGHT_OUT_OF_RANGE', `Code line ${value} does not exist`, `highlightLines/${index}`);
+        });
+      }
+      if (scene.visual.type === 'diagram') {
+        const visual = scene.visual;
+        const nodeIds = visual.nodes.map((node) => node.id);
+        if (new Set(nodeIds).size !== nodeIds.length) fail('DUPLICATE_ID', 'Diagram node ids must be unique', 'nodes');
+        const groupIds = new Set((visual.groups ?? []).map((group) => group.id));
+        if (groupIds.size !== (visual.groups ?? []).length) fail('DUPLICATE_ID', 'Diagram group ids must be unique', 'groups');
+        visual.nodes.forEach((node, index) => {
+          if (node.group !== undefined && !groupIds.has(node.group)) fail('UNKNOWN_DIAGRAM_GROUP', `Unknown group ${node.group}`, `nodes/${index}/group`);
+        });
+        // A group is drawn as one box around its members, so they must sit next to each other.
+        for (const groupId of groupIds) {
+          const members = visual.nodes.map((node, index) => (node.group === groupId ? index : -1)).filter((index) => index >= 0);
+          if (members.length && members.at(-1)! - members[0]! + 1 !== members.length) fail('DIAGRAM_GROUP_NOT_ADJACENT', `Nodes of group ${groupId} must be adjacent`, 'nodes');
+        }
+        visual.links.forEach((link, index) => {
+          if (!nodeIds.includes(link.from)) fail('UNKNOWN_DIAGRAM_NODE', `Unknown node ${link.from}`, `links/${index}/from`);
+          if (!nodeIds.includes(link.to)) fail('UNKNOWN_DIAGRAM_NODE', `Unknown node ${link.to}`, `links/${index}/to`);
+          if (link.from === link.to) fail('DIAGRAM_LINK_INVALID', 'A link must join two different nodes', `links/${index}`);
+        });
+        visual.active?.nodes?.forEach((nodeId, index) => {
+          if (!nodeIds.includes(nodeId)) fail('UNKNOWN_DIAGRAM_NODE', `Unknown node ${nodeId}`, `active/nodes/${index}`);
+        });
+        visual.active?.groups?.forEach((groupId, index) => {
+          if (!groupIds.has(groupId)) fail('UNKNOWN_DIAGRAM_GROUP', `Unknown group ${groupId}`, `active/groups/${index}`);
+        });
+        visual.active?.links?.forEach((value, index) => {
+          if (value >= visual.links.length) fail('HIGHLIGHT_OUT_OF_RANGE', `Link ${value} does not exist`, `active/links/${index}`);
+        });
+        if (visual.active?.packet && visual.active.packet.link >= visual.links.length) fail('HIGHLIGHT_OUT_OF_RANGE', `Link ${visual.active.packet.link} does not exist`, 'active/packet/link');
+      }
+      if (scene.visual.type === 'nest') {
+        const ids: string[] = [];
+        const collect = (item: {id: string; children?: unknown}) => {
+          ids.push(item.id);
+          if (Array.isArray(item.children)) (item.children as Array<{id: string; children?: unknown}>).forEach(collect);
+        };
+        collect(scene.visual.root);
+        if (new Set(ids).size !== ids.length) fail('DUPLICATE_ID', 'Nest ids must be unique', 'root');
+        scene.visual.highlight?.forEach((value, index) => {
+          if (!ids.includes(value)) fail('HIGHLIGHT_OUT_OF_RANGE', `Nest id ${value} does not exist`, `highlight/${index}`);
+        });
+      }
+      if (scene.visual.type === 'timeline') {
+        const visual = scene.visual;
+        const ids = visual.tracks.flatMap((track) => track.segments.map((segment) => segment.id));
+        if (new Set(ids).size !== ids.length) fail('DUPLICATE_ID', 'Timeline segment ids must be unique', 'tracks');
+        visual.tracks.forEach((track, trackIndex) => {
+          let previousEnd = 0;
+          track.segments.forEach((segment, index) => {
+            const pointer = `tracks/${trackIndex}/segments/${index}`;
+            if (segment.end <= segment.start) fail('TIMELINE_SEGMENT_INVALID', 'A segment must end after it starts', pointer);
+            if (segment.end > visual.end) fail('TIMELINE_SEGMENT_INVALID', 'A segment must end within the timeline end', `${pointer}/end`);
+            if (segment.start < previousEnd) fail('TIMELINE_SEGMENT_INVALID', 'Segments of one track must be in order and must not overlap', `${pointer}/start`);
+            previousEnd = segment.end;
+          });
+        });
+        visual.highlight?.forEach((value, index) => {
+          if (!ids.includes(value)) fail('HIGHLIGHT_OUT_OF_RANGE', `Timeline segment ${value} does not exist`, `highlight/${index}`);
+        });
+        if (visual.cursor !== undefined && visual.cursor > visual.end) fail('TIMELINE_CURSOR_INVALID', 'cursor must be within the timeline end', 'cursor');
+        visual.ticks?.forEach((value, index) => {
+          if (value > visual.end) fail('TIMELINE_TICK_INVALID', 'ticks must be within the timeline end', `ticks/${index}`);
         });
       }
       if (scene.visual.type === 'statement') {

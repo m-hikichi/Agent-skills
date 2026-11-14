@@ -82,6 +82,24 @@ program.command('validate')
     print({valid: true, ...result});
   });
 
+program.command('lint')
+  .description('report advisory quality findings (subtitle size, repeated text, uniform layouts, brief)')
+  .argument('[project]', 'project path', 'video-project.json')
+  .action(async (projectPath: string, _local: unknown, command: Command) => {
+    const options = globalOptions(command);
+    const runtime = new RuntimeService({workspaceRoot: workspace(options), ...(options.schema === undefined ? {} : {schemaPath: options.schema})});
+    print(await runtime.lintProjectPath(projectPath));
+  });
+
+program.command('review-frames')
+  .description('sample a rendered output directory into review sheets')
+  .argument('<output>', 'render output directory (contains video.mp4 and project.lock.json)')
+  .action(async (outputDirectory: string, _local: unknown, command: Command) => {
+    const options = globalOptions(command);
+    const runtime = new RuntimeService({workspaceRoot: workspace(options), ...(options.schema === undefined ? {} : {schemaPath: options.schema})});
+    print(await runtime.reviewFrames(outputDirectory));
+  });
+
 program.command('resolve')
   .description('inspect assets, synthesize speech, and create project.lock.json')
   .argument('[project]', 'project path', 'video-project.json')

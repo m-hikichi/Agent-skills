@@ -1,8 +1,9 @@
 import React from 'react';
 import {Img, OffthreadVideo, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import type {SceneVisual, VideoAsset, VideoProject} from '../shared/video-types.js';
-import {metricPolylinePoints, type NavigationState} from './layout.js';
+import {CODE_PANEL, codeFontSize, metricPolylinePoints, type NavigationState} from './layout.js';
 import {flowProgress} from './flow.js';
+import {DiagramVisualTemplate, themeTone} from './diagrams.js';
 
 export interface TemplateProps {
   visual: SceneVisual;
@@ -36,7 +37,8 @@ const emphasisLevel = (selected: readonly number[] | undefined, index: number): 
   return selected.includes(index) ? 1 : 0;
 };
 
-const emphasisOpacity = (weight: number): number => (weight >= 0.5 ? 1 : 0.4 + weight * 1.2);
+// Items outside the emphasis stay readable (0.72 keeps light text on the dark panels well above 4.5:1).
+const emphasisOpacity = (weight: number): number => (weight >= 0.5 ? 1 : 0.72 + weight * 0.56);
 const emphasisStrength = (weight: number): number => Math.max(0, (weight - 0.5) * 2);
 
 const withAlpha = (hex: string, alpha: number): string => {
@@ -72,7 +74,7 @@ const TitleTemplate = ({visual, staticPreview, continuing}: TemplateProps) => {
   const entrance = useEntrance(staticPreview, continuing);
   return (
     <div style={{...entrance, textAlign: 'center', maxWidth: 1500}}>
-      <div style={{fontSize: 24, fontWeight: 800, letterSpacing: '.22em', opacity: 0.7}}>JSON VIDEO STUDIO</div>
+      {/* No fixed brand line: the title page belongs to the video being made, not to this tool. */}
       <Heading>{visual.title}</Heading>
       {visual.subtitle ? <p style={{fontSize: 38, opacity: 0.8, margin: '28px 0 0'}}>{visual.subtitle}</p> : null}
     </div>
@@ -147,9 +149,25 @@ const MediaTemplate = ({visual, project, assetUrls}: TemplateProps) => {
   );
 };
 
-const CodeTemplate = ({visual, project}: TemplateProps) => {
+const CodeLine = ({line, number, variant, weight, previousWeight, accent, staticPreview}: {line: string; number: number; variant: string; weight: number; previousWeight: number | undefined; accent: string; staticPreview?: boolean}) => {
+  const eased = useEmphasisWeight(weight, previousWeight, staticPreview);
+  const strength = emphasisStrength(eased);
+  return (
+    <div style={{color: variant === 'diff' && line.startsWith('+') ? '#8ce99a' : variant === 'diff' && line.startsWith('-') ? '#ffa8a8' : undefined,
+      opacity: emphasisOpacity(eased), fontWeight: strength > 0.5 ? 800 : undefined,
+      background: strength > 0 ? withAlpha(accent, 0.22 * strength) : undefined,
+      // The bar sits in the left padding of the block, so it never covers the line number.
+      boxShadow: strength > 0 ? `${(-10 * strength).toFixed(1)}px 0 0 ${accent}` : undefined}}>
+      <span style={{display: 'inline-block', width: '2.2em', opacity: 0.5, userSelect: 'none'}}>{number}</span>{line}
+    </div>
+  );
+};
+
+const CodeTemplate = ({visual, project, staticPreview, continuing, previousVisual}: TemplateProps) => {
   if (visual.type !== 'code') return null;
   const lines = visual.code.split(/\r?\n/u);
+  const previous = continuing && previousVisual?.type === 'code' ? previousVisual : undefined;
+  const lineLevel = (selected: readonly number[] | undefined, index: number) => emphasisLevel(selected?.map((value) => value - 1), index);
   return (
     <div style={{...panel, width: 1500, overflow: 'hidden'}}>
       <div style={{display: 'flex', alignItems: 'center', gap: 12, padding: '20px 30px', borderBottom: '1px solid rgba(255,255,255,.14)'}}>
@@ -158,11 +176,10 @@ const CodeTemplate = ({visual, project}: TemplateProps) => {
         <span style={{width: 17, height: 17, borderRadius: 9, background: '#69db7c'}} />
         <strong style={{marginLeft: 18, opacity: 0.74}}>{visual.title ?? visual.variant}</strong>
       </div>
-      <pre style={{margin: 0, padding: '32px 40px', fontSize: 29, lineHeight: 1.42, maxHeight: 650, overflow: 'hidden', color: project.theme.foregroundColor}}>
+      <pre style={{margin: 0, padding: '32px 40px', fontSize: codeFontSize(visual.code), lineHeight: CODE_PANEL.lineHeight, maxHeight: CODE_PANEL.textHeight, overflow: 'hidden', color: project.theme.foregroundColor}}>
         {lines.map((line, index) => (
-          <div key={index} style={{color: visual.variant === 'diff' && line.startsWith('+') ? '#8ce99a' : visual.variant === 'diff' && line.startsWith('-') ? '#ffa8a8' : undefined}}>
-            <span style={{display: 'inline-block', width: 52, opacity: 0.34, userSelect: 'none'}}>{index + 1}</span>{line}
-          </div>
+          <CodeLine key={index} line={line} number={index + 1} variant={visual.variant} accent={project.theme.accentColor} staticPreview={staticPreview}
+            weight={lineLevel(visual.highlightLines, index)} previousWeight={previous ? lineLevel(previous.highlightLines, index) : undefined} />
         ))}
       </pre>
     </div>
@@ -414,5 +431,10 @@ export const VisualTemplate = (props: TemplateProps) => {
     case 'flow': return <FlowTemplate {...props} />;
     case 'table': return <TableTemplate {...props} />;
     case 'statement': return <StatementTemplate {...props} />;
+    case 'diagram':
+    case 'nest':
+    case 'timeline':
+      return <DiagramVisualTemplate visual={props.visual} tone={themeTone(props.project)} staticPreview={props.staticPreview ?? false} previousVisual={props.continuing ? props.previousVisual : undefined} />;
+    case 'slide': return null;
   }
 };

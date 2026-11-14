@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "example-video",
+  "iteration": 1,
+  "status": "fail",
+  "reviewedAt": "2026-01-01T00:00:00.000Z",
+  "checks": {
+    "briefComplete": true,
+    "reasonToWatchEarly": false,
+    "termsIntroducedWhenNeeded": true,
+    "explainsWhyAndHow": true,
+    "scopeFocused": true,
+    "claimsAccurate": true,
+    "formFitsMeaning": true,
+    "screenTextNotDuplicated": true
+  },
+  "notApplicableReasons": {},
+  "issues": [
+    {
+      "severity": "error",
+      "check": "reasonToWatchEarly",
+      "page": "scenePlanのpage、または台詞の位置",
+      "problem": "何が問題か",
+      "impact": "視聴者にとって何が困るか",
+      "evidence": "台詞やscenePlanの引用、原典の該当箇所",
+      "fix": "scenePlanや台詞をどう変えるか"
+    }
+  ],
+  "previousIssues": [],
+  "questionsForUser": []
+}
