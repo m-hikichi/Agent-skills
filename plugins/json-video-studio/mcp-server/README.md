@@ -32,3 +32,17 @@ docker run --rm --init json-video-studio-test
 ```
 
 Remotion以外のツール（Node.js 24系、Chromium、FFmpeg、フォント、VOICEVOX）は版を固定せず、ビルド・pull時点の最新版を使います。実際の版はproject lockに記録されるため、更新後はlock生成とレビューをやり直します。基準画像（`tests/fixtures/golden/`）は、`examples/deck-slide`と`examples/diagrams`のstoryboardを描画し、目視で確認したうえで置き換えます。画像比較テストは軽微な描画差を許容します。基準画像との完全一致も検査する場合は`JSON_VIDEO_REQUIRE_EXACT_GOLDEN=1`を指定します。
+
+## 実験的な英語TTS
+
+Kokoroは`Dockerfile.english`で追加するオプションです。通常のDockerfileだけでは英語の外部音声・無音動画を扱えますが、英語音声の自動生成にはモデルを含む専用イメージが必要です。導入と原稿例は[プラグインREADME](../README.md#英語動画実験的対応)を参照してください。
+
+プラグインルートで実エンジンのテストも実行できます。`--network none`で、モデル導入後の実行時にネットワークが不要なことを確認します。
+
+```sh
+docker build -t json-video-studio-english-test-core -f mcp-server/Dockerfile --target test .
+docker build -t json-video-studio-english-tts-test --build-arg BASE_IMAGE=json-video-studio-english-test-core -f mcp-server/Dockerfile.english .
+docker run --rm --init --network none json-video-studio-english-tts-test test
+```
+
+`tests/kokoro.test.ts`の実エンジンテストは、`JSON_VIDEO_KOKORO_MODELS`が設定された英語イメージで有効になります。通常のテストイメージでは、モデルを使わないキャッシュ・入力検証・レビュー・プロセス境界のテストを実行します。モデルはバージョン付きURLとSHA-256で固定し、Kokoroライブラリも版を固定します。取得したモデル・音声データのSHA-256、Python依存ライブラリの版、workerのSHA-256を`/opt/kokoro/models/manifest.json`へ記録し、そのfingerprintを生成音声の`voice.engineVersion`とキャッシュキーに含めます。

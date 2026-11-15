@@ -4,6 +4,8 @@ import {VERSION as REMOTION_VERSION} from 'remotion/version';
 import {BUNDLED_FONT_FAMILY} from '../shared/video-types.js';
 import {lockValidator, projectValidator, resolveSchemaPath} from './schema.js';
 import {toolVersion} from './media.js';
+import {KokoroClient} from './kokoro.js';
+import {runProcess} from './process.js';
 
 export interface DoctorCheck {
   name: string;
@@ -23,6 +25,7 @@ export interface DoctorOptions {
   voicevoxUrl?: string;
   workspaceRoot?: string;
   dataRoot?: string;
+  speechProvider?: 'voicevox' | 'kokoro' | 'all' | undefined;
 }
 
 async function capture(name: string, work: () => Promise<string>, hint: string): Promise<DoctorCheck> {
@@ -59,6 +62,7 @@ export async function doctor(options: DoctorOptions = {}): Promise<DoctorReport>
   const workspaceRoot = resolve(options.workspaceRoot ?? process.env.JSON_VIDEO_WORKSPACE_ROOT ?? process.cwd());
   const dataRoot = resolve(options.dataRoot ?? process.env.JSON_VIDEO_DATA_ROOT ?? resolve(workspaceRoot, '.json-video-work'));
   const chrome = process.env.CHROME_BIN ?? process.env.REMOTION_BROWSER_EXECUTABLE ?? 'chromium';
+  const speechProvider = options.speechProvider ?? 'voicevox';
   const checks = await Promise.all([
     capture('node', async () => process.version, 'Use the Docker image.'),
     capture('workspace-write', () => assertWritable(workspaceRoot), 'Check the ${CLAUDE_PROJECT_DIR} Docker mount and permissions.'),
@@ -73,7 +77,7 @@ export async function doctor(options: DoctorOptions = {}): Promise<DoctorReport>
     capture('chrome', () => toolVersion(chrome, ['--version']), 'Use the image-bundled Chromium.'),
     capture('remotion', async () => REMOTION_VERSION, 'Rebuild the json-video-studio image.'),
     capture('font', () => toolVersion('fc-match', ['--format=%{family} %{version}\n', BUNDLED_FONT_FAMILY]), `Use the image-bundled ${BUNDLED_FONT_FAMILY} font.`),
-    capture('voicevox-version', async () => {
+    ...(speechProvider === 'kokoro' ? [] : [capture('voicevox-version', async () => {
       approvedVoicevoxUrl(voicevoxUrl);
       const response = await fetch(`${voicevoxUrl}/version`, {signal: AbortSignal.timeout(3000)});
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -86,7 +90,13 @@ export async function doctor(options: DoctorOptions = {}): Promise<DoctorReport>
       const speakers = await response.json() as unknown[];
       if (!Array.isArray(speakers) || speakers.length === 0) throw new Error('No VOICEVOX speakers were returned.');
       return `${speakers.length} speakers`;
-    }, 'Confirm VOICEVOX models are available and review each speaker terms.'),
+    }, 'Confirm VOICEVOX models are available and review each speaker terms.')]),
+    ...(speechProvider === 'voicevox' ? [] : [capture('kokoro', async () => {
+      const client = new KokoroClient({cacheRoot: resolve(dataRoot, 'cache/voicevox/kokoro'), workspaceRoot});
+      const version = await client.version();
+      await runProcess(process.env.JSON_VIDEO_KOKORO_PYTHON ?? '/opt/kokoro/venv/bin/python', ['-c', 'import kokoro_onnx, soundfile, onnxruntime']);
+      return `${version} (${(await client.voices()).length} English voices)`;
+    }, 'Build and use the Dockerfile.english image.')]),
   ]);
   return {ok: checks.every((check) => check.ok), checkedAt: new Date().toISOString(), checks};
 }

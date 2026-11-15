@@ -1,6 +1,6 @@
 {
   "name": "json-video-studio",
-  "description": "JSONからVOICEVOX音声、字幕、storyboard、サムネイル、Remotion動画をローカル生成するClaude Code専用プラグイン",
+  "description": "JSONから日本語VOICEVOX・英語Kokoro音声、字幕、storyboard、サムネイル、Remotion動画をローカル生成するClaude Code専用プラグイン",
   "version": "0.2.0",
   "author": {
     "name": "agent-skills"
@@ -9,6 +9,7 @@
     "video",
     "remotion",
     "voicevox",
+    "kokoro",
     "json",
     "storyboard"
   ]

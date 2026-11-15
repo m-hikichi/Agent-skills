@@ -16,6 +16,8 @@ const examplePath = resolve(import.meta.dirname, '../../examples/minimal.video-p
 
 const expectedTools = [
   'doctor',
+  'english_speech_synthesize',
+  'english_voices_list',
   'job_cancel',
   'job_status',
   'output_inspect',
@@ -31,6 +33,39 @@ const expectedTools = [
   'speech_synthesize',
   'storyboard_start',
 ] as const;
+
+describe.skipIf(!process.env.JSON_VIDEO_KOKORO_MODELS)('offline English MCP tools', () => {
+  it('lists voices, diagnoses Kokoro, and returns a portable English WAV with cache reuse', async () => {
+    const root = await temporaryRoot();
+    const workspaceRoot = resolve(root, 'workspace');
+    const dataRoot = resolve(root, 'data');
+    await mkdir(workspaceRoot, {recursive: true});
+    const transport = new StdioClientTransport({command: process.execPath, args: ['--import', 'tsx', 'src/mcp/index.ts'], cwd: runtimeRoot,
+      env: {...getDefaultEnvironment(), JSON_VIDEO_WORKSPACE_ROOT: workspaceRoot, JSON_VIDEO_DATA_ROOT: dataRoot, JSON_VIDEO_SCHEMA_PATH: schemaPath,
+        JSON_VIDEO_KOKORO_MODELS: process.env.JSON_VIDEO_KOKORO_MODELS!,
+        JSON_VIDEO_KOKORO_PYTHON: process.env.JSON_VIDEO_KOKORO_PYTHON!, JSON_VIDEO_KOKORO_RUNNER: process.env.JSON_VIDEO_KOKORO_RUNNER!}, stderr: 'pipe'});
+    const client = new Client({name: 'english-mcp-test', version: '0.1.0'});
+    try {
+      await client.connect(transport);
+      const voices = textJson<{voices: Array<{voiceId: string}>}>(await client.callTool({name: 'english_voices_list', arguments: {}}));
+      expect(voices.voices.some(voice => voice.voiceId === 'af_heart')).toBe(true);
+      const diagnostics = textJson<{ok: boolean}>(await client.callTool({name: 'doctor', arguments: {speechProvider: 'kokoro'}}));
+      expect(diagnostics.ok).toBe(true);
+      const input = {text: 'Hello. This English speech is generated locally.', voiceId: 'af_heart', language: 'en-US'};
+      const first = textJson<{audioPath: string; cacheKey: string; sha256: string}>(await client.callTool({name: 'english_speech_synthesize', arguments: input}));
+      expect(first).toMatchObject({provider: 'kokoro', cacheHit: false, kana: null, synthesisText: input.text});
+      expect(first.audioPath).toBe(`.json-video-work/speech/${first.cacheKey}.wav`);
+      expect((await readFile(resolve(workspaceRoot, first.audioPath))).subarray(0, 4).toString()).toBe('RIFF');
+      const second = textJson(await client.callTool({name: 'english_speech_synthesize', arguments: input}));
+      expect(second).toMatchObject({cacheHit: true, audioPath: first.audioPath, sha256: first.sha256});
+      const invalid = await client.callTool({name: 'english_speech_synthesize', arguments: {...input, language: 'en-GB'}});
+      expect(invalid.isError).toBe(true);
+      expect(textJson(invalid)).toMatchObject({code: 'KOKORO_INPUT_INVALID'});
+    } finally {
+      await client.close();
+    }
+  }, 180_000);
+});
 
 async function temporaryRoot(): Promise<string> {
   const root = await mkdtemp(resolve(tmpdir(), 'json-video-mcp-'));
@@ -106,6 +141,7 @@ describe('stdio MCP server', () => {
       const listed = await client.listTools();
       expect(listed.tools.map(({name}) => name).sort()).toEqual(expectedTools);
       const byName = Object.fromEntries(listed.tools.map((entry) => [entry.name, entry]));
+      expect(byName.english_speech_synthesize?.inputSchema).toMatchObject({required: ['text', 'voiceId', 'language']});
       expect(byName.resolve_start?.inputSchema).toMatchObject({properties: {projectPath: {}, dryRun: {}}});
       expect(byName.resolve_start?.inputSchema).not.toMatchObject({properties: {outputDir: {}}});
       expect(byName.storyboard_start?.inputSchema).toMatchObject({properties: {projectPath: {}, outputDir: {}}});

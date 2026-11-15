@@ -9,6 +9,8 @@ import {JobQueue} from './jobs.js';
 import {ProjectService} from './project.js';
 import {publishResolveArtifacts, resolveProject} from './resolver.js';
 import {VoicevoxClient} from './voicevox.js';
+import type {SynthesizedVoice} from './voicevox.js';
+import {KokoroClient} from './kokoro.js';
 import {storyboardProject, renderProject, inspectArtifactOutput, inspectOutput} from '../render/api.js';
 import {extractReviewFrames} from './review-frames.js';
 
@@ -209,6 +211,25 @@ export class RuntimeService {
     };
     const speaker: Speaker = {id: 'speech', displayName: 'speech', voice};
     const synthesized = await this.voicevox().synthesize(request.text, speaker, signal);
+    return this.materializeSpeech(request.text, synthesized);
+  }
+
+  async listEnglishVoices(signal?: AbortSignal) {
+    const client = this.kokoro();
+    return {provider: 'kokoro', engineVersion: await client.version(signal), voices: await client.voices(signal)};
+  }
+
+  async synthesizeEnglishSpeech(request: {text: string; voiceId: string; language: 'en-US' | 'en-GB'; speedScale?: number | undefined; volumeScale?: number | undefined}, signal?: AbortSignal) {
+    const speaker: Speaker = {id: 'speech', displayName: request.voiceId, voice: {
+      provider: 'kokoro', voiceId: request.voiceId, language: request.language,
+      ...(request.speedScale === undefined ? {} : {speedScale: request.speedScale}),
+      ...(request.volumeScale === undefined ? {} : {volumeScale: request.volumeScale}),
+    }};
+    const synthesized = await this.kokoro().synthesize(request.text, speaker, signal);
+    return {...await this.materializeSpeech(request.text, synthesized), provider: 'kokoro', voiceId: request.voiceId, language: request.language};
+  }
+
+  private async materializeSpeech(text: string, synthesized: SynthesizedVoice) {
     // The cache may live outside the workspace (plugin data), so the WAV is
     // copied to a workspace path the caller can open.
     const directory = await ensureSafeDirectory(this.workspaceRoot, SPEECH_PREVIEW_DIRECTORY);
@@ -224,7 +245,7 @@ export class RuntimeService {
     // strings that must never be interpreted as paths.
     return {
       audioPath: `${SPEECH_PREVIEW_DIRECTORY}/${synthesized.cacheKey}.wav`,
-      synthesisText: request.text,
+      synthesisText: text,
       kana: synthesized.kana ?? null,
       durationMs: synthesized.durationMs,
       cacheHit: synthesized.cacheHit,
@@ -247,6 +268,10 @@ export class RuntimeService {
 
   private voicevox(): VoicevoxClient {
     return new VoicevoxClient({cacheRoot: this.voiceCacheRoot, workspaceRoot: this.workspaceRoot});
+  }
+
+  private kokoro(): KokoroClient {
+    return new KokoroClient({cacheRoot: resolve(this.voiceCacheRoot, 'kokoro'), workspaceRoot: this.workspaceRoot});
   }
 
   private async absoluteProject(request: JobRequest): Promise<string> {

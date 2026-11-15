@@ -154,7 +154,7 @@ export class VoicevoxClient {
     throwIfAborted(signal);
     await mkdir(this.cacheRoot, {recursive: true});
     const voice = speaker.voice;
-    if (!voice) {
+    if (!voice || voice.provider !== 'voicevox') {
       throw new AppError('VOICE_NOT_CONFIGURED', `Speaker ${speaker.id} has no VOICEVOX voice.`, {
         category: 'schema',
       });
@@ -246,7 +246,7 @@ export class VoicevoxClient {
    */
   async measure(text: string, speaker: Speaker, signal?: AbortSignal): Promise<number> {
     const voice = speaker.voice;
-    if (!voice) throw new AppError('VOICE_NOT_CONFIGURED', `Speaker ${speaker.id} has no VOICEVOX voice.`, {category: 'schema'});
+    if (!voice || voice.provider !== 'voicevox') throw new AppError('VOICE_NOT_CONFIGURED', `Speaker ${speaker.id} has no VOICEVOX voice.`, {category: 'schema'});
     const params = new URLSearchParams({text, speaker: String(voice.styleId)});
     const response = await this.request(`/audio_query?${params.toString()}`, {method: 'POST'}, signal);
     return speechMilliseconds(await response.json(), voice.speedScale ?? speaker.speed ?? 1);
@@ -255,7 +255,7 @@ export class VoicevoxClient {
   async plan(text: string, speaker: Speaker, signal?: AbortSignal): Promise<VoiceSynthesisPlan> {
     throwIfAborted(signal);
     const voice = speaker.voice;
-    if (!voice) throw new AppError('VOICE_NOT_CONFIGURED', `Speaker ${speaker.id} has no VOICEVOX voice.`, {category: 'schema'});
+    if (!voice || voice.provider !== 'voicevox') throw new AppError('VOICE_NOT_CONFIGURED', `Speaker ${speaker.id} has no VOICEVOX voice.`, {category: 'schema'});
     const engineVersion = await this.version(signal);
     const identity = await this.resolveIdentity(voice, signal);
     const cacheKey = digestJson({

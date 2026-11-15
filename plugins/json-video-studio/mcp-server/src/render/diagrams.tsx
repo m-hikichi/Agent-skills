@@ -38,7 +38,7 @@ export const themeTone = (project: Pick<VideoProject, 'theme'>): DiagramTone => 
 
 export const STAGE = {width: 1640, height: 600} as const;
 const TRANSITION_FRAMES = 8;
-const phraseWrap = {wordBreak: 'auto-phrase', lineBreak: 'strict', whiteSpace: 'pre-wrap'} as unknown as React.CSSProperties;
+const phraseWrap = {wordBreak: 'var(--video-word-break, auto-phrase)', lineBreak: 'var(--video-line-break, strict)', whiteSpace: 'pre-wrap'} as unknown as React.CSSProperties;
 
 /** Ease a 0..1 emphasis amount from the previous scene's state when the layout continues. */
 const useAmount = (current: number, previous: number | undefined, staticPreview: boolean): number => {
@@ -49,9 +49,9 @@ const useAmount = (current: number, previous: number | undefined, staticPreview:
 
 const Stage = ({children, title, note, tone}: {children: React.ReactNode; title?: string | undefined; note?: string | undefined; tone: DiagramTone}) => (
   <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, color: tone.text}}>
-    {title ? <div lang="ja" style={{fontSize: 46, fontWeight: 900, lineHeight: 1.2, textAlign: 'center', ...phraseWrap}}>{title}</div> : null}
+    {title ? <div style={{fontSize: 46, fontWeight: 900, lineHeight: 1.2, textAlign: 'center', ...phraseWrap}}>{title}</div> : null}
     {children}
-    {note ? <div lang="ja" style={{fontSize: 28, color: tone.sub, textAlign: 'center', maxWidth: STAGE.width, ...phraseWrap}}>{note}</div> : null}
+    {note ? <div style={{fontSize: 28, color: tone.sub, textAlign: 'center', maxWidth: STAGE.width, ...phraseWrap}}>{note}</div> : null}
   </div>
 );
 
@@ -173,8 +173,8 @@ const DiagramNode = ({node, x, width, amount, previousAmount, anyActive, tone, s
       border: `3px solid ${eased > 0.5 ? tone.markerLine : tone.line}`,
       boxShadow: eased > 0 ? `0 0 0 ${(eased * 3).toFixed(1)}px ${tone.markerLine}, 0 12px 30px rgba(0, 0, 0, ${(0.22 * eased).toFixed(2)})` : 'none',
       opacity: 1 - (1 - DIMMED_OPACITY) * anyActive * (1 - eased)}}>
-      <div lang="ja" style={{fontSize: width < 280 ? 36 : 46, fontWeight: 900, lineHeight: 1.2, color: tone.text, ...phraseWrap}}>{node.label}</div>
-      {node.detail ? <div lang="ja" style={{fontSize: width < 280 ? 26 : 31, lineHeight: 1.35, color: tone.sub, ...phraseWrap}}>{node.detail}</div> : null}
+      <div style={{fontSize: width < 280 ? 36 : 46, fontWeight: 900, lineHeight: 1.2, color: tone.text, ...phraseWrap}}>{node.label}</div>
+      {node.detail ? <div style={{fontSize: width < 280 ? 26 : 31, lineHeight: 1.35, color: tone.sub, ...phraseWrap}}>{node.detail}</div> : null}
     </div>
   );
 };
@@ -187,7 +187,7 @@ const DiagramGroup = ({label, left, width, amount, previousAmount, tone, staticP
       border: `3px ${eased > 0.5 ? 'solid' : 'dashed'} ${eased > 0.5 ? tone.markerLine : tone.accent}`,
       boxShadow: eased > 0 ? `0 0 0 ${(eased * 3).toFixed(1)}px ${tone.markerLine}` : 'none',
       background: eased > 0 ? `color-mix(in srgb, ${tone.marker} ${(eased * 45).toFixed(0)}%, transparent)` : `color-mix(in srgb, ${tone.accent} 7%, transparent)`}}>
-      <div lang="ja" style={{position: 'absolute', left: 22, top: 10, fontSize: 32, fontWeight: eased > 0.5 ? 900 : 800, color: eased > 0.5 ? tone.text : tone.accent}}>{label}</div>
+      <div style={{position: 'absolute', left: 22, top: 10, fontSize: 32, fontWeight: eased > 0.5 ? 900 : 800, color: eased > 0.5 ? tone.text : tone.accent}}>{label}</div>
     </div>
   );
 };
@@ -251,7 +251,7 @@ export const DiagramTemplate = ({visual, previousVisual, tone, staticPreview = f
           const geometry = geometryOf(index);
           const on = activeLinks.has(index);
           return (
-            <div key={`label-${index}`} lang="ja" style={{position: 'absolute', left: geometry.label.x - geometry.label.width / 2, width: geometry.label.width, top: geometry.label.y, textAlign: 'center',
+            <div key={`label-${index}`} style={{position: 'absolute', left: geometry.label.x - geometry.label.width / 2, width: geometry.label.width, top: geometry.label.y, textAlign: 'center',
               fontSize: 30, lineHeight: 1.3, whiteSpace: 'nowrap', fontWeight: on ? 900 : 600, color: on ? tone.text : tone.sub, opacity: activeLinks.size > 0 && !on ? DIMMED_OPACITY : 1}}>
               {/* An opaque backing keeps the label readable where a group frame's edge runs through the gap. */}
               <span style={{background: tone.panel, borderRadius: 6, padding: '0 6px'}}>{link.label}</span>
@@ -288,8 +288,8 @@ const NestBox = ({item, depth, highlight, previousHighlight, tone, staticPreview
       background: amount > 0 ? `color-mix(in srgb, ${tone.marker} ${(amount * 100).toFixed(0)}%, ${depth % 2 === 0 ? tone.panelAlt : tone.panel})` : (depth % 2 === 0 ? tone.panelAlt : tone.panel),
       boxShadow: amount > 0 ? `0 0 0 ${(amount * 3).toFixed(1)}px ${tone.markerLine}, 0 10px 26px rgba(0,0,0,${(0.2 * amount).toFixed(2)})` : 'none'}}>
       <div style={{display: 'flex', alignItems: 'baseline', gap: 16, flexWrap: 'wrap'}}>
-        <span lang="ja" style={{fontSize: labelSize, fontWeight: 900, color: tone.text, lineHeight: 1.25}}>{item.label}</span>
-        {item.detail ? <span lang="ja" style={{fontSize: detailSize, color: tone.sub, lineHeight: 1.35, ...phraseWrap}}>{item.detail}</span> : null}
+        <span style={{fontSize: labelSize, fontWeight: 900, color: tone.text, lineHeight: 1.25}}>{item.label}</span>
+        {item.detail ? <span style={{fontSize: detailSize, color: tone.sub, lineHeight: 1.35, ...phraseWrap}}>{item.detail}</span> : null}
       </div>
       {children.length ? (
         <div style={{display: 'grid', gridTemplateColumns: `repeat(${children.length}, minmax(0, 1fr))`, gap: 18 - depth * 4, flex: 1}}>
@@ -322,7 +322,7 @@ const TimelineSegment = ({segment, left, width, amount, previousAmount, anyHighl
       border: `2px solid ${eased > 0.5 ? tone.markerLine : tone.line}`,
       boxShadow: eased > 0 ? `inset 0 0 0 ${(eased * 3).toFixed(1)}px ${tone.markerLine}` : 'none',
       opacity: 1 - (1 - DIMMED_OPACITY) * anyHighlight * (1 - eased)}}>
-      <span lang="ja" style={{fontSize: 33, fontWeight: eased > 0.5 ? 900 : 700, color: tone.text, whiteSpace: 'nowrap'}}>{segment.label}</span>
+      <span style={{fontSize: 33, fontWeight: eased > 0.5 ? 900 : 700, color: tone.text, whiteSpace: 'nowrap'}}>{segment.label}</span>
     </div>
   );
 };
@@ -354,7 +354,7 @@ export const TimelineTemplate = ({visual, previousVisual, tone, staticPreview = 
       <div style={{position: 'relative', width: STAGE.width, height: tracksHeight + 86, marginTop: 86}}>
         {visual.tracks.map((track, trackIndex) => (
           <div key={trackIndex} style={{position: 'absolute', left: 0, right: 0, top: trackIndex * (TRACK.height + TRACK.gap), height: TRACK.height}}>
-            <div lang="ja" style={{position: 'absolute', left: 0, width: TRACK.labelWidth - 20, top: 0, bottom: 0, display: 'flex', alignItems: 'center', fontSize: 38, fontWeight: 900, color: tone.text}}>{track.label}</div>
+            <div style={{position: 'absolute', left: 0, width: TRACK.labelWidth - 20, top: 0, bottom: 0, display: 'flex', alignItems: 'center', fontSize: 38, fontWeight: 900, color: tone.text}}>{track.label}</div>
             <div style={{position: 'absolute', left: TRACK.labelWidth, right: 0, top: 0, bottom: 0, borderRadius: 12, background: tone.panelAlt}}>
               {track.segments.map((segment) => (
                 <TimelineSegment key={segment.id} segment={segment} tone={tone} staticPreview={staticPreview} anyHighlight={anyHighlight} shade={14 + (trackIndex % 3) * 9}

@@ -109,7 +109,7 @@ export const lintProject = (project: VideoProject): LintFinding[] => {
   const maxLines = project.theme.subtitleStyle?.maxLines ?? 2;
   const overflowing = scenes.filter((scene) => {
     const text = scene.subtitle ?? scene.text ?? '';
-    const cues = (project.theme.subtitleStyle?.split ?? 'auto') === 'auto' ? splitSubtitle(text, lineUnits, maxLines) : [text];
+    const cues = (project.theme.subtitleStyle?.split ?? 'auto') === 'auto' ? splitSubtitle(text, lineUnits, maxLines, project.meta.language) : [text];
     return cues.some((cue) => textUnits(cue) > lineUnits * maxLines);
   });
   if (overflowing.length) {

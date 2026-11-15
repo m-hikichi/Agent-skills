@@ -225,6 +225,27 @@
       ]
     },
     "voiceParameters": {
+      "oneOf": [{"$ref": "#/$defs/voicevoxParameters"}, {"$ref": "#/$defs/kokoroParameters"}]
+    },
+    "kokoroParameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "engineVersion", "voiceId", "language", "speakerName", "styleName", "speedScale", "volumeScale", "cacheKey", "textSha256", "synthesisText"],
+      "properties": {
+        "provider": {"const": "kokoro"},
+        "engineVersion": {"type": "string", "minLength": 1, "maxLength": 100},
+        "voiceId": {"type": "string", "pattern": "^[ab][fm]_[a-z]+$", "maxLength": 80},
+        "language": {"enum": ["en-US", "en-GB"]},
+        "speakerName": {"type": "string", "minLength": 1, "maxLength": 200},
+        "styleName": {"type": "string", "minLength": 1, "maxLength": 200},
+        "speedScale": {"type": "number", "minimum": 0.5, "maximum": 2},
+        "volumeScale": {"type": "number", "minimum": 0, "maximum": 2},
+        "cacheKey": {"$ref": "#/$defs/sha256"},
+        "textSha256": {"$ref": "#/$defs/sha256"},
+        "synthesisText": {"type": "string", "minLength": 1, "maxLength": 2000}
+      }
+    },
+    "voicevoxParameters": {
       "type": "object",
       "additionalProperties": false,
       "required": [

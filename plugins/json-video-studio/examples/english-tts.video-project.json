@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "1.0.0",
+  "meta": {
+    "id": "english-tts-demo",
+    "title": "English TTS example",
+    "description": "Local Kokoro narration generated from text, without a supplied audio file.",
+    "language": "en-US"
+  },
+  "canvas": {
+    "preset": "youtube-1080p",
+    "fps": 30
+  },
+  "theme": {
+    "backgroundColor": "#111827",
+    "foregroundColor": "#F9FAFB",
+    "accentColor": "#38BDF8",
+    "fontFamily": "Noto Sans CJK JP",
+    "spacing": "comfortable",
+    "subtitleStyle": {
+      "fontSize": 54,
+      "maxLines": 2,
+      "backgroundColor": "#000000CC",
+      "color": "#FFFFFF"
+    }
+  },
+  "assets": [],
+  "speakers": [
+    {
+      "voice": {
+        "provider": "kokoro",
+        "language": "en-US",
+        "speedScale": 1.0,
+        "voiceId": "af_heart"
+      },
+      "displayName": "English narrator",
+      "id": "narrator"
+    }
+  ],
+  "sections": [
+    {
+      "id": "opening",
+      "title": "Introduction",
+      "scenes": [
+        {
+          "id": "opening-title",
+          "visual": {
+            "type": "title",
+            "title": "JSON Video Studio",
+            "subtitle": "Local English text-to-speech"
+          },
+          "text": "Welcome to JSON Video Studio. This narration is generated locally with Kokoro.",
+          "speakerId": "narrator"
+        }
+      ]
+    }
+  ],
+  "thumbnail": {
+    "textLines": [
+      "English video"
+    ],
+    "layout": "center"
+  },
+  "outputs": {
+    "video": true,
+    "captions": true,
+    "chapters": true,
+    "thumbnail": true,
+    "storyboard": true
+  },
+  "policies": {
+    "allowUnknownRights": false,
+    "maxDurationMinutes": 1
+  }
+}

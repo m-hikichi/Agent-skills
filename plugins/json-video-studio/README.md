@@ -48,6 +48,44 @@ claude --plugin-dir /absolute/path/to/json-video-studio
 
 動画は1920×1080・30fps。ローカル素材、VOICEVOXまたは提供音声、15種類の固定visual、章の進捗表示（`navigation`）、資料型レイアウト枠（`theme.frame`）、音声に合わせた字幕の分割表示に対応します。VOICEVOXは`http://127.0.0.1:50021`です。複数のClaude Codeセッションから同時に制作できます（同じ原稿JSONを同時に編集する使い方は除く）。MCPのコンテナはセッション終了時に停止し、ジョブの状態は引き継ぎません。
 
+### 英語動画（実験的対応）
+
+このブランチでは`meta.language`に`en-US`または`en-GB`を指定できます。英語音声は[Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)と[kokoro-onnx](https://github.com/thewh1teagle/kokoro-onnx)でローカル生成します。モデルはイメージ構築時に取得・SHA-256検証し、生成時にはAPIキー・GPU・外部通信は不要です。米国英語20話者、英国英語8話者を選べます。画面・字幕・サムネイルも英語に対応し、字幕は英文の文・単語の境界で分割します。
+
+既存の日本語用イメージと分けて試す場合は、プラグインルートで次を実行します。通常の`json-video-studio`イメージやMCP設定は置き換えません。
+
+```sh
+docker build -t json-video-studio-english-core -f mcp-server/Dockerfile .
+docker build -t json-video-studio-english --build-arg BASE_IMAGE=json-video-studio-english-core -f mcp-server/Dockerfile.english .
+docker run --rm --network none json-video-studio-english doctor --speech-provider kokoro
+docker run --rm --network none -v "${PWD}:/workspace" -v json-video-studio-english-data:/data json-video-studio-english resolve examples/english-tts.video-project.json --dry-run
+docker run --rm --network none -v "${PWD}:/workspace" -v json-video-studio-english-data:/data json-video-studio-english resolve examples/english-tts.video-project.json
+```
+
+`examples/english-tts.video-project.json`が音声自動生成用、`examples/english.video-project.json`が無音の表示確認用です。CLIの`storyboard`・`render`も同じイメージ名とマウントで実行します。`/data`の専用volumeは実行間の音声キャッシュを保持します。英語のみの制作にはVOICEVOXへの接続は不要です。MCP用の設定例は`.mcp.english.json`です。実験用設定として使い、既存の`.mcp.json`は保持してください。この設定例は`--network none`で英語用エンジンのみを使います。MCPの`doctor`には`speechProvider: "kokoro"`を渡します。
+
+英語の話者には`provider: "kokoro"`、`voiceId`、`language`を指定します。米国英語は`af_heart`・`am_michael`など、英国英語は`bf_emma`・`bm_george`などです。`language`はプロジェクトの言語と一致させます。`speedScale`（0.5〜2）・`volumeScale`（0〜2）も指定できます。日本語は従来どおりVOICEVOXで生成し、プロバイダーと言語の組み合わせが違う場合は検証エラーになります。
+
+```json
+{
+  "speakers": [{
+    "id": "narrator", "displayName": "Narrator",
+    "voice": {"provider": "kokoro", "voiceId": "af_heart", "language": "en-US"}
+  }],
+  "scene": {
+    "id": "intro", "speakerId": "narrator",
+    "text": "Welcome. This video explains the workflow.",
+    "visual": {"type": "title", "title": "The workflow"}
+  }
+}
+```
+
+上記は設定箇所の抜粋です。`scene`は実際の`sections[].scenes[]`へ配置し、音声生成のsceneには`audioAssetId`・`durationMs`を書きません。`text`が字幕と音声原稿の既定値になり、読み上げだけ変える場合は`speechText`を指定します。既存の外部音声（WAV・MP3・M4A・OGG）も`assets`と`audioAssetId`で取り込めます。無音のsceneは`text`を使わず、`subtitle`と`durationMs`を指定します。
+
+`english_voices_list`で利用可能な話者を取得し、`english_speech_synthesize`でprojectを作る前に試聴用WAVを生成できます。試聴と`resolve`はキャッシュを共有します。キャッシュキーには原稿・話者・言語・速度・音量と、モデル・音声データ・実行ライブラリ・workerの識別情報を含み、lockには生成条件とWAVのハッシュを記録します。クレジットにもKokoroの話者とモデルライセンスを記録します。
+
+Kokoroと提供音声の字幕タイミングは文字量による配分で、単語ごとの音声認識・位置合わせは行いません。短い文ごとにsceneを分け、発音・字幕切替・改行を確認してください。日本語向けの読み辞書・かな照合は英語には適用しません。Kokoro音声の本番レンダーには、実音声の聴取を記録した`narration-review.json`（`method: "listening"`）が必要です。未聴取のままpassにはできません。記録例は`agents/narration-reviewer.md`を参照してください。
+
 素材は原稿からの相対パスを使います。外部URL・任意コードの埋め込みはできません。作者・出典・ライセンスをJSONに記録し、出力のクレジットを保持してください。公開前にRemotionのライセンスとVOICEVOXキャラクターの利用規約を確認してください。本プラグイン固有コードには公開ライセンスを付与していません。
 
 ## 構成

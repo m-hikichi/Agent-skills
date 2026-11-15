@@ -1,0 +1,24 @@
+# Build the current source with Dockerfile first, then add the offline English TTS.
+# BASE_IMAGE may also be a test-stage image to run the actual engine integration tests.
+ARG BASE_IMAGE=json-video-studio-english-core
+FROM node:24-bookworm-slim AS kokoro-assets
+USER root
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3-venv libsndfile1 espeak-ng \
+    && rm -rf /var/lib/apt/lists/*
+COPY tts/requirements.txt /app/tts/requirements.txt
+RUN python3 -m venv /opt/kokoro/venv \
+    && /opt/kokoro/venv/bin/pip install --no-cache-dir -r /app/tts/requirements.txt
+COPY tts/ /app/tts/
+RUN /opt/kokoro/venv/bin/python /app/tts/download-model.py
+FROM ${BASE_IMAGE}
+USER root
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 libsndfile1 espeak-ng \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=kokoro-assets /opt/kokoro /opt/kokoro
+COPY tts/ /app/tts/
+ENV JSON_VIDEO_KOKORO_PYTHON=/opt/kokoro/venv/bin/python \
+    JSON_VIDEO_KOKORO_RUNNER=/app/tts/kokoro.py \
+    JSON_VIDEO_KOKORO_MODELS=/opt/kokoro/models
+USER node

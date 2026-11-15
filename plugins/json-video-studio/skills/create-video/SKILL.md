@@ -1,6 +1,6 @@
 ---
 name: create-video
-description: 日本語の企画、台詞、ローカル素材からvideo-project.jsonを作り、検証、VOICEVOX音声生成、storyboardレビュー、Remotionレンダー、成果物検査まで進める。JSONから解説動画、ナレーション動画、字幕付き動画、サムネイルを作りたい依頼で使う。
+description: 日本語または英語の企画、台詞、ローカル素材からvideo-project.jsonを作り、検証、日本語VOICEVOX・英語Kokoro音声生成または提供音声の取り込み、storyboardレビュー、Remotionレンダー、成果物検査まで進める。JSONから解説動画、ナレーション動画、字幕付き動画、サムネイルを作りたい依頼で使う。
 ---
 
 # JSON Video Studio create-video
@@ -25,12 +25,15 @@ description: 日本語の企画、台詞、ローカル素材からvideo-project
 3. render jobが`succeeded`である。
 4. `output_inspect`が同梱`project.lock.json`のSchema・自己ハッシュ・project digest・`totalFrames / fps`と、解像度1920×1080、30fps、H.264/AAC、yuv420p、音声・尺・必須成果物を確認している。
 5. `project.lock.json`、`credits.txt`、`render-report.json`が成果物manifestに含まれている。
-6. VOICEVOX音声がある場合、current lockの`narration-review.json`で全音声の合成原稿・生成かな・WAV hashを確認している。波形一致・音量・同期だけを読みのレビューの代わりにしない。
+6. 生成音声がある場合、current lockの`narration-review.json`で全音声の合成原稿・WAV hashを確認している。VOICEVOXは生成かなを照合し、Kokoroは実音声を聴取する。波形一致・音量・同期だけを読みのレビューの代わりにしない。
 7. 完成MP4のフレーム（全scene、ページ切替、字幕切替、動きのある場面、640px縮小）を別agentが確認し、`final-review.json`がある。静止画レビューだけでアニメーションの滑らかさや音声を合格にしない。
 8. 確認していないこと（聴感、動きの滑らかさなど）を最終報告で「未確認」と明記している。`output_inspect`が通ったことを、動画として良いことの根拠にしない。
 
 ## 共通ルール
 
+- 言語は`meta.language`で指定する。既定は`ja-JP`でVOICEVOXを使う。実験的な英語対応は`en-US`または`en-GB`で、話者の`voice`に`provider: kokoro`・`voiceId`・一致する`language`を指定する。話者は`english_voices_list`で取得し、`english_speech_synthesize`で試聴できる。Kokoroを含む専用イメージが必要。提供音声の`audioAssetId`も使える。
+- 英語用MCP設定では`doctor`に`speechProvider: kokoro`を渡す。既定のdoctorはVOICEVOXを検査するため、英語だけの環境では英語用の診断を選ぶ。
+- 英語の提供音声は短い文ごとにsceneへ分ける。字幕切替は文字量による配分なので完成動画で同期を確認する。日本語向けの`pronunciations`・かな照合を英語へ適用しない。発音・アクセント・固有名詞は実際の音声で確認し、未聴取なら未確認とする。
 - 正本は`../../schemas/video-project.schema.json`（プラグインルート基準では`schemas/video-project.schema.json`）。未知フィールドを推測して追加しない。
 - プロジェクト外のファイル、絶対パス、URL、`..`、任意HTML/CSS/JavaScript/React、shell、SVGを入力へ書かない。
 - 利用者が権利を説明できない素材は`rights.status: unknown`にする。`allowUnknownRights: false`のまま本番レンダーを迂回しない。
@@ -114,6 +117,7 @@ JSONを書く前に、`request.json`の`scenePlan`へ場面ごとの設計を書
 3. sceneは次のいずれか1方式だけを使う。
    - ユーザー音声: `audioAssetId`。`durationMs`を書かない
    - VOICEVOX: `speakerId`と`text`。`audioAssetId`と`durationMs`を書かない
+   - Kokoro（英語）: `speakerId`と`text`。`audioAssetId`と`durationMs`を書かない。声の`language`とprojectの言語を一致させる
    - 無音: `durationMs`。`speakerId`と`audioAssetId`を書かない
 4. 字幕:
    - 字幕は`theme.subtitleStyle.fontSize`を40以上にする（幅640pxで約13px）。長い台詞を小さい文字で1行に押し込まない。
@@ -135,14 +139,14 @@ JSONを書く前に、`request.json`の`scenePlan`へ場面ごとの設計を書
 
 ## S5. Resolve
 
-1. 先に`resolve_start`のdry-runを行い、VOICEVOX呼び出し件数、cache hit、推定尺、権利警告を確認する。
+1. 先に`resolve_start`のdry-runを行い、`voicevoxCalls`・`kokoroCalls`、cache hit、推定尺、権利警告を確認する。
 2. 問題がなければ通常の`resolve_start`を実行し、job IDをrequest記録へ保存する。
 3. `job_status`が終端状態になるまで追跡する。
    - `succeeded`: lock hash、totalFrames、warningsを記録してReviewへ
    - `failed`: 構造化エラーの`jsonPointer`と`hint`を使って修正し、Validateから再開
    - `JOB_NOT_FOUND`（MCP再起動で状態が消えた）: 同じproject digestなら再実行。digestが変わっていればValidateから再開
-4. 生成した音声のSHA-256、時間、VOICEVOX versionがlockへ入っていることを確認する。
-5. 各`lock.assets[].voice.synthesisText`と`kana`を確認し、略語・固有名詞・数値の意図した読みと照合する。警告された未指定略語は、kanaで読みを確かめるか辞書へ登録する。
+4. 生成した音声のSHA-256、時間、provider・engineVersion・話者設定がlockへ入っていることを確認する。
+5. 各`lock.assets[].voice.synthesisText`を確認する。VOICEVOXは`kana`も照合する。Kokoroは生成かなを持たないので原稿と実音声を照合する。英語の読み修正は`speechText`を修正して再resolveし、未聴取なら本番レンダーを進めない。
 6. 分割された字幕は`lock.scenes[].subtitleCues`に入る。切替時刻は文ごとの発話長からの比例配分であり、音素単位の厳密な一致ではない。
 
 ## S6. Review

@@ -52,8 +52,10 @@ function tool<Input extends z.ZodRawShape>(
   mcp.registerTool<Input, Input>(name, {description, inputSchema: shape}, callback);
 }
 
-tool('doctor', 'Check Schema, FFmpeg, ffprobe, and VOICEVOX availability.', {}, async () =>
-  doctor({workspaceRoot, dataRoot, ...(schemaPath === undefined ? {} : {schemaPath})}));
+tool('doctor', 'Check Schema, FFmpeg, ffprobe, and the selected local TTS (defaults to VOICEVOX).', {
+  speechProvider: z.enum(['voicevox', 'kokoro', 'all']).optional(),
+}, async ({speechProvider}) =>
+  doctor({workspaceRoot, dataRoot, speechProvider, ...(schemaPath === undefined ? {} : {schemaPath})}));
 
 tool('project_create', 'Create a validated JSON video project.', {
   projectPath: z.string().min(1),
@@ -111,6 +113,16 @@ for (const [name, kind] of [
 
 tool('speakers_list', 'List the VOICEVOX speakers and styles (speakerUuid, styleId) the Engine offers.', {}, async () =>
   runtime.listSpeakers());
+
+tool('english_voices_list', 'List locally installed Kokoro English voice IDs and their en-US/en-GB accents.', {}, async () => runtime.listEnglishVoices());
+
+tool('english_speech_synthesize', 'Generate an English WAV locally with Kokoro. No API key or network is used. Returns the audio path, synthesis text, duration, hash, and cache metadata; no Japanese kana is produced.', {
+  text: z.string().min(1).max(2000).regex(/\S/u),
+  voiceId: z.string().regex(/^[ab][fm]_[a-z]+$/u).max(80),
+  language: z.enum(['en-US', 'en-GB']),
+  speedScale: z.number().min(0.5).max(2).optional(),
+  volumeScale: z.number().min(0).max(2).optional(),
+}, async input => runtime.synthesizeEnglishSpeech(input));
 
 tool('speech_synthesize', 'Synthesize one utterance with VOICEVOX without a project and return the WAV path, the Engine kana reading, and the duration. text is the exact synthesis text (no pronunciation dictionary is applied). The cache is shared with resolve.', {
   text: z.string().min(1).max(2000).regex(/\S/u),

@@ -1,4 +1,5 @@
 import React from 'react';
+import {languageStyles} from './language.js';
 import {Audio} from '@remotion/media';
 import {
   AbsoluteFill,
@@ -49,7 +50,7 @@ const SceneNavigation = ({scene, project, totalFrames, staticPreview = false}: {
 
 // Phrase-aware, balanced wrapping: a two-line subtitle splits near its middle at a phrase
 // boundary instead of filling the first line to the edge and cutting a phrase.
-const deckSubtitleText = {wordBreak: 'auto-phrase', lineBreak: 'strict', textWrap: 'balance'} as unknown as React.CSSProperties;
+const deckSubtitleText = {wordBreak: 'var(--video-word-break, auto-phrase)', lineBreak: 'var(--video-line-break, strict)', textWrap: 'balance'} as unknown as React.CSSProperties;
 
 /**
  * Deck frame body: gradient, white card with the slide (or a cover page),
@@ -95,7 +96,7 @@ const DeckBody = ({scene, project, assetUrls, staticPreview, continuity, previou
           color: project.theme.subtitleStyle?.color ?? '#fff', background: project.theme.subtitleStyle?.backgroundColor ?? 'rgba(0, 0, 0, 0.75)', ...subtitleLayout.box, minHeight: 0, maxHeight: subtitleHeight,
           // On content pages the box keeps the height reserved for it, so it neither jumps between cues nor leaves a gap above the footer.
           ...(cover ? {} : {height: subtitleHeight}), padding: '12px 30px'}}>
-          <div lang="ja" style={{...subtitleLayout.text, ...deckSubtitleText}}>{subtitleAtFrame(scene, frame, staticPreview)}</div>
+          <div style={{...subtitleLayout.text, ...deckSubtitleText}}>{subtitleAtFrame(scene, frame, staticPreview)}</div>
         </div>
       ) : null}
     </AbsoluteFill>
@@ -152,7 +153,7 @@ const SceneLayer = ({scene, project, assetUrls, staticPreview = false, continuit
       ) : null}
       {scene.subtitleText && (staticPreview || continuity.toNext || frame < speakingFrames) ? (
         <div style={{position: 'absolute', opacity: scene.visual.type === 'flow' ? fade : 1, left: 190, right: 190, bottom: 44, borderRadius: 18, textAlign: 'center', fontSize: subtitleFontSize, fontWeight: 800, color: project.theme.subtitleStyle?.color ?? '#fff', background: project.theme.subtitleStyle?.backgroundColor ?? 'rgba(0,0,0,.78)', textShadow: '0 3px 8px rgba(0,0,0,.8)', ...subtitleLayout.box}}>
-          <div lang="ja" style={{...subtitleLayout.text, ...deckSubtitleText}}>{subtitle}</div>
+          <div style={{...subtitleLayout.text, ...deckSubtitleText}}>{subtitle}</div>
         </div>
       ) : null}
       {audio}
@@ -182,7 +183,7 @@ export const VideoComposition = ({project, lock, assetUrls}: RemotionRenderInput
     return [{id: section.id, assetId, from: first.startFrame, durationInFrames: last.startFrame + last.durationInFrames - first.startFrame}];
   });
   return (
-    <AbsoluteFill style={{fontFamily: BUNDLED_FONT_FAMILY, background: project.theme.backgroundColor, color: project.theme.foregroundColor, overflow: 'hidden'}}>
+    <AbsoluteFill lang={project.meta.language} style={{...languageStyles(project.meta.language), fontFamily: BUNDLED_FONT_FAMILY, background: project.theme.backgroundColor, color: project.theme.foregroundColor, overflow: 'hidden'}}>
       {scenes.map((scene, index) => {
         const background = backgroundForScene(project, scene, resolvedAssetUrls);
         const previousVisual = scenes[index - 1]?.visual;
@@ -215,7 +216,7 @@ export const ThumbnailComposition = ({project, assetUrls}: RemotionRenderInput) 
     .map((id) => resolvedAssetUrls[id])
     .filter((url): url is string => Boolean(url));
   return (
-    <AbsoluteFill style={{fontFamily: BUNDLED_FONT_FAMILY, background: project.theme.backgroundColor, color: project.theme.foregroundColor, overflow: 'hidden'}}>
+    <AbsoluteFill lang={project.meta.language} style={{...languageStyles(project.meta.language), fontFamily: BUNDLED_FONT_FAMILY, background: project.theme.backgroundColor, color: project.theme.foregroundColor, overflow: 'hidden'}}>
       {background ? <Img src={background} style={{width: '100%', height: '100%', objectFit: 'cover', opacity: 0.46}} /> : null}
       <AbsoluteFill style={{background: 'linear-gradient(90deg, rgba(3,7,18,.92), rgba(3,7,18,.18))'}} />
       <AbsoluteFill style={{justifyContent: 'center', alignItems: align === 'left' ? 'flex-start' : align === 'right' ? 'flex-end' : 'center', padding: 90, textAlign: align}}>
@@ -236,7 +237,7 @@ export const StoryboardComposition = ({project, lock, assetUrls}: RemotionRender
   const resolvedAssetUrls = materializeAssetUrls(assetUrls);
   const scenes = effectiveScenes(project, lock).slice(0, 12);
   return (
-    <AbsoluteFill style={{background: '#e8edf5', padding: 28, boxSizing: 'border-box', fontFamily: BUNDLED_FONT_FAMILY, display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gridTemplateRows: 'repeat(4, minmax(0, 1fr))', gap: 18}}>
+    <AbsoluteFill lang={project.meta.language} style={{...languageStyles(project.meta.language), background: '#e8edf5', padding: 28, boxSizing: 'border-box', fontFamily: BUNDLED_FONT_FAMILY, display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gridTemplateRows: 'repeat(4, minmax(0, 1fr))', gap: 18}}>
       {scenes.map((scene, index) => (
         <div key={scene.id} style={{position: 'relative', overflow: 'hidden', borderRadius: 14, boxShadow: '0 5px 18px rgba(15,23,42,.18)'}}>
           <div style={{width: 1920, height: 1080, left: cell.left, top: cell.top, transform: `scale(${cell.scale})`, transformOrigin: 'top left', background: project.theme.backgroundColor, color: project.theme.foregroundColor, position: 'absolute', overflow: 'hidden'}}>

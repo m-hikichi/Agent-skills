@@ -150,7 +150,7 @@ export const assertPassingNarrationReview = async (projectRoot: string, projectI
     const filename = await resolveSafeAssetPath(projectRoot, `.json-video-work/${projectId}/narration-review.json`);
     review = JSON.parse(await readFile(filename, 'utf8'));
   } catch (error) {
-    throw new AppError('NARRATION_REVIEW_REQUIRED', '音声の読み確認が必要です。合成入力とVOICEVOX kanaを確認し、current lockのnarration-review.jsonを保存してください', {category: 'schema', cause: error});
+    throw new AppError('NARRATION_REVIEW_REQUIRED', '音声の読み確認が必要です。VOICEVOXは生成かな、Kokoroは実音声を確認し、current lockのnarration-review.jsonを保存してください', {category: 'schema', cause: error});
   }
   if (!hasPassingNarrationReview(review, projectId, lock)) {
     throw new AppError('NARRATION_REVIEW_NOT_PASSED', '音声読み確認が未完了、古いlock、または確認した音声・かなが一致しません。かな未記録の旧lockは再resolveしてください', {category: 'schema'});

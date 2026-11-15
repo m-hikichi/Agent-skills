@@ -255,7 +255,7 @@ export interface Meta {
   id: Identifier;
   title: string;
   description?: string;
-  language: 'ja-JP';
+  language: 'ja-JP' | 'en-US' | 'en-GB';
 }
 export interface Canvas {
   preset: 'youtube-1080p';
@@ -319,7 +319,7 @@ export interface Asset {
 export interface Speaker {
   id: Identifier;
   displayName: string;
-  voice?: VoicevoxVoice;
+  voice?: VoicevoxVoice | KokoroVoice;
   avatar?: Avatar;
   volume?: number;
   speed?: number;
@@ -332,6 +332,13 @@ export interface VoicevoxVoice {
   volumeScale?: number;
   pitchScale?: number;
   intonationScale?: number;
+}
+export interface KokoroVoice {
+  provider: 'kokoro';
+  voiceId: string;
+  language: 'en-US' | 'en-GB';
+  speedScale?: number;
+  volumeScale?: number;
 }
 export interface Avatar {
   defaultAssetId?: Identifier;

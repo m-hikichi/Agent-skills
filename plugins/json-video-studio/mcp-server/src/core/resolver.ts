@@ -14,6 +14,7 @@ import {atomicWriteJson, atomicWrite, digestFile, digestJson, ensureSafeDirector
 import {inspectAsset} from './media.js';
 import {ProjectService} from './project.js';
 import {VoicevoxClient, type SynthesizedVoice, type VoiceSynthesisPlan} from './voicevox.js';
+import {KokoroClient} from './kokoro.js';
 import {validateProjectLock} from './schema.js';
 import {collectRuntimeVersions} from './runtime-info.js';
 import {pronunciationWarnings, resolveSpeechText} from './speech.js';
@@ -58,6 +59,7 @@ export interface ResolvePlan {
     cacheKey?: string;
     estimatedDurationMs: number;
   }>;
+  kokoroCalls: ResolvePlan['voicevoxCalls'];
   cacheHits: number;
   estimatedDurationMs: number;
   estimatedFrames: number;
@@ -125,7 +127,9 @@ function makeCredits(project: VideoProject, lockedAssets: LockedAsset[]): string
     }
   }
   for (const asset of lockedAssets) {
-    if (asset.voice) credits.add(`VOICEVOX:${asset.voice.speakerName}`);
+    if (asset.voice) credits.add(asset.voice.provider === 'kokoro'
+      ? `Kokoro-82M (Apache-2.0):${asset.voice.speakerName}`
+      : `VOICEVOX:${asset.voice.speakerName}`);
   }
   return [...credits].sort();
 }
@@ -162,7 +166,21 @@ export async function stageResolveArtifacts(
 
 function voiceLockedAsset(sceneId: string, text: string, speaker: Speaker, voice: SynthesizedVoice): LockedAsset {
   const parameters = speaker.voice;
-  if (!parameters) throw new AppError('VOICE_NOT_CONFIGURED', `Speaker ${speaker.id} has no VOICEVOX voice.`, {category: 'schema'});
+  if (!parameters) throw new AppError('VOICE_NOT_CONFIGURED', `Speaker ${speaker.id} has no TTS voice.`, {category: 'schema'});
+  if (parameters.provider === 'kokoro') {
+    return {
+      id: `voice:${sceneId}`, type: 'voice', sourcePath: `kokoro:${voice.cacheKey}`,
+      resolvedPath: voice.relativePath, sha256: voice.sha256, mime: 'audio/wav',
+      sizeBytes: voice.sizeBytes, durationMs: voice.durationMs,
+      voice: {
+        provider: 'kokoro', engineVersion: voice.engineVersion, voiceId: parameters.voiceId,
+        language: parameters.language, speakerName: voice.speakerName, styleName: voice.styleName,
+        speedScale: parameters.speedScale ?? speaker.speed ?? 1,
+        volumeScale: parameters.volumeScale ?? speaker.volume ?? 1,
+        cacheKey: voice.cacheKey, textSha256: digestJson(text), synthesisText: text,
+      },
+    };
+  }
   return {
     id: `voice:${sceneId}`,
     type: 'voice',
@@ -207,8 +225,13 @@ export async function resolveProject(options: ResolveOptions): Promise<ResolvePl
   const cacheRoot = options.cacheRoot
     ? resolve(options.cacheRoot)
     : resolve(projectRoot, `.json-video-work/${project.meta.id}/cache/voicevox`);
-  const voiceProvider = options.voiceProvider ?? new VoicevoxClient({cacheRoot, workspaceRoot: projectRoot});
+  const providers = {
+    voicevox: new VoicevoxClient({cacheRoot, workspaceRoot: projectRoot}),
+    kokoro: new KokoroClient({cacheRoot: resolve(cacheRoot, 'kokoro'), workspaceRoot: projectRoot}),
+  };
+  const providerFor = (speaker: Speaker): VoiceProvider => options.voiceProvider ?? providers[speaker.voice?.provider ?? 'voicevox'];
   const voicevoxCalls: ResolvePlan['voicevoxCalls'] = [];
+  const kokoroCalls: ResolvePlan['kokoroCalls'] = [];
   const dryAudioDurations = new Map<string, number>();
   if (options.dryRun) {
     for (const asset of project.assets.filter((item) => item.type === 'audio')) {
@@ -226,17 +249,20 @@ export async function resolveProject(options: ResolveOptions): Promise<ResolvePl
         const speaker = speakers.get(scene.speakerId);
         if (!speaker?.voice) {
           if (scene.durationMs === undefined) {
-            throw new AppError('VOICE_NOT_CONFIGURED', `Scene ${scene.id} requires a VOICEVOX voice or durationMs.`, {
+            throw new AppError('VOICE_NOT_CONFIGURED', `Scene ${scene.id} requires a TTS voice or durationMs.`, {
               category: 'schema',
             });
           }
         } else {
+          const voiceProvider = providerFor(speaker);
           const planned = options.dryRun && voiceProvider.plan
             ? await voiceProvider.plan(speechText, speaker, options.signal)
             : undefined;
-          estimatedSceneMs = planned?.durationMs
-            ?? Math.max(600, Math.ceil((speechText.length / (5 * (speaker.voice.speedScale ?? speaker.speed ?? 1))) * 1000));
-          voicevoxCalls.push({
+          const speed = speaker.voice.speedScale ?? speaker.speed ?? 1;
+          estimatedSceneMs = planned?.durationMs ?? Math.max(600, Math.ceil((speaker.voice.provider === 'kokoro'
+            ? speechText.trim().split(/\s+/u).length / (2.5 * speed)
+            : speechText.length / (5 * speed)) * 1000));
+          (speaker.voice.provider === 'kokoro' ? kokoroCalls : voicevoxCalls).push({
             sectionId: section.id,
             sceneId: scene.id,
             speakerId: speaker.id,
@@ -259,7 +285,8 @@ export async function resolveProject(options: ResolveOptions): Promise<ResolvePl
       assetCount: project.assets.length,
       sceneCount: project.sections.reduce((total, section) => total + section.scenes.length, 0),
       voicevoxCalls,
-      cacheHits: voicevoxCalls.filter((call) => call.cacheHit).length,
+      kokoroCalls,
+      cacheHits: [...voicevoxCalls, ...kokoroCalls].filter((call) => call.cacheHit).length,
       estimatedDurationMs,
       estimatedFrames,
       rightsWarnings: project.assets.filter((asset) => asset.rights.status === 'unknown').map((asset) => `権利情報が未確認です: ${asset.id}`),
@@ -306,8 +333,9 @@ export async function resolveProject(options: ResolveOptions): Promise<ResolvePl
       } else if (speechText && scene.speakerId) {
         const speaker = speakers.get(scene.speakerId);
         if (speaker?.voice) {
+          const voiceProvider = providerFor(speaker);
           const voice = await voiceProvider.synthesize(speechText, speaker, options.signal);
-          voicevoxVersion = voice.engineVersion;
+          if (speaker.voice.provider === 'voicevox') voicevoxVersion = voice.engineVersion;
           const materializedPath = resolve(materializedVoiceRoot, `${voice.cacheKey}.wav`);
           if (resolve(voice.path) !== materializedPath) {
             try {
@@ -341,17 +369,18 @@ export async function resolveProject(options: ResolveOptions): Promise<ResolvePl
       const subtitleText = scene.subtitle ?? scene.text ?? '';
       let subtitleCues: ResolvedScene['subtitleCues'];
       if (subtitleText && (project.theme.subtitleStyle?.split ?? 'auto') === 'auto') {
-        const cueTexts = splitSubtitle(subtitleText, subtitleLineUnits(project), project.theme.subtitleStyle?.maxLines ?? 2);
+        const cueTexts = splitSubtitle(subtitleText, subtitleLineUnits(project), project.theme.subtitleStyle?.maxLines ?? 2, project.meta.language);
         if (cueTexts.length > 1) {
           // When the subtitle is the narration itself, each cue is weighted by
           // the Engine's spoken length of that sentence; otherwise (separate
           // subtitle, explicit speechText, supplied audio) by its length in characters.
           const speaker = scene.speakerId ? speakers.get(scene.speakerId) : undefined;
-          const measurable = !scene.audioAssetId && scene.subtitle === undefined && scene.speechText === undefined && speaker?.voice && voiceProvider.measure;
+          const voiceProvider = speaker ? providerFor(speaker) : undefined;
+          const measurable = !scene.audioAssetId && scene.subtitle === undefined && scene.speechText === undefined && speaker?.voice && voiceProvider?.measure;
           let weights: number[] = [];
           if (measurable) {
             try {
-              weights = await Promise.all(cueTexts.map((cue) => voiceProvider.measure!(resolveSpeechText({text: cue}, project.pronunciations), speaker, options.signal)));
+              weights = await Promise.all(cueTexts.map((cue) => voiceProvider!.measure!(resolveSpeechText({text: cue}, project.pronunciations), speaker, options.signal)));
             } catch (error) {
               throwIfAborted(options.signal);
               weights = [];

@@ -211,10 +211,18 @@ function semanticValidation(project: VideoProject): void {
       if (scene.text && !scene.audioAssetId) {
         const speaker = project.speakers.find((item) => item.id === scene.speakerId);
         if (!speaker?.voice) {
-          throw new AppError('VOICE_REQUIRED', `Text scene ${scene.id} requires a speaker with a VOICEVOX voice.`, {
+          throw new AppError('VOICE_REQUIRED', `Text scene ${scene.id} requires a speaker with a TTS voice or supplied audio.`, {
             category: 'schema',
             jsonPointer: `${base}/speakerId`,
           });
+        }
+        const voice = speaker.voice;
+        if ((project.meta.language === 'ja-JP' && voice.provider !== 'voicevox')
+          || (project.meta.language !== 'ja-JP' && (voice.provider !== 'kokoro' || voice.language !== project.meta.language))) {
+          throw new AppError('VOICE_LANGUAGE_MISMATCH', `Scene ${scene.id} voice must match project language ${project.meta.language}.`, {category: 'schema', jsonPointer: `${base}/speakerId`});
+        }
+        if (voice.provider === 'kokoro' && !voice.voiceId.startsWith(voice.language === 'en-US' ? 'a' : 'b')) {
+          throw new AppError('VOICE_LANGUAGE_MISMATCH', 'Kokoro voice accent must match its language.', {category: 'schema', jsonPointer: `${base}/speakerId`});
         }
       }
       requireAsset(scene.audioAssetId, `${base}/audioAssetId`, 'audio');

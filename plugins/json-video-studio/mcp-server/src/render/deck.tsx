@@ -1,4 +1,5 @@
 import React from 'react';
+import {languageStyles} from './language.js';
 import {Img, interpolate, useCurrentFrame} from 'remotion';
 import type {SceneVisual, VideoProject} from '../shared/video-types.js';
 import {DECK_FRAME, type NavigationState} from './layout.js';
@@ -56,7 +57,7 @@ export const DECK = {
   rule: 'linear-gradient(90deg, var(--deck-gradient-start) 0%, var(--deck-primary) 100%)',
 } as const;
 
-const phraseWrap = {wordBreak: 'auto-phrase', lineBreak: 'strict', whiteSpace: 'pre-wrap'} as unknown as React.CSSProperties;
+const phraseWrap = {wordBreak: 'var(--video-word-break, auto-phrase)', lineBreak: 'var(--video-line-break, strict)', whiteSpace: 'pre-wrap'} as unknown as React.CSSProperties;
 
 type SlideVisual = Extract<SceneVisual, {type: 'slide'}>;
 type SlideBlock = SlideVisual['blocks'][number];
@@ -135,14 +136,14 @@ const TextBlock = ({block, previous, staticPreview}: BlockProps<'text'>) => (
         {block.heading ? <span style={{fontSize: 32, fontWeight: 800, color: DECK.darkMid}}>{block.heading}</span> : null}
       </div>
     ) : null}
-    <div lang="ja" style={{fontSize: 36, lineHeight: 1.6, color: DECK.text, ...phraseWrap}}>
+    <div style={{fontSize: 36, lineHeight: 1.6, color: DECK.text, ...phraseWrap}}>
       <Marked text={block.text} terms={block.emphasis} previousTerms={previous ? (previous.emphasis ?? []) : undefined} staticPreview={staticPreview} />
     </div>
   </div>
 );
 
 const CalloutBlock = ({block, previous, staticPreview}: BlockProps<'callout'>) => (
-  <div lang="ja" style={{background: DECK.light, borderLeft: `8px solid ${DECK.main}`, padding: '20px 32px', fontSize: 34, lineHeight: 1.6, color: DECK.text, ...phraseWrap}}>
+  <div style={{background: DECK.light, borderLeft: `8px solid ${DECK.main}`, padding: '20px 32px', fontSize: 34, lineHeight: 1.6, color: DECK.text, ...phraseWrap}}>
     <Marked text={block.text} terms={block.emphasis} previousTerms={previous ? (previous.emphasis ?? []) : undefined} staticPreview={staticPreview} />
   </div>
 );
@@ -159,7 +160,7 @@ const TableCell = ({children, weight, previousWeight, staticPreview, zebra, labe
   const strength = strengthOf(eased);
   const base = zebra ? DECK.light : '#FFFFFF';
   return (
-    <div lang="ja" style={{display: 'flex', alignItems: 'center', justifyContent: label ? 'flex-start' : 'center', padding: '8px 22px', minHeight: 66, boxSizing: 'border-box',
+    <div style={{display: 'flex', alignItems: 'center', justifyContent: label ? 'flex-start' : 'center', padding: '8px 22px', minHeight: 66, boxSizing: 'border-box',
       background: strength > 0 ? `color-mix(in srgb, ${DECK.marker} ${(strength * 100).toFixed(0)}%, ${base})` : base,
       boxShadow: strength > 0 ? `inset 0 0 0 ${(strength * 3).toFixed(1)}px ${DECK.markerLine}` : 'none',
       borderBottom: `1px solid ${DECK.line}`,
@@ -204,7 +205,7 @@ const TableBlock = ({block, previous, staticPreview}: BlockProps<'table'>) => {
           </React.Fragment>
         ))}
       </div>
-      {block.note ? <div lang="ja" style={{fontSize: 26, color: DECK.textSub, marginTop: 10, ...phraseWrap}}>{block.note}</div> : null}
+      {block.note ? <div style={{fontSize: 26, color: DECK.textSub, marginTop: 10, ...phraseWrap}}>{block.note}</div> : null}
     </div>
   );
 };
@@ -218,8 +219,8 @@ const Card = ({item, weight, previousWeight, staticPreview}: {item: {title: stri
       border: `2px solid ${strength > 0 ? DECK.markerLine : DECK.line}`,
       boxShadow: strength > 0 ? `0 0 0 ${(strength * 3).toFixed(1)}px ${DECK.markerLine}, 0 10px 26px rgba(0, 0, 0, ${(0.25 * strength).toFixed(2)})` : 'none'}}>
       <div style={{background: DECK.dark, color: '#fff', fontSize: 32, fontWeight: 800, textAlign: 'center', padding: '14px 18px'}}>{item.title}</div>
-      <div lang="ja" style={{padding: '20px 26px', fontSize: 33, lineHeight: 1.55, color: DECK.text, flex: 1, ...phraseWrap}}>{item.body}</div>
-      {item.note ? <div lang="ja" style={{margin: '0 18px 18px', background: DECK.lighter, borderRadius: 8, padding: '12px 16px', fontSize: 26, color: DECK.darkMid, fontWeight: 700, ...phraseWrap}}>{item.note}</div> : null}
+      <div style={{padding: '20px 26px', fontSize: 33, lineHeight: 1.55, color: DECK.text, flex: 1, ...phraseWrap}}>{item.body}</div>
+      {item.note ? <div style={{margin: '0 18px 18px', background: DECK.lighter, borderRadius: 8, padding: '12px 16px', fontSize: 26, color: DECK.darkMid, fontWeight: 700, ...phraseWrap}}>{item.note}</div> : null}
     </div>
   );
 };
@@ -235,9 +236,9 @@ const Kpi = ({item, weight, previousWeight, staticPreview}: {item: {label: strin
   const strength = strengthOf(eased);
   return (
     <div style={{background: DECK.lighter, borderRadius: 10, padding: '22px 28px', opacity: dimOpacity(eased), boxShadow: strength > 0 ? `inset 0 0 0 ${(strength * 4).toFixed(1)}px ${DECK.markerLine}` : 'none'}}>
-      <div lang="ja" style={{fontSize: 28, fontWeight: 800, color: DECK.darkMid, ...phraseWrap}}>{item.label}</div>
-      <div lang="ja" style={{fontSize: 58, fontWeight: 900, color: DECK.text, lineHeight: 1.25, marginTop: 6, ...phraseWrap}}>{item.value}</div>
-      {item.note ? <div lang="ja" style={{fontSize: 27, color: DECK.textSub, marginTop: 6, ...phraseWrap}}>{item.note}</div> : null}
+      <div style={{fontSize: 28, fontWeight: 800, color: DECK.darkMid, ...phraseWrap}}>{item.label}</div>
+      <div style={{fontSize: 58, fontWeight: 900, color: DECK.text, lineHeight: 1.25, marginTop: 6, ...phraseWrap}}>{item.value}</div>
+      {item.note ? <div style={{fontSize: 27, color: DECK.textSub, marginTop: 6, ...phraseWrap}}>{item.note}</div> : null}
     </div>
   );
 };
@@ -255,7 +256,7 @@ const ListItem = ({text, weight, previousWeight, staticPreview}: {text: string; 
     <div style={{display: 'flex', gap: 16, alignItems: 'baseline', padding: '8px 14px', borderRadius: 8, opacity: dimOpacity(eased),
       background: strength > 0 ? `color-mix(in srgb, ${DECK.marker} ${(strength * 100).toFixed(0)}%, transparent)` : 'transparent'}}>
       <span style={{flex: '0 0 auto', width: 12, height: 12, borderRadius: 6, background: DECK.main, transform: 'translateY(-4px)'}} />
-      <span lang="ja" style={{fontSize: 34, lineHeight: 1.5, color: DECK.text, fontWeight: strength > 0.5 ? 800 : 500, ...phraseWrap}}>{text}</span>
+      <span style={{fontSize: 34, lineHeight: 1.5, color: DECK.text, fontWeight: strength > 0.5 ? 800 : 500, ...phraseWrap}}>{text}</span>
     </div>
   );
 };
@@ -281,7 +282,7 @@ const Step = ({item, index, numbering, weight, previousWeight, staticPreview}: {
         {numbering === 'number' ? <span style={{marginRight: 12, opacity: 0.85}}>{index + 1}</span> : null}
         {item.title}
       </div>
-      {item.detail ? <div lang="ja" style={{fontSize: 26, marginTop: 6, ...phraseWrap}}>{item.detail}</div> : null}
+      {item.detail ? <div style={{fontSize: 26, marginTop: 6, ...phraseWrap}}>{item.detail}</div> : null}
     </div>
   );
 };
@@ -343,7 +344,7 @@ export const DeckPageHeader = ({tag, title}: {tag?: string | undefined; title?: 
   <>
     <div style={{display: 'flex', alignItems: 'center', gap: 22, padding: '20px 40px 16px'}}>
       {tag ? <span style={{flex: '0 0 auto', fontSize: 32, fontWeight: 800, color: '#fff', background: DECK.darkMid, borderRadius: 6, padding: '6px 20px'}}>{tag}</span> : null}
-      {title ? <span lang="ja" style={{fontSize: 46, fontWeight: 900, color: DECK.text, lineHeight: 1.2, letterSpacing: '-0.01em', ...phraseWrap}}>{title}</span> : null}
+      {title ? <span style={{fontSize: 46, fontWeight: 900, color: DECK.text, lineHeight: 1.2, letterSpacing: '-0.01em', ...phraseWrap}}>{title}</span> : null}
     </div>
     <div style={{height: 4, background: DECK.rule}} />
   </>
@@ -386,9 +387,9 @@ export const DeckCover = ({visual, project, assetUrls}: {visual: SceneVisual; pr
       {mark ? <Img src={mark} style={{position: 'absolute', left: 84, top: 72, height: 96}} /> : null}
       {logo ? <Img src={logo} style={{position: 'absolute', right: 70, bottom: 26, height: 100}} /> : null}
       <div style={{position: 'absolute', left: 120, right: 120, top: logo ? 250 : 300, textAlign: 'center', color: '#fff'}}>
-        <div lang="ja" style={{fontSize: 84, fontWeight: 900, lineHeight: 1.25, ...phraseWrap}}>{visual.title}</div>
-        {visual.subtitle ? <div lang="ja" style={{fontSize: 40, fontWeight: 700, marginTop: 30, opacity: 0.96, ...phraseWrap}}>{visual.subtitle}</div> : null}
-        {frame?.coverCaption ? <div lang="ja" style={{fontSize: 30, marginTop: 44, opacity: 0.9}}>{frame.coverCaption}</div> : null}
+        <div style={{fontSize: 84, fontWeight: 900, lineHeight: 1.25, ...phraseWrap}}>{visual.title}</div>
+        {visual.subtitle ? <div style={{fontSize: 40, fontWeight: 700, marginTop: 30, opacity: 0.96, ...phraseWrap}}>{visual.subtitle}</div> : null}
+        {frame?.coverCaption ? <div style={{fontSize: 30, marginTop: 44, opacity: 0.9}}>{frame.coverCaption}</div> : null}
       </div>
     </div>
   );
@@ -441,14 +442,14 @@ export const DeckThumbnail = ({project, assetUrls}: {project: VideoProject; asse
   const logo = frame?.coverLogoAssetId ? assetUrls[frame.coverLogoAssetId] : undefined;
   const mark = frame?.coverMarkAssetId ? assetUrls[frame.coverMarkAssetId] : undefined;
   return (
-    <div style={{position: 'absolute', inset: 0, fontFamily: 'Noto Sans CJK JP', ...deckVariables(project)}}>
+    <div lang={project.meta.language} style={{position: 'absolute', inset: 0, fontFamily: 'Noto Sans CJK JP', ...deckVariables(project), ...languageStyles(project.meta.language)}}>
       <div style={{position: 'absolute', inset: 0, background: DECK.gradient}} />
       {logo ? <div style={{position: 'absolute', left: 0, right: 0, bottom: 0, height: '18%', background: '#fff'}} /> : null}
       {mark ? <Img src={mark} style={{position: 'absolute', left: 46, top: 40, height: 70}} /> : null}
       {logo ? <Img src={logo} style={{position: 'absolute', right: 44, bottom: 22, height: 84}} /> : null}
       <div style={{position: 'absolute', left: 60, right: 60, top: logo ? 150 : 60, bottom: logo ? '20%' : 60, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', color: '#fff'}}>
         {project.thumbnail.textLines.map((line, index) => (
-          <div key={line} lang="ja" style={{fontSize: index === 0 ? 64 : 96, fontWeight: 900, lineHeight: 1.15, marginTop: index ? 18 : 0,
+          <div key={line} style={{fontSize: index === 0 ? 64 : 96, fontWeight: 900, lineHeight: 1.15, marginTop: index ? 18 : 0,
             color: index === 0 ? DECK.marker : '#fff', textShadow: '0 6px 24px rgba(0, 0, 0, 0.35)', ...phraseWrap}}>{line}</div>
         ))}
       </div>

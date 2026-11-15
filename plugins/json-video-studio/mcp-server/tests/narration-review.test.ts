@@ -17,6 +17,24 @@ const review = () => ({
 });
 
 describe('pronunciation review evidence', () => {
+  it('requires actual listening for Kokoro, binds evidence to voice/accent/audio, and rejects fabricated kana', () => {
+    const english = structuredClone(lock);
+    english.assets[0]!.voice = {
+      provider: 'kokoro', engineVersion: 'test', voiceId: 'af_heart', language: 'en-US',
+      speakerName: 'af_heart', styleName: 'en-US', speedScale: 1, volumeScale: 1,
+      cacheKey: 'c'.repeat(64), textSha256: 'd'.repeat(64), synthesisText: 'Hello world.',
+    };
+    const evidence = {assetId: 'voice:intro', sha256: english.assets[0]!.sha256,
+      provider: 'kokoro', voiceId: 'af_heart', language: 'en-US', synthesisText: 'Hello world.', readingsConfirmed: true, coverage: 'full-utterance'};
+    const listened = {...review(), method: 'listening', listeningPerformed: true, evidence: [evidence]};
+    expect(hasPassingNarrationReview(listened, 'demo', english)).toBe(true);
+    expect(hasPassingNarrationReview({...listened, listeningPerformed: false}, 'demo', english)).toBe(false);
+    expect(hasPassingNarrationReview({...listened, method: 'engine-kana'}, 'demo', english)).toBe(false);
+    for (const change of [{voiceId: 'af_sarah'}, {language: 'en-GB'}, {sha256: 'changed'}, {kana: 'fake'}]) {
+      expect(hasPassingNarrationReview({...listened, evidence: [{...evidence, ...change}]}, 'demo', english)).toBe(false);
+    }
+    expect(hasPassingNarrationReview({...review(), method: 'listening', listeningPerformed: true}, 'demo', lock)).toBe(false);
+  });
   it('requires current matching evidence at the render file boundary', async () => {
     const root = await mkdtemp(join(tmpdir(), 'json-video-narration-review-'));
     try {

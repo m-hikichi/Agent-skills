@@ -63,11 +63,14 @@ program.command('init')
 
 program.command('doctor')
   .description('check runtime dependencies')
-  .action(async (_local: unknown, command: Command) => {
+  .option('--speech-provider <provider>', 'voicevox, kokoro, or all', 'voicevox')
+  .action(async (local: {speechProvider: string}, command: Command) => {
+    if (!['voicevox', 'kokoro', 'all'].includes(local.speechProvider)) throw new Error('Unknown speech provider');
     const options = globalOptions(command);
     const report = await doctor({
       workspaceRoot: workspace(options),
       dataRoot: process.env.JSON_VIDEO_DATA_ROOT,
+      speechProvider: local.speechProvider as 'voicevox' | 'kokoro' | 'all',
       ...(options.schema === undefined ? {} : {schemaPath: options.schema}),
     });
     print(report);

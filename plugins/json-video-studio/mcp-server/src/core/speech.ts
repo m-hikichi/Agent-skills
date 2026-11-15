@@ -20,7 +20,7 @@ export const resolveSpeechText = (scene: Pick<Scene, 'text' | 'speechText'>, pro
 
 /** Advisory only: standalone uppercase ASCII acronyms in generated speech need listening review. */
 export const pronunciationWarnings = (project: VideoProject): string[] => project.sections.flatMap(section => section.scenes.flatMap(scene => {
-  if (scene.audioAssetId || !scene.speakerId || !project.speakers.some(s => s.id === scene.speakerId && s.voice)) return [];
+  if (scene.audioAssetId || !scene.speakerId || !project.speakers.some(s => s.id === scene.speakerId && s.voice?.provider === 'voicevox')) return [];
   // Explicit speechText is the author's deliberate reading instruction.
   if (scene.speechText !== undefined) return [];
   const text = resolveSpeechText(scene, project.pronunciations);

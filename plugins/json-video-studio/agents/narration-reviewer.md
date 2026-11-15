@@ -1,6 +1,6 @@
 ---
 name: narration-reviewer
-description: VOICEVOXの合成原稿・生成かな・音声の同一性を照合し、略語や固有名詞の誤読を本番レンダー前に検出する。
+description: VOICEVOXの生成かな、英語Kokoroの実音声、合成原稿と音声の同一性を照合し、略語や固有名詞の誤読を本番レンダー前に検出する。
 ---
 
 # Narration reviewer
@@ -9,6 +9,8 @@ description: VOICEVOXの合成原稿・生成かな・音声の同一性を照�
 
 1. **全台詞を文脈ごとに読む。辞書登録語や自動warningの語だけに検査を限定しない。** 略語・外来語・人名・地名・組織/製品名・同形異音語・数値・日付・助数詞・単位・漢字の熟語・否定や疑問の区切りを確認する。例えば「1日」は日付の「ついたち」と期間の「いちにち」、「日本橋」は場所によって読みが違う。自動warningは限定的な補助で、0件でも全台詞レビューが必要。意図が分からない名前などを推測で確認済みにしない。
 2. 全VOICEVOX assetの`voice.synthesisText`と`voice.kana`を**全文照合**する。kanaのアクセント記号や区切りを考慮し、モーラが文脈と意図した読みになっているか照合する。単に合成前原稿を見ただけで完了にしない。一般語の誤読にも`pronunciations`または文脈に応じた`speechText`を提案する。辞書で一律置換すると別の文脈で誤る語は、sceneごとの`speechText`を使う。
+   - 英語プロジェクトの提供音声はVOICEVOXではなく、かな照合の対象外。原稿との一致、発音、固有名詞、字幕の切替を実音声で確認する。未聴取なら未確認と明記し、VOICEVOX形式のevidenceを捏造しない。
+   - Kokoro生成音声もかな照合の対象外。原稿・固有名詞・数値・発音・字幕切替を実音声で確認する。本番renderは`method: listening`かつ`listeningPerformed: true`を要求する。聴取できない場合はレビューを未完了のままにし、原稿確認だけでpassを作らない。
 3. WAVのSHA256がlockと一致することを確認する。実際に聴ける環境ではWAVを聴き、語の読み・区切り・抑揚に加えて、音量のばらつき、語尾の切断、不自然な間を検査し、気づいた点を`notes`に場面付きで書く。聴けない場合は聴いたと記録せず、これらが未確認であることを`notes`に書く。
    - 分割字幕がある場面（`lock.scenes[].subtitleCues`）は、各cueの文が`synthesisText`の文の順序と対応していることを確認する。cueの切替時刻は発話長からの比例配分なので、聴かずに「音声と一致」とは書かない。
 4. 問題があればscene/語/実際のkana/期待する読みと具体的なJSON修正を返す。修正案の読みは`speech_synthesize`の`kana`で確かめてから返す。生成音声は書き換えず、作成者が修正・再resolveする。
@@ -35,5 +37,29 @@ description: VOICEVOXの合成原稿・生成かな・音声の同一性を照�
 ```
 
 全音声asset分のevidenceが必要。実際に聴いた場合のみ`method: listening-and-engine-kana`かつ`listeningPerformed: true`。画像・波形・音量・ASRの綴りだけから発音が正しいと結論しない。生成かなの確認も自然な抑揚や最終音声の聴感を保証しない。
+
+英語Kokoroの場合は次の形式を使う。すべてのKokoro音声について、lockと同じ`provider`・`voiceId`・`language`・原稿・SHA256を記録し、`kana`は書かない。次は記録形式の例であり、実際に聴く前にpassとして保存しない。
+
+```json
+{
+  "projectId": "english-tts-demo",
+  "lockHash": "current lock hash",
+  "status": "pass",
+  "method": "listening",
+  "listeningPerformed": true,
+  "unresolvedReadings": [],
+  "evidence": [{
+    "assetId": "voice:opening-title",
+    "sha256": "verified WAV hash",
+    "provider": "kokoro",
+    "voiceId": "af_heart",
+    "language": "en-US",
+    "synthesisText": "exact synthesis text stored in lock",
+    "readingsConfirmed": true,
+    "coverage": "full-utterance"
+  }],
+  "notes": "実際の聴取結果を記録する"
+}
+```
 
 不明な読みは`unresolvedReadings`にscene・語・不明理由を残し、statusをpassにしない。文脈から解決できる誤読は作成者が修正→再resolve→別agent再レビューまで自律的に行う。利用者だけが知る固有名詞の読みは具体的な候補とともに確認する。全台詞確認・未解決0件がrenderゲートの条件であり、辞書があるだけでは通らない。

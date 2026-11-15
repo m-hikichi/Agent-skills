@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "1.0.0",
+  "meta": {
+    "id": "english-demo",
+    "title": "English video example",
+    "description": "Experimental English layout. Add a supplied audio asset for narration.",
+    "language": "en-US"
+  },
+  "canvas": {
+    "preset": "youtube-1080p",
+    "fps": 30
+  },
+  "theme": {
+    "backgroundColor": "#111827",
+    "foregroundColor": "#F9FAFB",
+    "accentColor": "#38BDF8",
+    "fontFamily": "Noto Sans CJK JP",
+    "spacing": "comfortable",
+    "subtitleStyle": {
+      "fontSize": 54,
+      "maxLines": 2,
+      "backgroundColor": "#000000CC",
+      "color": "#FFFFFF"
+    }
+  },
+  "assets": [],
+  "speakers": [],
+  "sections": [
+    {
+      "id": "opening",
+      "title": "Introduction",
+      "scenes": [
+        {
+          "id": "opening-title",
+          "durationMs": 6000,
+          "visual": {
+            "type": "title",
+            "title": "JSON Video Studio",
+            "subtitle": "English video with supplied narration"
+          },
+          "subtitle": "Create a clear English video. Supply your own narration, then review the subtitles and timing."
+        }
+      ]
+    }
+  ],
+  "thumbnail": {
+    "textLines": [
+      "English video"
+    ],
+    "layout": "center"
+  },
+  "outputs": {
+    "video": true,
+    "captions": true,
+    "chapters": true,
+    "thumbnail": true,
+    "storyboard": true
+  },
+  "policies": {
+    "allowUnknownRights": false,
+    "maxDurationMinutes": 1
+  }
+}

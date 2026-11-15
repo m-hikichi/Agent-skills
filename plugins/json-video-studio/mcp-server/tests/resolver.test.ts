@@ -93,10 +93,15 @@ describe('timeline resolver', () => {
     expect(await readFile(result.creditsPath, 'utf8')).toBe('VOICEVOX:四国めたん\n');
   });
 
-  it('measures a user-provided WAV with ffprobe and bypasses VOICEVOX', async () => {
+  it.each(['ja-JP', 'en-US', 'en-GB'] as const)('measures a user-provided %s WAV with ffprobe and bypasses VOICEVOX', async (language) => {
     const workspace = await root();
     const project = await fixture('dialogue.video-project.json');
+    project.meta.language = language;
     const scene = project.sections[0]!.scenes[0]!;
+    if (language !== 'ja-JP') {
+      scene.text = 'This is English narration. Supply your own audio, then review the subtitles and timing.';
+      delete scene.subtitle;
+    }
     project.sections = [{...project.sections[0]!, scenes: [scene]}];
     project.assets = [{
       id: 'user-narration',
@@ -149,8 +154,16 @@ describe('timeline resolver', () => {
       }),
     ]);
     expect(result.lock.assets[0]!.voice).toBeUndefined();
+    if (language !== 'ja-JP') {
+      const cues = result.lock.scenes[0]!.subtitleCues!;
+      expect(cues.length).toBeGreaterThan(1);
+      expect(cues.map(cue => cue.text).join(' ')).toBe(scene.text);
+      expect(cues.at(-1)!.endFrame).toBe(31);
+    }
     expect(result.lock.runtime.voicevox).toBe('test-engine');
-    expect(await readFile(result.captionsPath, 'utf8')).toContain('00:00:00,000 --> 00:00:01,033');
+    const captions = await readFile(result.captionsPath, 'utf8');
+    expect(captions.startsWith('1\n00:00:00,000 --> ')).toBe(true);
+    expect(captions).toContain(' --> 00:00:01,033');
     expect(await readFile(result.creditsPath, 'utf8')).toBe('user-narration — テスト利用者\n');
     expect(JSON.parse(await readFile(result.lockPath, 'utf8'))).toMatchObject({
       lockHash: result.lock.lockHash,

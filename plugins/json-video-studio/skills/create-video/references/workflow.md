@@ -8,6 +8,8 @@
 - `project_validate`: Schemaとsemantic検証を行い、error/warningをJSON Pointer付きで返す。
 - `project_lint`: 機械が判定できる品質上の助言を返す（projectは返さない）。`findings[]`は`code`・`severity`（warning/info）・`category`（legibility/explanation/visual）・`sceneIds`・`message`・`hint`・`evidence`を持つ。project所在ディレクトリの`.json-video-work/<project-id>/request.json`があれば、`brief`の未記入も指摘する。jobは止めない。
 - `speakers_list`: VOICEVOX Engineの話者とstyle（`speakerUuid`、`styleId`）を返す。
+- `english_voices_list`: インストール済みKokoroの英語`voiceId`と`language`（`en-US`・`en-GB`）を返す。
+- `english_speech_synthesize`: `text`・`voiceId`・`language`と任意の`speedScale`・`volumeScale`から、ローカルで英語WAVを生成する。`kana`はnull。試聴とresolveはキャッシュを共有する。
 - `speech_synthesize`: projectなしで一文を合成し、WAV（`.json-video-work/speech/<cacheKey>.wav`）、Engineの`kana`、長さを返す。`text`は合成原稿そのもので、辞書は適用しない。cacheは`resolve`と共有する。
 - `job_status`: jobの状態、0〜1のprogress、message、result/errorを返す。
 - `job_cancel`: 指定jobだけを安全に中断する。
@@ -23,7 +25,7 @@
 
 ## 非同期ツール
 
-- `resolve_start`: local assetとVOICEVOXを解決し、content-addressed cacheとlockを作る。`dryRun`ではファイルや音声を生成しない。
+- `resolve_start`: local assetとVOICEVOX/Kokoroを解決し、content-addressed cacheとlockを作る。`dryRun`ではファイルや音声を生成しない。`voicevoxCalls`と`kokoroCalls`は分けて返す。
 - `storyboard_start`: current lockから各scene静止画、contact sheet、サムネイル候補を作る。結果には`warnings`（字幕・表示時間・空白）、`layoutMetrics`（deckの各ページについて、描画結果から測ったカード下の空白率`blankBottomRatio`と`blankBottomPx`）、`lint`（`project_lint`と同じ指摘）が入る。字幕が分割される場面の静止画は、最も長いcueを表示する。
 - `render_start`: current/frozen lockから最終成果物を作る。
 
@@ -82,6 +84,7 @@
 
 - VOICEVOXへ接続できるのは`resolve`（音声合成と、字幕cueの重みを得る`audio_query`）、`speakers_list`、`speech_synthesize`、`doctor`だけである。Remotion componentとmetadata計算からネットワークへアクセスしない。
 - 同じテキスト、speaker UUID、style ID、速度、音量、pitch、intonation、VOICEVOX Engine versionなら`${CLAUDE_PLUGIN_DATA}/cache/voicevox/`のcontent-addressed cacheをproject間で再利用する。
+- Kokoroは`${CLAUDE_PLUGIN_DATA}/cache/voicevox/kokoro/`へ独立したキャッシュを保存する。キーには原稿・voiceId・language・速度・音量と、モデルファイル・依存ライブラリ・workerのfingerprintを含む。モデル取得はイメージ構築時のみで、音声合成は外部通信を使わない。
 - current reviewは`.json-video-work/<project-id>/review.json`、各判定の不変な履歴は`reviews/<lock-hash>-<iteration>.json`へ保存する。
 - renderは`--frozen-lock`で、hash不一致や欠落素材を検出したら失敗する。
 - render後は固定済み`project.lock.json`も成果物へ原子的に同梱する。`artifact-manifest.json`はlockを含む成果物の相対path、size、SHA-256を固定し、`output_inspect`は同梱lockのSchema・自己ハッシュ・project digest・`totalFrames / fps`、manifestの欠落・余分・改変を検出する。

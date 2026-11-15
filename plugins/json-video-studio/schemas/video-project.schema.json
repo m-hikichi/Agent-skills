@@ -131,7 +131,7 @@
           "maxLength": 1000
         },
         "language": {
-          "const": "ja-JP"
+          "enum": ["ja-JP", "en-US", "en-GB"]
         }
       }
     },
@@ -421,6 +421,18 @@
         }
       }
     },
+    "kokoroVoice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "voiceId", "language"],
+      "properties": {
+        "provider": {"const": "kokoro"},
+        "voiceId": {"type": "string", "pattern": "^[ab][fm]_[a-z]+$", "maxLength": 80},
+        "language": {"enum": ["en-US", "en-GB"]},
+        "speedScale": {"type": "number", "minimum": 0.5, "maximum": 2},
+        "volumeScale": {"type": "number", "minimum": 0, "maximum": 2}
+      }
+    },
     "avatar": {
       "type": "object",
       "additionalProperties": false,
@@ -460,7 +472,7 @@
           "maxLength": 80
         },
         "voice": {
-          "$ref": "#/$defs/voicevoxVoice"
+          "oneOf": [{"$ref": "#/$defs/voicevoxVoice"}, {"$ref": "#/$defs/kokoroVoice"}]
         },
         "avatar": {
           "$ref": "#/$defs/avatar"

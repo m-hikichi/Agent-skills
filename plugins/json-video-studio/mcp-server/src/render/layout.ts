@@ -166,9 +166,27 @@ export const textUnits = (text: string): number => Array.from(text).reduce((sum,
  * line, and a sentence longer than the line limit is cut at the comma nearest
  * its middle. Returns a single element when no split is needed or possible.
  */
-export const splitSubtitle = (text: string, lineUnits: number, maxLines = 2): string[] => {
+export const splitSubtitle = (text: string, lineUnits: number, maxLines = 2, language: VideoProject['meta']['language'] = 'ja-JP'): string[] => {
   const whole = text.trim();
   if (!whole || whole.includes('\n') || textUnits(whole) <= lineUnits) return [whole];
+  if (language !== 'ja-JP') {
+    // Locale-aware sentence boundaries avoid treating decimal points as stops.
+    const sentences = Array.from(new Intl.Segmenter(language, {granularity: 'sentence'}).segment(whole), ({segment}) => segment.trim()).filter(Boolean);
+    const cues: string[] = [];
+    for (const sentence of sentences) {
+      let piece = '';
+      for (const word of sentence.split(/\s+/u)) {
+        const joined = piece ? `${piece} ${word}` : word;
+        if (piece && textUnits(joined) > lineUnits * maxLines) {
+          cues.push(piece);
+          piece = word;
+        } else piece = joined;
+      }
+      if (piece) cues.push(piece);
+    }
+    // Never split a word or discard cues; oversized single words are linted.
+    return cues;
+  }
   const sentences = whole.match(/[^。！？!?]+[。！？!?]*[」』）)]*/gu)?.map((part) => part.trim()).filter(Boolean) ?? [whole];
   const pieces = sentences.flatMap((sentence) => {
     if (textUnits(sentence) <= lineUnits * maxLines) return [sentence];
@@ -344,7 +362,7 @@ export const collectLayoutWarnings = (project: VideoProject): LayoutWarning[] =>
     for (const scene of section.scenes) {
       const subtitle = scene.subtitle ?? scene.text ?? '';
       // A subtitle that is split into cues is judged by its longest cue, as it is shown.
-      const shown = (project.theme.subtitleStyle?.split ?? 'auto') === 'auto' ? splitSubtitle(subtitle, subtitleLineUnits(project), subtitleMaxLines) : [subtitle];
+      const shown = (project.theme.subtitleStyle?.split ?? 'auto') === 'auto' ? splitSubtitle(subtitle, subtitleLineUnits(project), subtitleMaxLines, project.meta.language) : [subtitle];
       if (shown.some((cue) => estimateTextLines(cue, 1540, subtitleFontSize) > subtitleMaxLines)) {
         warnings.push({
           sceneId: scene.id,

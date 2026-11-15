@@ -8,6 +8,7 @@ import type {
   Section as GeneratedSection,
   Speaker as GeneratedSpeaker,
   VoicevoxVoice as GeneratedVoicevoxVoice,
+  KokoroVoice as GeneratedKokoroVoice,
 } from '../generated/video-project.js';
 
 export const BUNDLED_FONT_FAMILY = 'Noto Sans CJK JP' as const;
@@ -20,6 +21,7 @@ export type AssetRights = GeneratedRights;
 export type AssetType = GeneratedAsset['type'];
 export type RightsStatus = GeneratedRights['status'];
 export type VoicevoxVoice = GeneratedVoicevoxVoice;
+export type KokoroVoice = GeneratedKokoroVoice;
 export type AvatarDefinition = GeneratedAvatar;
 export type Speaker = GeneratedSpeaker;
 export type SceneVisual = GeneratedSceneVisual;
@@ -59,7 +61,22 @@ export interface LockedAsset {
   width?: number;
   height?: number;
   rights?: AssetRights;
-  voice?: LockedVoicevoxVoice;
+  voice?: LockedVoicevoxVoice | LockedKokoroVoice;
+}
+
+export interface LockedKokoroVoice {
+  provider: 'kokoro';
+  engineVersion: string;
+  voiceId: string;
+  language: 'en-US' | 'en-GB';
+  speakerName: string;
+  styleName: string;
+  speedScale: number;
+  volumeScale: number;
+  cacheKey: string;
+  textSha256: string;
+  synthesisText: string;
+  kana?: never;
 }
 
 export type ResolvedScene = Scene & {

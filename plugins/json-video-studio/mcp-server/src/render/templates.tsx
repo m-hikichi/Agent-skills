@@ -20,9 +20,9 @@ const EMPHASIS_TRANSITION_FRAMES = 8;
 
 /**
  * Break Japanese body text between phrases (Chromium's auto-phrase segmentation)
- * instead of in the middle of a word. Requires lang="ja" on the element.
+ * instead of in the middle of a word. English inherits normal word wrapping.
  */
-const phraseWrap = {wordBreak: 'auto-phrase', lineBreak: 'strict'} as unknown as React.CSSProperties;
+const phraseWrap = {wordBreak: 'var(--video-word-break, auto-phrase)', lineBreak: 'var(--video-line-break, strict)'} as unknown as React.CSSProperties;
 
 /** Ease an emphasis weight from the previous scene's state to this scene's state. */
 const useEmphasisWeight = (current: number, previous: number | undefined, staticPreview = false): number => {
@@ -90,7 +90,7 @@ const BulletItem = ({item, index, weight, previousWeight, entrance, project, sta
       border: `${2 + strength * 2}px solid ${strength > 0 ? withAlpha(accent, 0.25 + strength * 0.75) : 'rgba(255,255,255,0.14)'}`,
       background: strength > 0 ? withAlpha(accent, 0.08 + strength * 0.1) : panel.background}}>
       <span style={{display: 'grid', placeItems: 'center', flex: '0 0 auto', width: 48, height: 48, borderRadius: 24, background: accent, color: '#06101f', fontWeight: 900}}>{index + 1}</span>
-      <span lang="ja" style={{fontWeight: strength > 0.5 ? 800 : 400, ...phraseWrap}}>{item}</span>
+      <span style={{fontWeight: strength > 0.5 ? 800 : 400, ...phraseWrap}}>{item}</span>
     </div>
   );
 };
@@ -124,7 +124,7 @@ const SplitTemplate = ({visual, project, staticPreview, continuing}: TemplatePro
       ].map((side, index) => (
         <div key={side.title} style={{...panel, padding: 44, minHeight: 480, borderTop: `8px solid ${index === 0 ? project.theme.accentColor : project.theme.foregroundColor}`}}>
           <h2 style={{fontSize: 40, margin: '0 0 26px', opacity: 0.78}}>{side.title}</h2>
-          <div lang="ja" style={{fontSize: 42, lineHeight: 1.55, whiteSpace: 'pre-wrap', ...phraseWrap}}>{side.body}</div>
+          <div style={{fontSize: 42, lineHeight: 1.55, whiteSpace: 'pre-wrap', ...phraseWrap}}>{side.body}</div>
         </div>
       ))}
     </div>
@@ -176,7 +176,8 @@ const CodeTemplate = ({visual, project, staticPreview, continuing, previousVisua
         <span style={{width: 17, height: 17, borderRadius: 9, background: '#69db7c'}} />
         <strong style={{marginLeft: 18, opacity: 0.74}}>{visual.title ?? visual.variant}</strong>
       </div>
-      <pre style={{margin: 0, padding: '32px 40px', fontSize: codeFontSize(visual.code), lineHeight: CODE_PANEL.lineHeight, maxHeight: CODE_PANEL.textHeight, overflow: 'hidden', color: project.theme.foregroundColor}}>
+      {/* Keep code language-neutral: Chromium otherwise changes its generic monospace font for Japanese. */}
+      <pre lang="" style={{margin: 0, padding: '32px 40px', fontSize: codeFontSize(visual.code), lineHeight: CODE_PANEL.lineHeight, maxHeight: CODE_PANEL.textHeight, overflow: 'hidden', color: project.theme.foregroundColor}}>
         {lines.map((line, index) => (
           <CodeLine key={index} line={line} number={index + 1} variant={visual.variant} accent={project.theme.accentColor} staticPreview={staticPreview}
             weight={lineLevel(visual.highlightLines, index)} previousWeight={previous ? lineLevel(previous.highlightLines, index) : undefined} />
@@ -382,7 +383,7 @@ const StatementTemplate = ({visual, project, staticPreview, continuing}: Templat
           {visual.title ? <span style={{fontSize: 46, fontWeight: 900}}>{visual.title}</span> : null}
         </div>
       ) : null}
-      <div lang="ja" style={{fontSize: 52, lineHeight: 1.6, fontWeight: 500, ...phraseWrap}}>
+      <div style={{fontSize: 52, lineHeight: 1.6, fontWeight: 500, ...phraseWrap}}>
         {emphasisRuns(visual.text, visual.emphasis).map((run, index) => run.emphasized
           ? <span key={index} style={{color: accent, fontWeight: 900}}>{run.text}</span>
           : <React.Fragment key={index}>{run.text}</React.Fragment>)}
