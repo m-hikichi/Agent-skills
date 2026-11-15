@@ -1,0 +1,281 @@
+import React from 'react';
+import {Audio} from '@remotion/media';
+import {
+  AbsoluteFill,
+  Img,
+  Sequence,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from 'remotion';
+import {BUNDLED_FONT_FAMILY, type ProjectLock, type RenderInput, type ResolvedScene, type SceneVisual, type Speaker, type VideoProject} from '../shared/video-types.js';
+import {NAVIGATION_BAR_HEIGHT, clampVolume, createSubtitleLayoutStyles, deckGeometry, effectiveDurationInFrames, effectiveScenes, isDeckDiagramVisual, isDeckFrame, isCoverVisual, navigationState, pageOpacity, sceneContinuity, scenePageNumbers, storyboardCellLayout, subtitleAtFrame, type SceneContinuity} from './layout.js';
+import {NavigationBar, VisualTemplate} from './templates.js';
+import {DECK, DeckCover, DeckFooter, DeckPageHeader, DeckThumbnail, SlideTemplate, deckVariables} from './deck.js';
+import {DiagramVisualTemplate, deckTone} from './diagrams.js';
+
+// Remotion requires an index signature for composition props. The shared contract
+// deliberately stays a closed interface, so the renderer adds it at this boundary.
+export type RemotionRenderInput = RenderInput & Record<string, unknown>;
+
+const resolveSpeaker = (project: VideoProject, id?: string): Speaker | undefined =>
+  id ? project.speakers.find((speaker) => speaker.id === id) : undefined;
+
+const materializeAssetUrls = (assetUrls: Record<string, string>): Record<string, string> =>
+  Object.fromEntries(Object.entries(assetUrls).map(([id, url]) => [
+    id,
+    url.startsWith('remotion-static:') ? staticFile(url.slice('remotion-static:'.length)) : url,
+  ]));
+
+const resolveAvatar = (
+  speaker: Speaker | undefined,
+  emotion: string | undefined,
+  mouthOpen: boolean,
+): string | undefined => {
+  if (!speaker?.avatar) return undefined;
+  if (mouthOpen && speaker.avatar.mouthOpenAssetId) return speaker.avatar.mouthOpenAssetId;
+  if (emotion && speaker.avatar.expressions?.[emotion]) return speaker.avatar.expressions[emotion];
+  return speaker.avatar.defaultAssetId;
+};
+
+const NO_CONTINUITY: SceneContinuity = {fromPrevious: false, toNext: false};
+
+/** Chapter bar drawn outside the scene fade so it stays steady across scene changes. */
+const SceneNavigation = ({scene, project, totalFrames, staticPreview = false}: {scene: ResolvedScene; project: VideoProject; totalFrames: number; staticPreview?: boolean}) => {
+  const frame = useCurrentFrame();
+  const state = navigationState(project, scene.sectionId, scene.startFrame + (staticPreview ? 0 : frame), totalFrames);
+  return state ? <NavigationBar state={state} project={project} /> : null;
+};
+
+// Phrase-aware, balanced wrapping: a two-line subtitle splits near its middle at a phrase
+// boundary instead of filling the first line to the edge and cutting a phrase.
+const deckSubtitleText = {wordBreak: 'auto-phrase', lineBreak: 'strict', textWrap: 'balance'} as unknown as React.CSSProperties;
+
+/**
+ * Deck frame body: gradient, white card with the slide (or a cover page),
+ * subtitle under the card and the footer. Only the slide contents fade on a
+ * page change; the frame itself never moves.
+ */
+const DeckBody = ({scene, project, assetUrls, staticPreview, continuity, previousVisual, fade, page, totalFrames, showSubtitle, subtitleFontSize, subtitleMaxLines}: {scene: ResolvedScene; project: VideoProject; assetUrls: Record<string, string>; staticPreview: boolean; continuity: SceneContinuity; previousVisual?: SceneVisual | undefined; fade: number; page: number; totalFrames: number; showSubtitle: boolean; subtitleFontSize: number; subtitleMaxLines: 1 | 2}) => {
+  const frame = useCurrentFrame();
+  const cover = isCoverVisual(scene.visual);
+  const absoluteFrame = scene.startFrame + (staticPreview ? 0 : frame);
+  const navigation = navigationState(project, scene.sectionId, absoluteFrame, totalFrames);
+  const {card, subtitleTop, subtitleHeight, subtitleWidth} = deckGeometry(project);
+  const subtitleLayout = createSubtitleLayoutStyles(subtitleFontSize, subtitleMaxLines);
+  const diagram = isDeckDiagramVisual(scene.visual);
+  const diagramHeader = diagram && 'title' in scene.visual ? {tag: (scene.visual as {tag?: string}).tag, title: scene.visual.title} : undefined;
+  return (
+    <AbsoluteFill style={{...deckVariables(project), background: DECK.gradient, color: DECK.text}}>
+      {cover ? (
+        <AbsoluteFill style={{opacity: fade}}><DeckCover visual={scene.visual} project={project} assetUrls={assetUrls} /></AbsoluteFill>
+      ) : (
+        <>
+          <div style={{position: 'absolute', left: card.left, top: card.top, right: card.right, bottom: card.bottom, background: '#fff', borderRadius: 14, boxShadow: '0 10px 30px rgba(0, 0, 0, 0.18)', overflow: 'hidden'}}>
+            <div style={{position: 'absolute', inset: 0, opacity: fade}}>
+              {scene.visual.type === 'slide'
+                ? <SlideTemplate visual={scene.visual} staticPreview={staticPreview} {...(continuity.fromPrevious && previousVisual ? {previousVisual} : {})} />
+                : diagram
+                ? <div style={{position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', color: DECK.text}}>
+                    <DeckPageHeader tag={diagramHeader?.tag} title={diagramHeader?.title} />
+                    <div style={{flex: 1, minHeight: 0, display: 'grid', placeItems: 'center', padding: '10px 40px'}}>
+                      <DiagramVisualTemplate visual={scene.visual} tone={deckTone} staticPreview={staticPreview} showTitle={false} previousVisual={continuity.fromPrevious ? previousVisual : undefined} />
+                    </div>
+                  </div>
+                : <AbsoluteFill style={{display: 'grid', placeItems: 'center', padding: 40, background: project.theme.backgroundColor, color: project.theme.foregroundColor}}>
+                    <VisualTemplate visual={scene.visual} project={project} assetUrls={assetUrls} staticPreview={staticPreview} continuing={continuity.fromPrevious} {...(continuity.fromPrevious && previousVisual ? {previousVisual} : {})} />
+                  </AbsoluteFill>}
+            </div>
+          </div>
+          <DeckFooter project={project} assetUrls={assetUrls} navigation={navigation} page={page} progress={navigation?.progress ?? (totalFrames > 0 ? absoluteFrame / totalFrames : 0)} />
+        </>
+      )}
+      {showSubtitle ? (
+        <div style={{position: 'absolute', left: (1920 - subtitleWidth) / 2, width: subtitleWidth, top: cover ? Math.min(740, subtitleTop) : subtitleTop, borderRadius: 12, textAlign: 'center', fontSize: subtitleFontSize, fontWeight: 700,
+          color: project.theme.subtitleStyle?.color ?? '#fff', background: project.theme.subtitleStyle?.backgroundColor ?? 'rgba(0, 0, 0, 0.75)', ...subtitleLayout.box, minHeight: 0, maxHeight: subtitleHeight,
+          // On content pages the box keeps the height reserved for it, so it neither jumps between cues nor leaves a gap above the footer.
+          ...(cover ? {} : {height: subtitleHeight}), padding: '12px 30px'}}>
+          <div lang="ja" style={{...subtitleLayout.text, ...deckSubtitleText}}>{subtitleAtFrame(scene, frame, staticPreview)}</div>
+        </div>
+      ) : null}
+    </AbsoluteFill>
+  );
+};
+
+const SceneLayer = ({scene, project, assetUrls, staticPreview = false, continuity = NO_CONTINUITY, previousVisual, page = 1, totalFrames = 1, finalScene = false}: {scene: ResolvedScene; project: VideoProject; assetUrls: Record<string, string>; staticPreview?: boolean; continuity?: SceneContinuity; previousVisual?: SceneVisual; page?: number; totalFrames?: number; finalScene?: boolean}) => {
+  const frame = useCurrentFrame();
+  const {fps} = useVideoConfig();
+  const speaker = resolveSpeaker(project, scene.speakerId);
+  const inferredSpeakingFrames = Math.max(0, scene.durationInFrames - Math.ceil(((scene.holdAfterMs ?? 0) / 1_000) * fps));
+  const speakingFrames = scene.audioDurationMs > 0 ? Math.ceil((scene.audioDurationMs / 1_000) * fps) : inferredSpeakingFrames;
+  const isSpeaking = Boolean(scene.text || scene.resolvedAudioAssetId) && frame < speakingFrames;
+  const avatarId = resolveAvatar(speaker, scene.emotion, !staticPreview && isSpeaking && frame % 10 < 4);
+  const avatarSrc = avatarId ? assetUrls[avatarId] : undefined;
+  const subtitleFontSize = project.theme.subtitleStyle?.fontSize ?? 48;
+  const subtitleMaxLines = project.theme.subtitleStyle?.maxLines ?? 2;
+  const subtitleLayout = createSubtitleLayoutStyles(subtitleFontSize, subtitleMaxLines);
+  const fade = staticPreview ? 1 : pageOpacity(frame, scene.durationInFrames, continuity, finalScene);
+  const subtitle = subtitleAtFrame(scene, frame, staticPreview);
+  const topPadding = project.navigation?.groups.length ? 70 + NAVIGATION_BAR_HEIGHT : 70;
+  const audio = (
+    <>
+      {!staticPreview && scene.resolvedAudioAssetId && assetUrls[scene.resolvedAudioAssetId] ? (
+        <Audio src={assetUrls[scene.resolvedAudioAssetId]} volume={scene.resolvedAudioAssetId.startsWith('voice:') ? 1 : clampVolume(speaker?.volume)} />
+      ) : null}
+      {!staticPreview && scene.sfxAssetId && assetUrls[scene.sfxAssetId] ? (
+        <Audio src={assetUrls[scene.sfxAssetId]} volume={clampVolume(project.audio?.sfxVolume)} />
+      ) : null}
+    </>
+  );
+
+  if (isDeckFrame(project)) {
+    return (
+      <>
+        <DeckBody scene={scene} project={project} assetUrls={assetUrls} staticPreview={staticPreview} continuity={continuity} previousVisual={previousVisual}
+          fade={fade} page={page} totalFrames={totalFrames} showSubtitle={Boolean(scene.subtitleText) && (staticPreview || continuity.toNext || frame < speakingFrames)}
+          subtitleFontSize={subtitleFontSize} subtitleMaxLines={subtitleMaxLines} />
+        {audio}
+      </>
+    );
+  }
+
+  return (
+    <AbsoluteFill style={{opacity: scene.visual.type === 'flow' ? 1 : fade, color: project.theme.foregroundColor}}>
+      <AbsoluteFill style={{display: 'grid', placeItems: 'center', padding: `${topPadding}px 140px 190px`}}>
+        <VisualTemplate visual={scene.visual} project={project} assetUrls={assetUrls} staticPreview={staticPreview} continuing={continuity.fromPrevious} {...(continuity.fromPrevious && previousVisual ? {previousVisual} : {})} />
+      </AbsoluteFill>
+      {avatarSrc ? (
+        <Img
+          src={avatarSrc}
+          style={{position: 'absolute', opacity: scene.visual.type === 'flow' ? fade : 1, right: 42, bottom: 154, width: 290, height: 390, objectFit: 'contain', transform: `translateY(${!staticPreview && isSpeaking ? Math.sin(frame / 3) * 3 : 0}px)`}}
+        />
+      ) : null}
+      {scene.subtitleText && (staticPreview || continuity.toNext || frame < speakingFrames) ? (
+        <div style={{position: 'absolute', opacity: scene.visual.type === 'flow' ? fade : 1, left: 190, right: 190, bottom: 44, borderRadius: 18, textAlign: 'center', fontSize: subtitleFontSize, fontWeight: 800, color: project.theme.subtitleStyle?.color ?? '#fff', background: project.theme.subtitleStyle?.backgroundColor ?? 'rgba(0,0,0,.78)', textShadow: '0 3px 8px rgba(0,0,0,.8)', ...subtitleLayout.box}}>
+          <div lang="ja" style={{...subtitleLayout.text, ...deckSubtitleText}}>{subtitle}</div>
+        </div>
+      ) : null}
+      {audio}
+    </AbsoluteFill>
+  );
+};
+
+const backgroundForScene = (project: VideoProject, scene: ResolvedScene, assetUrls: Record<string, string>): string | undefined => {
+  const section = project.sections.find((item) => item.id === scene.sectionId);
+  return section?.backgroundAssetId ? assetUrls[section.backgroundAssetId] : undefined;
+};
+
+export const VideoComposition = ({project, lock, assetUrls}: RemotionRenderInput) => {
+  const resolvedAssetUrls = materializeAssetUrls(assetUrls);
+  const scenes = effectiveScenes(project, lock);
+  const continuity = sceneContinuity(scenes);
+  const pages = scenePageNumbers(scenes);
+  const totalFrames = effectiveDurationInFrames(project, lock);
+  const deck = isDeckFrame(project);
+  const sectionAudio = project.sections.flatMap((section) => {
+    const assetId = section.bgmAssetId ?? project.audio?.bgmAssetId;
+    if (!assetId || !resolvedAssetUrls[assetId]) return [];
+    const sectionScenes = scenes.filter((scene) => scene.sectionId === section.id);
+    const first = sectionScenes[0];
+    const last = sectionScenes.at(-1);
+    if (!first || !last) return [];
+    return [{id: section.id, assetId, from: first.startFrame, durationInFrames: last.startFrame + last.durationInFrames - first.startFrame}];
+  });
+  return (
+    <AbsoluteFill style={{fontFamily: BUNDLED_FONT_FAMILY, background: project.theme.backgroundColor, color: project.theme.foregroundColor, overflow: 'hidden'}}>
+      {scenes.map((scene, index) => {
+        const background = backgroundForScene(project, scene, resolvedAssetUrls);
+        const previousVisual = scenes[index - 1]?.visual;
+        return (
+          <Sequence key={scene.id} from={scene.startFrame} durationInFrames={scene.durationInFrames} name={scene.id}>
+            {background ? <Img src={background} style={{position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.27}} /> : null}
+            <SceneLayer scene={scene} project={project} assetUrls={resolvedAssetUrls} continuity={continuity[index] ?? NO_CONTINUITY} page={pages[index] ?? 1} totalFrames={totalFrames} finalScene={index === scenes.length - 1} {...(previousVisual ? {previousVisual} : {})} />
+            {deck ? null : <SceneNavigation scene={scene} project={project} totalFrames={totalFrames} />}
+          </Sequence>
+        );
+      })}
+      {sectionAudio.map((audio) => (
+        <Sequence key={`bgm-${audio.id}`} from={audio.from} durationInFrames={audio.durationInFrames} name={`BGM ${audio.id}`}>
+          <Audio src={resolvedAssetUrls[audio.assetId]} volume={clampVolume(project.audio?.bgmVolume, 0.12)} loop />
+        </Sequence>
+      ))}
+    </AbsoluteFill>
+  );
+};
+
+export const ThumbnailComposition = ({project, assetUrls}: RemotionRenderInput) => {
+  const resolvedAssetUrls = materializeAssetUrls(assetUrls);
+  if (isDeckFrame(project)) return <DeckThumbnail project={project} assetUrls={resolvedAssetUrls} />;
+  const background = project.thumbnail.backgroundAssetId ? resolvedAssetUrls[project.thumbnail.backgroundAssetId] : undefined;
+  const align = project.thumbnail.layout ?? 'center';
+  const avatars = (project.thumbnail.speakerIds ?? [])
+    .map((id) => resolveSpeaker(project, id))
+    .map((speaker) => speaker?.avatar?.defaultAssetId)
+    .filter((id): id is string => Boolean(id))
+    .map((id) => resolvedAssetUrls[id])
+    .filter((url): url is string => Boolean(url));
+  return (
+    <AbsoluteFill style={{fontFamily: BUNDLED_FONT_FAMILY, background: project.theme.backgroundColor, color: project.theme.foregroundColor, overflow: 'hidden'}}>
+      {background ? <Img src={background} style={{width: '100%', height: '100%', objectFit: 'cover', opacity: 0.46}} /> : null}
+      <AbsoluteFill style={{background: 'linear-gradient(90deg, rgba(3,7,18,.92), rgba(3,7,18,.18))'}} />
+      <AbsoluteFill style={{justifyContent: 'center', alignItems: align === 'left' ? 'flex-start' : align === 'right' ? 'flex-end' : 'center', padding: 90, textAlign: align}}>
+        <div style={{maxWidth: 1040}}>
+          {project.thumbnail.textLines.map((line, index) => <div key={line} style={{fontSize: index === 0 ? 105 : 82, lineHeight: 1.02, fontWeight: 950, color: index === 0 ? project.theme.accentColor : project.theme.foregroundColor, textShadow: '0 8px 30px rgba(0,0,0,.75)', marginTop: index ? 20 : 0}}>{line}</div>)}
+        </div>
+      </AbsoluteFill>
+      {avatars.map((url, index) => (
+        <Img key={url} src={url} style={{position: 'absolute', right: 26 + index * 190, bottom: -35, width: 280, height: 490, objectFit: 'contain', filter: 'drop-shadow(0 16px 20px rgba(0,0,0,.55))'}} />
+      ))}
+    </AbsoluteFill>
+  );
+};
+
+export const StoryboardComposition = ({project, lock, assetUrls}: RemotionRenderInput) => {
+  const {width, height} = useVideoConfig();
+  const cell = storyboardCellLayout(width, height);
+  const resolvedAssetUrls = materializeAssetUrls(assetUrls);
+  const scenes = effectiveScenes(project, lock).slice(0, 12);
+  return (
+    <AbsoluteFill style={{background: '#e8edf5', padding: 28, boxSizing: 'border-box', fontFamily: BUNDLED_FONT_FAMILY, display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gridTemplateRows: 'repeat(4, minmax(0, 1fr))', gap: 18}}>
+      {scenes.map((scene, index) => (
+        <div key={scene.id} style={{position: 'relative', overflow: 'hidden', borderRadius: 14, boxShadow: '0 5px 18px rgba(15,23,42,.18)'}}>
+          <div style={{width: 1920, height: 1080, left: cell.left, top: cell.top, transform: `scale(${cell.scale})`, transformOrigin: 'top left', background: project.theme.backgroundColor, color: project.theme.foregroundColor, position: 'absolute', overflow: 'hidden'}}>
+            {backgroundForScene(project, scene, resolvedAssetUrls) ? <Img src={backgroundForScene(project, scene, resolvedAssetUrls)!} style={{position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.27}} /> : null}
+            <SceneLayer scene={isDeckFrame(project) ? scene : {...scene, startFrame: 0}} project={project} assetUrls={resolvedAssetUrls} staticPreview totalFrames={lock.totalFrames} />
+            {isDeckFrame(project) ? null : <SceneNavigation scene={scene} project={project} totalFrames={lock.totalFrames} staticPreview />}
+          </div>
+          <div style={{position: 'absolute', left: 10, top: 3, borderRadius: 8, background: 'rgba(0,0,0,.76)', color: '#fff', padding: '3px 9px', fontSize: 16}}>{index + 1}. {scene.id}</div>
+        </div>
+      ))}
+    </AbsoluteFill>
+  );
+};
+
+export const calculateMainMetadata = ({props}: {props: RemotionRenderInput}) => ({
+  durationInFrames: effectiveDurationInFrames(props.project, props.lock),
+  fps: props.project.canvas.fps,
+  width: 1920,
+  height: 1080,
+});
+
+export const emptyRenderInput = (): RemotionRenderInput => ({
+  project: {
+    schemaVersion: '1.0.0',
+    meta: {id: 'preview', title: 'Preview', language: 'ja-JP'},
+    canvas: {preset: 'youtube-1080p', fps: 30},
+    theme: {backgroundColor: '#07111f', foregroundColor: '#f8fafc', accentColor: '#22d3ee', fontFamily: BUNDLED_FONT_FAMILY},
+    assets: [], speakers: [], sections: [],
+    thumbnail: {textLines: ['Preview']},
+    outputs: {video: true, captions: true, chapters: true, thumbnail: true, storyboard: true},
+    policies: {allowUnknownRights: false, maxDurationMinutes: 30},
+  },
+  lock: {
+    lockVersion: '1.0.0', projectDigest: '', lockHash: '', generatedAt: '',
+    runtime: {node: '', remotion: '', ffmpeg: '', chrome: '', font: ''},
+    assets: [], scenes: [], totalFrames: 1, fps: 30, credits: [], warnings: [],
+  },
+  assetUrls: {},
+});
+
+export const renderDuration = (project: VideoProject, lock: ProjectLock): number =>
+  effectiveDurationInFrames(project, lock);

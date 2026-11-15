@@ -1,0 +1,11 @@
+{
+  "eval_id": 0,
+  "eval_name": "complete-feature",
+  "prompt": "Spec Kit v1.0.x feature一式から、要件定義書、要件に紐づく機能一覧、機能に基づくテスト一覧、canonical JSON、統合HTMLを作成し、publish可否を検査する。",
+  "assertions": [
+    "5種類の成果物が生成される",
+    "current要件がFNCとTSTへ追跡できる",
+    "未確認のplan/contract対応を自動で確定せずpublishをブロックする",
+    "MarkdownとHTMLがcanonical JSONから決定的に再生成できる"
+  ]
+}

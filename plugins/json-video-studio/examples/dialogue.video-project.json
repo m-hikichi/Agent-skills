@@ -1,0 +1,117 @@
+{
+  "schemaVersion": "1.0.0",
+  "meta": {
+    "id": "voicevox-dialogue",
+    "title": "JSON動画の仕組み",
+    "description": "VOICEVOX発話と複数テンプレートを確認するサンプルです。",
+    "language": "ja-JP"
+  },
+  "canvas": {
+    "preset": "youtube-1080p",
+    "fps": 30
+  },
+  "theme": {
+    "backgroundColor": "#0F172A",
+    "foregroundColor": "#F8FAFC",
+    "accentColor": "#F59E0B",
+    "fontFamily": "Noto Sans CJK JP",
+    "spacing": "comfortable",
+    "subtitleStyle": {
+      "fontSize": 52,
+      "maxLines": 2,
+      "backgroundColor": "#020617DD",
+      "color": "#FFFFFF"
+    }
+  },
+  "assets": [],
+  "speakers": [
+    {
+      "id": "narrator",
+      "displayName": "四国めたん",
+      "voice": {
+        "provider": "voicevox",
+        "speakerUuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+        "styleId": 2,
+        "speedScale": 1.05,
+        "volumeScale": 1
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "intro",
+      "title": "JSON動画とは",
+      "scenes": [
+        {
+          "id": "intro-title",
+          "speakerId": "narrator",
+          "text": "JSONに台詞と画面の内容を書くだけで、音声と映像を同期できます。",
+          "subtitle": "JSONの台詞と画面から、音声と映像を同期できます。",
+          "emotion": "happy",
+          "holdAfterMs": 300,
+          "visual": {
+            "type": "title",
+            "title": "JSONから動画へ",
+            "subtitle": "音声時間を基準にタイムラインを構築"
+          }
+        },
+        {
+          "id": "intro-steps",
+          "speakerId": "narrator",
+          "text": "検証、音声生成、絵コンテ確認、レンダーの順に処理します。",
+          "visual": {
+            "type": "bullets",
+            "title": "再現可能な4段階",
+            "items": [
+              "Schemaで入力を検証",
+              "VOICEVOXで発話音声を生成",
+              "storyboardを目視確認",
+              "固定lockからMP4をレンダー"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "ending",
+      "title": "まとめ",
+      "scenes": [
+        {
+          "id": "ending-outro",
+          "speakerId": "narrator",
+          "text": "まずはサンプルを編集して、自分の動画を作ってみましょう。",
+          "visual": {
+            "type": "outro",
+            "title": "次は自分のJSONで",
+            "subtitle": "編集したら再検証してレンダー"
+          }
+        }
+      ]
+    }
+  ],
+  "audio": {
+    "bgmVolume": 0.12,
+    "sfxVolume": 0.5
+  },
+  "thumbnail": {
+    "textLines": [
+      "JSONだけで",
+      "解説動画を生成"
+    ],
+    "speakerIds": [
+      "narrator"
+    ],
+    "layout": "left"
+  },
+  "outputs": {
+    "video": true,
+    "captions": true,
+    "chapters": true,
+    "thumbnail": true,
+    "storyboard": true
+  },
+  "policies": {
+    "allowUnknownRights": false,
+    "maxDurationMinutes": 5
+  }
+}

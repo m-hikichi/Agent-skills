@@ -1,0 +1,13 @@
+{
+  "expectations": [
+    {"text": "各Markdownの冒頭で目的・完成度・残件・次の行動が分かる", "passed": true, "evidence": "3文書すべてに「この資料で分かること」「現在の確認状況」と残件・次の行動を表示。"},
+    {"text": "未レビューの機能境界を候補と表示する", "passed": true, "evidence": "意味レビュー未完了の全機能を「候補（対応関係のレビューが必要）」と表示。"},
+    {"text": "同じ業務目的の要件・例外・達成基準を1つの機能へ集約する", "passed": true, "evidence": "通知先登録のUS・AC・FR・Edge Case・Success Criteriaの8要件をFNC-001へ集約し、要件ごとの機能複製を解消。"},
+    {"text": "未完成テストを要具体化と表示する", "passed": true, "evidence": "事前条件・操作・期待結果を判定し、不足項目名と実施可否を表示。"},
+    {"text": "HTML上部に件数と次の確認への導線がある", "passed": true, "evidence": "ダッシュボードに要件・機能・テスト・未決件数と最初の未決事項へのリンクを表示。"},
+    {"text": "関連IDはホバーとキーボードフォーカスで内容を確認できる", "passed": true, "evidence": "REQ/FNC/TSTリンクに短い内容プレビューを持たせ、mouseoverとfocusinの両方で画面上のツールチップへ表示。"},
+    {"text": "warningを問題なしと表示しない", "passed": true, "evidence": "errors/warningsに応じて問題なし・確認推奨・要対応の3段階表示。"},
+    {"text": "機械用の戻り先や生JSONを本文に表示しない", "passed": true, "evidence": "return_toを日本語の次アクションへ変換し、品質診断を構造化表示。"},
+    {"text": "補足情報は折り畳み、空値を表示しない", "passed": true, "evidence": "HTMLの補足をdetails/summaryへ移し、空値を除外。"}
+  ]
+}

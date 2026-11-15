@@ -1,0 +1,82 @@
+{
+  "skill_name": "speckit-spec-to-basic-design-html",
+  "evals": [
+    {
+      "id": 0,
+      "name": "fresh-gen-equipment-lending-v2",
+      "prompt": "添付の Spec Kit spec.md から、実装とテストへ引き渡せる基本設計の機能一覧を作成してください。要求の取りこぼしと、specにない設計事項を勝手に確定することを避けたいです。gitで設計差分をレビューでき、非エンジニアはHTMLで確認できるようにしてください。",
+      "expected_output": "spec.mdを要求の正本とし、v2 design.jsonと自己完結HTMLを生成する。全規範要素を追跡し、各機能に安定ID・設計詳細・根拠を持たせる。品質ゲートがpassedである。",
+      "files": ["fixtures/equipment-lending-spec.md"],
+      "expectations": [
+        "FNC-xxxを持つv2 design.jsonと対応HTMLが生成される",
+        "FR、User Story、受入シナリオ、Edge Cases、Clarifications、Assumptions、Success Criteria、Out of Scopeがtraceabilityにある",
+        "各機能にアクター、起動契機、実行形態、入出力、事前・事後条件、業務ルール、例外、対象データ、根拠がある",
+        "業務ルールはspecified・derived・confirmedを区別し、derivedには導出理由がある",
+        "現行、将来、対象外が混同されない",
+        "品質レポートのblocking_error_countが0である",
+        "HTMLに機能一覧、機能詳細、トレーサビリティ、インターフェース、確認・品質情報の5タブがある"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "fresh-gen-book-lending-v2",
+      "prompt": "社内図書貸出管理のspec.mdから基本設計機能一覧を作ってください。要求から導出した設計と明記された要求を区別し、実装担当が入出力・条件・失敗時動作まで確認できる形式にしてください。",
+      "expected_output": "別ドメインでもv2スキーマと全規範要素トレーサビリティを適用し、予約・取り置きを現行機能として捏造しない。自動督促をbatchまたはeventとして画面から分離する。",
+      "files": ["fixtures/book-lending-spec.md"],
+      "expectations": [
+        "全FRと受入・エッジ・前提・成功基準・対象外を追跡する",
+        "FR-031のSHOULDを設計根拠へ保持する",
+        "自動督促を画面機能として扱わない",
+        "予約・取り置きを現行機能へ追加しない",
+        "FR-040とSC-003を将来として扱う",
+        "品質ゲートがpassedである"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "legacy-html-migration",
+      "prompt": "添付の旧形式HTML機能一覧を、spec.mdを正本とする新しい基本設計形式へ移行してください。既存の分類・順序・文言は維持し、不足する設計情報は推測せず確認事項として提示してください。",
+      "expected_output": "旧HTMLからv2 design.jsonドラフトを生成し、既存13機能を保持する。不足情報と未対応の規範要素をblocking open_questionsとして提示し、確認前に確定版を生成しない。",
+      "files": ["fixtures/equipment-lending-spec.md", "fixtures/備品貸出管理デモ_基本設計_機能一覧.html"],
+      "expectations": [
+        "既存13機能と分類・順序・文言を保持する",
+        "各機能へ仮のFNC-xxxを一意に割り当てる",
+        "v1に無い設計項目をopen_questionsへ追加する",
+        "全規範要素をtraceabilityへ追加する",
+        "確認前の品質判定はfailedであり確定HTMLを生成しない"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "api-batch-event-state-transition",
+      "prompt": "注文連携APIのspec.mdを基本設計機能一覧へ落としてください。API、イベント、日次バッチ、状態遷移を画面機能と混同せず、冪等性・再送・禁止遷移の根拠を追跡できるようにしてください。",
+      "expected_output": "API、event、batch、external-interfaceを構造化し、状態遷移、冪等制御、再送、日次照合を独立した受入可能な責務として設計する。",
+      "files": ["fixtures/api-order-spec.md"],
+      "expectations": [
+        "API・イベント・バッチ・外部連携のインターフェース種別を使い分ける",
+        "意味回帰用api-order-design.jsonと同じFR-002→FNC-002、FR-010/011→FNC-003、FR-021→FNC-004/005、FR-030→FNC-006の責務対応になる",
+        "同一冪等キーの重複防止がFR-002とClarificationへ追跡できる",
+        "配送済みから取消への禁止遷移がFR-011とEdge Caseへ追跡できる",
+        "イベント再送上限がFR-021とEdge Caseへ追跡できる",
+        "FR-040だけを将来機能として扱い、決済・返金は対象外とする",
+        "品質ゲートがpassedである"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "ambiguous-spec-asks-before-finalizing",
+      "prompt": "申請承認のspec.mdから確定版の基本設計機能一覧を作ってください。曖昧な点があれば、一般的な値で補完せず私に確認してください。",
+      "expected_output": "代理承認者の決定方法と通知再送条件が未定義であることを根拠付きで質問し、回答前に確定版を生成しない。回答後はClarificationsへ追記してから設計へ反映する。",
+      "files": ["fixtures/ambiguous-approval-spec.md"],
+      "expectations": [
+        "代理承認者の決定方法を質問する",
+        "通知の再送間隔・回数または失敗時処理を質問する",
+        "質問にspecの該当Edge Caseと影響機能を示す",
+        "具体的な選択肢と推奨案を提示する",
+        "回答前にpassedの品質レポートや確定版HTMLを生成しない",
+        "回答後は質問をansweredとしてspec.mdとdesign.jsonへ同時記録する",
+        "設計へCL IDを反映した後だけ質問をresolvedにして確定版を生成する"
+      ]
+    }
+  ]
+}

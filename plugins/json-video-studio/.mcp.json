@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "json-video-studio": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i", "--init",
+        "--entrypoint", "node",
+        "--network", "json-video-studio",
+        "-v", "${CLAUDE_PROJECT_DIR}:/workspace",
+        "-v", "${CLAUDE_PLUGIN_DATA}:/data",
+        "json-video-studio",
+        "/app/dist/mcp/index.js"
+      ]
+    }
+  }
+}

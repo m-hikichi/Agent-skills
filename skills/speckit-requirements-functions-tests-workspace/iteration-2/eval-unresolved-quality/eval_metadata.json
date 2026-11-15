@@ -1,0 +1,11 @@
+{
+  "eval_id": 1,
+  "eval_name": "unresolved-quality",
+  "prompt": "未解決clarificationと未完了checklistを含むSpec Kit v1.0.x featureを文書化し、金額や通貨を捏造せずpublish可否を検査する。",
+  "assertions": [
+    "未決の金額・通貨を補完しない",
+    "未解決事項とchecklistを根拠付きで表示する",
+    "draft成果物は生成できるがpublishは拒否される",
+    "6軸の品質診断を表示する"
+  ]
+}

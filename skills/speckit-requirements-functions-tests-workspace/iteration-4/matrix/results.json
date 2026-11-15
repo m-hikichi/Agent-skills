@@ -1,0 +1,98 @@
+[
+  {
+    "fixture": "complete-feature",
+    "profile": "draft",
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "status": "draft-ready",
+    "blocking_errors": 0
+  },
+  {
+    "fixture": "complete-feature",
+    "profile": "publish",
+    "exit_code": 1,
+    "expected_exit_code": 1,
+    "status": "blocked",
+    "blocking_errors": 20
+  },
+  {
+    "fixture": "japanese-custom-headings",
+    "profile": "draft",
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "status": "draft-ready",
+    "blocking_errors": 0
+  },
+  {
+    "fixture": "japanese-custom-headings",
+    "profile": "publish",
+    "exit_code": 1,
+    "expected_exit_code": 1,
+    "status": "blocked",
+    "blocking_errors": 10
+  },
+  {
+    "fixture": "spec-only",
+    "profile": "draft",
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "status": "draft-ready",
+    "blocking_errors": 0
+  },
+  {
+    "fixture": "spec-only",
+    "profile": "publish",
+    "exit_code": 1,
+    "expected_exit_code": 1,
+    "status": "blocked",
+    "blocking_errors": 10
+  },
+  {
+    "fixture": "tasks-no-tests",
+    "profile": "draft",
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "status": "draft-ready",
+    "blocking_errors": 0
+  },
+  {
+    "fixture": "tasks-no-tests",
+    "profile": "publish",
+    "exit_code": 1,
+    "expected_exit_code": 1,
+    "status": "blocked",
+    "blocking_errors": 9
+  },
+  {
+    "fixture": "unknown-extra",
+    "profile": "draft",
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "status": "draft-ready",
+    "blocking_errors": 0
+  },
+  {
+    "fixture": "unknown-extra",
+    "profile": "publish",
+    "exit_code": 1,
+    "expected_exit_code": 1,
+    "status": "blocked",
+    "blocking_errors": 6
+  },
+  {
+    "fixture": "unresolved-quality",
+    "profile": "draft",
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "status": "draft-ready",
+    "blocking_errors": 0
+  },
+  {
+    "fixture": "unresolved-quality",
+    "profile": "publish",
+    "exit_code": 1,
+    "expected_exit_code": 1,
+    "status": "blocked",
+    "blocking_errors": 10
+  }
+]

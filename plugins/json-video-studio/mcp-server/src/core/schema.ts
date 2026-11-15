@@ -1,0 +1,450 @@
+import {access} from 'node:fs/promises';
+import {dirname, extname, resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import Ajv2020Import, {type ErrorObject, type ValidateFunction} from 'ajv/dist/2020.js';
+import addFormatsImport from 'ajv-formats';
+import type {ProjectLock, VideoProject} from '../shared/video-types.js';
+import {AppError} from './errors.js';
+import {readJson} from './fs-safe.js';
+
+type JsonSchema = Record<string, unknown>;
+
+let cached: {path: string; validator: ValidateFunction<VideoProject>} | undefined;
+let lockCached: {projectPath: string; lockPath: string; validator: ValidateFunction<ProjectLock>} | undefined;
+const Ajv2020 = Ajv2020Import as unknown as new (options: Record<string, unknown>) => {
+  compile<T>(schema: JsonSchema): ValidateFunction<T>;
+  addSchema(schema: JsonSchema): void;
+};
+const addFormats = addFormatsImport as unknown as (ajv: unknown) => void;
+
+async function firstExisting(paths: string[]): Promise<string> {
+  for (const path of paths) {
+    try {
+      await access(path);
+      return path;
+    } catch {
+      // Continue through deterministic fallbacks.
+    }
+  }
+  throw new AppError('SCHEMA_NOT_FOUND', 'video-project.schema.json was not found.', {
+    category: 'dependency',
+    hint: 'Set JSON_VIDEO_SCHEMA_PATH to the absolute schema path.',
+  });
+}
+
+export async function resolveSchemaPath(explicitPath?: string): Promise<string> {
+  if (explicitPath) return resolve(explicitPath);
+  if (process.env.JSON_VIDEO_SCHEMA_PATH) return resolve(process.env.JSON_VIDEO_SCHEMA_PATH);
+  const moduleDir = dirname(fileURLToPath(import.meta.url));
+  return firstExisting([
+    '/plugin/schemas/video-project.schema.json',
+    resolve(process.cwd(), 'schemas/video-project.schema.json'),
+    resolve(moduleDir, '../../../schemas/video-project.schema.json'),
+  ]);
+}
+
+export async function projectValidator(schemaPath?: string): Promise<ValidateFunction<VideoProject>> {
+  const path = await resolveSchemaPath(schemaPath);
+  if (cached?.path === path) return cached.validator;
+  const schema = await readJson<JsonSchema>(path);
+  const ajv = new Ajv2020({
+    allErrors: true,
+    strict: true,
+    allowUnionTypes: false,
+    validateFormats: true,
+  });
+  addFormats(ajv);
+  const validator = ajv.compile<VideoProject>(schema);
+  cached = {path, validator};
+  return validator;
+}
+
+export async function resolveLockSchemaPath(explicitPath?: string, projectSchemaPath?: string): Promise<string> {
+  if (explicitPath) return resolve(explicitPath);
+  if (process.env.JSON_VIDEO_LOCK_SCHEMA_PATH) return resolve(process.env.JSON_VIDEO_LOCK_SCHEMA_PATH);
+  const projectPath = await resolveSchemaPath(projectSchemaPath);
+  return firstExisting([
+    resolve(dirname(projectPath), 'project-lock.schema.json'),
+    '/plugin/schemas/project-lock.schema.json',
+    resolve(process.cwd(), 'schemas/project-lock.schema.json'),
+  ]);
+}
+
+export async function lockValidator(
+  projectSchemaPath?: string,
+  explicitLockSchemaPath?: string,
+): Promise<ValidateFunction<ProjectLock>> {
+  const resolvedProjectPath = await resolveSchemaPath(projectSchemaPath);
+  const resolvedLockPath = await resolveLockSchemaPath(explicitLockSchemaPath, resolvedProjectPath);
+  if (lockCached?.projectPath === resolvedProjectPath && lockCached.lockPath === resolvedLockPath) return lockCached.validator;
+  const [projectSchema, lockSchema] = await Promise.all([
+    readJson<JsonSchema>(resolvedProjectPath),
+    readJson<JsonSchema>(resolvedLockPath),
+  ]);
+  const ajv = new Ajv2020({allErrors: true, strict: true, allowUnionTypes: false, validateFormats: true});
+  addFormats(ajv);
+  ajv.addSchema(projectSchema);
+  const validator = ajv.compile<ProjectLock>(lockSchema);
+  lockCached = {projectPath: resolvedProjectPath, lockPath: resolvedLockPath, validator};
+  return validator;
+}
+
+function pointerFor(error: ErrorObject): string {
+  const suffix = error.keyword === 'required' && typeof error.params.missingProperty === 'string'
+    ? `/${escapePointer(error.params.missingProperty)}`
+    : '';
+  return `${error.instancePath}${suffix}` || '/';
+}
+
+function escapePointer(segment: string): string {
+  return segment.replaceAll('~', '~0').replaceAll('/', '~1');
+}
+
+function validateUnique(values: string[], pointer: string, label: string): void {
+  const seen = new Set<string>();
+  for (const value of values) {
+    if (seen.has(value)) {
+      throw new AppError('DUPLICATE_ID', `Duplicate ${label} id: ${value}`, {
+        category: 'schema',
+        jsonPointer: pointer,
+      });
+    }
+    seen.add(value);
+  }
+}
+
+function semanticValidation(project: VideoProject): void {
+  validateUnique(project.assets.map((item) => item.id), '/assets', 'asset');
+  validateUnique(project.speakers.map((item) => item.id), '/speakers', 'speaker');
+  validateUnique(project.sections.map((item) => item.id), '/sections', 'section');
+  validateUnique(project.sections.flatMap((section) => section.scenes.map((item) => item.id)), '/sections', 'scene');
+
+  const assets = new Map(project.assets.map((item) => [item.id, item]));
+  const speakers = new Set(project.speakers.map((item) => item.id));
+  const requireAsset = (id: string | undefined, pointer: string, type?: string | string[]): void => {
+    if (!id) return;
+    const asset = assets.get(id);
+    if (!asset) {
+      throw new AppError('UNKNOWN_ASSET', `Unknown asset id: ${id}`, {category: 'schema', jsonPointer: pointer});
+    }
+    const allowed = typeof type === 'string' ? [type] : type;
+    if (allowed && !allowed.includes(asset.type)) {
+      throw new AppError('ASSET_TYPE_MISMATCH', `Asset ${id} must be ${allowed.join(' or ')}, not ${asset.type}.`, {
+        category: 'schema',
+        jsonPointer: pointer,
+      });
+    }
+  };
+
+  project.assets.forEach((asset, index) => {
+    if (/^(?:[a-z]+:|\\\\|\/)/iu.test(asset.path) || asset.path.split(/[\\/]/u).includes('..')) {
+      throw new AppError('UNSAFE_ASSET_PATH', `Asset paths must be workspace-relative: ${asset.path}`, {
+        category: 'policy',
+        jsonPointer: `/assets/${index}/path`,
+      });
+    }
+    const allowedExtensions: Record<VideoProject['assets'][number]['type'], readonly string[]> = {
+      image: ['.png', '.jpg', '.jpeg', '.webp'],
+      avatar: ['.png', '.jpg', '.jpeg', '.webp'],
+      video: ['.mp4', '.webm', '.mov'],
+      audio: ['.wav', '.mp3', '.m4a', '.ogg'],
+      font: ['.ttf', '.otf', '.woff2'],
+    };
+    if (!allowedExtensions[asset.type].includes(extname(asset.path).toLowerCase())) {
+      throw new AppError('ASSET_EXTENSION_REJECTED', `Unsupported ${asset.type} extension: ${asset.path}`, {
+        category: 'policy', jsonPointer: `/assets/${index}/path`,
+      });
+    }
+    if (asset.rights.status === 'unknown' && !project.policies.allowUnknownRights) {
+      throw new AppError('UNKNOWN_RIGHTS', `Rights must be confirmed for asset ${asset.id}.`, {
+        category: 'policy',
+        jsonPointer: `/assets/${index}/rights/status`,
+      });
+    }
+  });
+
+  const pronunciationTerms = new Set<string>();
+  project.pronunciations?.forEach(({term}, index) => {
+    if (pronunciationTerms.has(term)) throw new AppError('DUPLICATE_PRONUNCIATION', `Duplicate pronunciation term: ${term}`, {category: 'schema', jsonPointer: `/pronunciations/${index}/term`});
+    pronunciationTerms.add(term);
+  });
+
+  const frame = project.theme.frame;
+  requireAsset(frame?.footerLogoAssetId, '/theme/frame/footerLogoAssetId', ['image']);
+  requireAsset(frame?.coverLogoAssetId, '/theme/frame/coverLogoAssetId', ['image']);
+  requireAsset(frame?.coverMarkAssetId, '/theme/frame/coverMarkAssetId', ['image']);
+
+  const sectionIds = new Set(project.sections.map((section) => section.id));
+  const navigatedSections = new Set<string>();
+  project.navigation?.groups.forEach((group, groupIndex) => {
+    group.sectionIds.forEach((sectionId, index) => {
+      const pointer = `/navigation/groups/${groupIndex}/sectionIds/${index}`;
+      if (!sectionIds.has(sectionId)) {
+        throw new AppError('UNKNOWN_SECTION', `Navigation references unknown section id: ${sectionId}`, {category: 'schema', jsonPointer: pointer});
+      }
+      if (navigatedSections.has(sectionId)) {
+        throw new AppError('DUPLICATE_NAVIGATION_SECTION', `Section ${sectionId} belongs to more than one navigation group.`, {category: 'schema', jsonPointer: pointer});
+      }
+      navigatedSections.add(sectionId);
+    });
+  });
+
+  project.speakers.forEach((speaker, index) => {
+    requireAsset(speaker.avatar?.defaultAssetId, `/speakers/${index}/avatar/defaultAssetId`, ['image', 'avatar']);
+    requireAsset(speaker.avatar?.mouthOpenAssetId, `/speakers/${index}/avatar/mouthOpenAssetId`, ['image', 'avatar']);
+    Object.entries(speaker.avatar?.expressions ?? {}).forEach(([emotion, assetId]) => {
+      requireAsset(assetId, `/speakers/${index}/avatar/expressions/${escapePointer(emotion)}`, ['image', 'avatar']);
+    });
+  });
+
+  for (const [sectionIndex, section] of project.sections.entries()) {
+    requireAsset(section.backgroundAssetId, `/sections/${sectionIndex}/backgroundAssetId`, 'image');
+    requireAsset(section.bgmAssetId, `/sections/${sectionIndex}/bgmAssetId`, 'audio');
+    for (const [sceneIndex, scene] of section.scenes.entries()) {
+      const base = `/sections/${sectionIndex}/scenes/${sceneIndex}`;
+      if (scene.speakerId && !speakers.has(scene.speakerId)) {
+        throw new AppError('UNKNOWN_SPEAKER', `Unknown speaker id: ${scene.speakerId}`, {
+          category: 'schema',
+          jsonPointer: `${base}/speakerId`,
+        });
+      }
+      if (scene.text && !scene.audioAssetId) {
+        const speaker = project.speakers.find((item) => item.id === scene.speakerId);
+        if (!speaker?.voice) {
+          throw new AppError('VOICE_REQUIRED', `Text scene ${scene.id} requires a speaker with a VOICEVOX voice.`, {
+            category: 'schema',
+            jsonPointer: `${base}/speakerId`,
+          });
+        }
+      }
+      requireAsset(scene.audioAssetId, `${base}/audioAssetId`, 'audio');
+      requireAsset(scene.sfxAssetId, `${base}/sfxAssetId`, 'audio');
+      if (scene.visual.type === 'media') requireAsset(scene.visual.assetId, `${base}/visual/assetId`, ['image', 'avatar', 'video']);
+      if (scene.visual.type === 'flow' && scene.visual.activeStep >= scene.visual.steps.length) {
+        throw new AppError('FLOW_ACTIVE_STEP_INVALID', `Flow activeStep must select an existing step in scene ${scene.id}.`, {category: 'schema', jsonPointer: `${base}/visual/activeStep`});
+      }
+      if (scene.visual.type === 'bullets') {
+        const itemCount = scene.visual.items.length;
+        scene.visual.highlight?.forEach((value, index) => {
+          if (value >= itemCount) {
+            throw new AppError('HIGHLIGHT_OUT_OF_RANGE', `Bullet highlight ${value} has no item in scene ${scene.id}.`, {category: 'schema', jsonPointer: `${base}/visual/highlight/${index}`});
+          }
+        });
+      }
+      if (scene.visual.type === 'table') {
+        const columnCount = scene.visual.columns.length;
+        const rowCount = scene.visual.rows.length;
+        scene.visual.rows.forEach((row, index) => {
+          if (row.cells.length !== columnCount) {
+            throw new AppError('TABLE_SHAPE_MISMATCH', `Table row ${index} must have ${columnCount} cells in scene ${scene.id}.`, {category: 'schema', jsonPointer: `${base}/visual/rows/${index}/cells`});
+          }
+        });
+        scene.visual.highlightRows?.forEach((value, index) => {
+          if (value >= rowCount) throw new AppError('HIGHLIGHT_OUT_OF_RANGE', `Table highlight row ${value} does not exist in scene ${scene.id}.`, {category: 'schema', jsonPointer: `${base}/visual/highlightRows/${index}`});
+        });
+        scene.visual.highlightColumns?.forEach((value, index) => {
+          if (value >= columnCount) throw new AppError('HIGHLIGHT_OUT_OF_RANGE', `Table highlight column ${value} does not exist in scene ${scene.id}.`, {category: 'schema', jsonPointer: `${base}/visual/highlightColumns/${index}`});
+        });
+      }
+      if (scene.visual.type === 'slide') {
+        scene.visual.blocks.forEach((block, blockIndex) => {
+          const blockBase = `${base}/visual/blocks/${blockIndex}`;
+          const checkIndexes = (values: readonly number[] | undefined, count: number, field: string) => {
+            values?.forEach((value, index) => {
+              if (value >= count) throw new AppError('HIGHLIGHT_OUT_OF_RANGE', `Highlight ${value} does not exist in block ${blockIndex} of scene ${scene.id}.`, {category: 'schema', jsonPointer: `${blockBase}/${field}/${index}`});
+            });
+          };
+          const checkEmphasis = (text: string, terms: readonly string[] | undefined) => {
+            terms?.forEach((term, index) => {
+              if (!text.includes(term)) throw new AppError('EMPHASIS_NOT_FOUND', `Emphasis must be an exact substring of the block text in scene ${scene.id}.`, {category: 'schema', jsonPointer: `${blockBase}/emphasis/${index}`});
+            });
+          };
+          switch (block.kind) {
+            case 'text':
+            case 'callout':
+              checkEmphasis(block.text, block.emphasis);
+              break;
+            case 'table':
+              block.rows.forEach((row, index) => {
+                if (row.cells.length !== block.columns.length) {
+                  throw new AppError('TABLE_SHAPE_MISMATCH', `Table row ${index} must have ${block.columns.length} cells in scene ${scene.id}.`, {category: 'schema', jsonPointer: `${blockBase}/rows/${index}/cells`});
+                }
+              });
+              checkIndexes(block.highlightRows, block.rows.length, 'highlightRows');
+              checkIndexes(block.highlightColumns, block.columns.length, 'highlightColumns');
+              break;
+            case 'code':
+              checkIndexes(block.highlightLines?.map((value) => value - 1), block.code.split(/\r?\n/u).length, 'highlightLines');
+              break;
+            default:
+              checkIndexes(block.highlight, block.items.length, 'highlight');
+          }
+        });
+      }
+      const fail = (code: string, message: string, pointer: string): never => {
+        throw new AppError(code, `${message} (scene ${scene.id})`, {category: 'schema', jsonPointer: `${base}/visual/${pointer}`});
+      };
+      if (scene.visual.type === 'code') {
+        const lineCount = scene.visual.code.split(/\r?\n/u).length;
+        scene.visual.highlightLines?.forEach((value, index) => {
+          if (value > lineCount) fail('HIGHLIGHT_OUT_OF_RANGE', `Code line ${value} does not exist`, `highlightLines/${index}`);
+        });
+      }
+      if (scene.visual.type === 'diagram') {
+        const visual = scene.visual;
+        const nodeIds = visual.nodes.map((node) => node.id);
+        if (new Set(nodeIds).size !== nodeIds.length) fail('DUPLICATE_ID', 'Diagram node ids must be unique', 'nodes');
+        const groupIds = new Set((visual.groups ?? []).map((group) => group.id));
+        if (groupIds.size !== (visual.groups ?? []).length) fail('DUPLICATE_ID', 'Diagram group ids must be unique', 'groups');
+        visual.nodes.forEach((node, index) => {
+          if (node.group !== undefined && !groupIds.has(node.group)) fail('UNKNOWN_DIAGRAM_GROUP', `Unknown group ${node.group}`, `nodes/${index}/group`);
+        });
+        // A group is drawn as one box around its members, so they must sit next to each other.
+        for (const groupId of groupIds) {
+          const members = visual.nodes.map((node, index) => (node.group === groupId ? index : -1)).filter((index) => index >= 0);
+          if (members.length && members.at(-1)! - members[0]! + 1 !== members.length) fail('DIAGRAM_GROUP_NOT_ADJACENT', `Nodes of group ${groupId} must be adjacent`, 'nodes');
+        }
+        visual.links.forEach((link, index) => {
+          if (!nodeIds.includes(link.from)) fail('UNKNOWN_DIAGRAM_NODE', `Unknown node ${link.from}`, `links/${index}/from`);
+          if (!nodeIds.includes(link.to)) fail('UNKNOWN_DIAGRAM_NODE', `Unknown node ${link.to}`, `links/${index}/to`);
+          if (link.from === link.to) fail('DIAGRAM_LINK_INVALID', 'A link must join two different nodes', `links/${index}`);
+        });
+        visual.active?.nodes?.forEach((nodeId, index) => {
+          if (!nodeIds.includes(nodeId)) fail('UNKNOWN_DIAGRAM_NODE', `Unknown node ${nodeId}`, `active/nodes/${index}`);
+        });
+        visual.active?.groups?.forEach((groupId, index) => {
+          if (!groupIds.has(groupId)) fail('UNKNOWN_DIAGRAM_GROUP', `Unknown group ${groupId}`, `active/groups/${index}`);
+        });
+        visual.active?.links?.forEach((value, index) => {
+          if (value >= visual.links.length) fail('HIGHLIGHT_OUT_OF_RANGE', `Link ${value} does not exist`, `active/links/${index}`);
+        });
+        if (visual.active?.packet && visual.active.packet.link >= visual.links.length) fail('HIGHLIGHT_OUT_OF_RANGE', `Link ${visual.active.packet.link} does not exist`, 'active/packet/link');
+      }
+      if (scene.visual.type === 'nest') {
+        const ids: string[] = [];
+        const collect = (item: {id: string; children?: unknown}) => {
+          ids.push(item.id);
+          if (Array.isArray(item.children)) (item.children as Array<{id: string; children?: unknown}>).forEach(collect);
+        };
+        collect(scene.visual.root);
+        if (new Set(ids).size !== ids.length) fail('DUPLICATE_ID', 'Nest ids must be unique', 'root');
+        scene.visual.highlight?.forEach((value, index) => {
+          if (!ids.includes(value)) fail('HIGHLIGHT_OUT_OF_RANGE', `Nest id ${value} does not exist`, `highlight/${index}`);
+        });
+      }
+      if (scene.visual.type === 'timeline') {
+        const visual = scene.visual;
+        const ids = visual.tracks.flatMap((track) => track.segments.map((segment) => segment.id));
+        if (new Set(ids).size !== ids.length) fail('DUPLICATE_ID', 'Timeline segment ids must be unique', 'tracks');
+        visual.tracks.forEach((track, trackIndex) => {
+          let previousEnd = 0;
+          track.segments.forEach((segment, index) => {
+            const pointer = `tracks/${trackIndex}/segments/${index}`;
+            if (segment.end <= segment.start) fail('TIMELINE_SEGMENT_INVALID', 'A segment must end after it starts', pointer);
+            if (segment.end > visual.end) fail('TIMELINE_SEGMENT_INVALID', 'A segment must end within the timeline end', `${pointer}/end`);
+            if (segment.start < previousEnd) fail('TIMELINE_SEGMENT_INVALID', 'Segments of one track must be in order and must not overlap', `${pointer}/start`);
+            previousEnd = segment.end;
+          });
+        });
+        visual.highlight?.forEach((value, index) => {
+          if (!ids.includes(value)) fail('HIGHLIGHT_OUT_OF_RANGE', `Timeline segment ${value} does not exist`, `highlight/${index}`);
+        });
+        if (visual.cursor !== undefined && visual.cursor > visual.end) fail('TIMELINE_CURSOR_INVALID', 'cursor must be within the timeline end', 'cursor');
+        visual.ticks?.forEach((value, index) => {
+          if (value > visual.end) fail('TIMELINE_TICK_INVALID', 'ticks must be within the timeline end', `ticks/${index}`);
+        });
+      }
+      if (scene.visual.type === 'statement') {
+        const {text} = scene.visual;
+        scene.visual.emphasis?.forEach((value, index) => {
+          if (!text.includes(value)) {
+            throw new AppError('EMPHASIS_NOT_FOUND', `Statement emphasis must be an exact substring of text in scene ${scene.id}.`, {category: 'schema', jsonPointer: `${base}/visual/emphasis/${index}`});
+          }
+        });
+      }
+      if (scene.visual.type === 'metric' && scene.visual.variant !== 'number' && scene.visual.labels && scene.visual.values && scene.visual.labels.length !== scene.visual.values.length) {
+        throw new AppError('METRIC_LENGTH_MISMATCH', `Metric labels and values must have the same length in scene ${scene.id}.`, {
+          category: 'schema', jsonPointer: `${base}/visual/labels`,
+        });
+      }
+      if (!scene.audioAssetId && !scene.text && scene.durationMs === undefined) {
+        throw new AppError('SCENE_DURATION_REQUIRED', `Scene ${scene.id} needs text, audioAssetId, or durationMs.`, {
+          category: 'schema',
+          jsonPointer: base,
+        });
+      }
+    }
+  }
+  requireAsset(project.audio?.bgmAssetId, '/audio/bgmAssetId', 'audio');
+  requireAsset(project.thumbnail.backgroundAssetId, '/thumbnail/backgroundAssetId', 'image');
+  project.thumbnail.speakerIds?.forEach((speakerId, index) => {
+    if (!speakers.has(speakerId)) {
+      throw new AppError('UNKNOWN_SPEAKER', `Unknown thumbnail speaker id: ${speakerId}`, {
+        category: 'schema',
+        jsonPointer: `/thumbnail/speakerIds/${index}`,
+      });
+    }
+  });
+}
+
+export async function validateProject(
+  value: unknown,
+  options: {schemaPath?: string} = {},
+): Promise<VideoProject> {
+  const validator = await projectValidator(options.schemaPath);
+  if (!validator(value)) {
+    const first = validator.errors?.[0];
+    const details = validator.errors?.map((error) => `${pointerFor(error)} ${error.message ?? error.keyword}`).join('; ');
+    throw new AppError('SCHEMA_VALIDATION_FAILED', details ?? 'Project does not match the schema.', {
+      category: 'schema',
+      ...(first === undefined ? {} : {jsonPointer: pointerFor(first)}),
+      hint: 'Fix the indicated field and run validate again.',
+    });
+  }
+  semanticValidation(value);
+  return value;
+}
+
+export async function validateProjectLock(
+  value: unknown,
+  options: {projectSchemaPath?: string; lockSchemaPath?: string} = {},
+): Promise<ProjectLock> {
+  const validator = await lockValidator(options.projectSchemaPath, options.lockSchemaPath);
+  if (!validator(value)) {
+    const first = validator.errors?.[0];
+    const details = validator.errors?.map((error) => `${pointerFor(error)} ${error.message ?? error.keyword}`).join('; ');
+    throw new AppError('LOCK_SCHEMA_VALIDATION_FAILED', details ?? 'project.lock.json does not match its schema.', {
+      category: 'schema',
+      ...(first === undefined ? {} : {jsonPointer: pointerFor(first)}),
+      hint: 'Run resolve again; do not edit project.lock.json by hand.',
+    });
+  }
+  validateUnique(value.assets.map((asset) => asset.id), '/assets', 'locked asset');
+  validateUnique(value.scenes.map((scene) => scene.id), '/scenes', 'resolved scene');
+  const assetIds = new Set(value.assets.map((asset) => asset.id));
+  let expectedStart = 0;
+  for (const [index, scene] of value.scenes.entries()) {
+    if (scene.startFrame !== expectedStart) {
+      throw new AppError('LOCK_TIMELINE_INVALID', `Scene ${scene.id} starts at ${scene.startFrame}; expected ${expectedStart}.`, {
+        category: 'schema', jsonPointer: `/scenes/${index}/startFrame`,
+      });
+    }
+    if (scene.resolvedAudioAssetId && !assetIds.has(scene.resolvedAudioAssetId)) {
+      throw new AppError('LOCK_ASSET_REFERENCE_INVALID', `Unknown resolved audio asset: ${scene.resolvedAudioAssetId}`, {
+        category: 'schema', jsonPointer: `/scenes/${index}/resolvedAudioAssetId`,
+      });
+    }
+    expectedStart += scene.durationInFrames;
+  }
+  if (expectedStart !== value.totalFrames) {
+    throw new AppError('LOCK_TIMELINE_INVALID', `totalFrames is ${value.totalFrames}; expected ${expectedStart}.`, {
+      category: 'schema', jsonPointer: '/totalFrames',
+    });
+  }
+  return value;
+}
+
+export function clearSchemaCacheForTests(): void {
+  cached = undefined;
+  lockCached = undefined;
+}

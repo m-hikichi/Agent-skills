@@ -1,0 +1,13 @@
+name: json-video-studio
+
+services:
+  voicevox:
+    image: voicevox/voicevox_engine:cpu-latest
+    container_name: json-video-studio-voicevox
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:50021:50021"
+
+networks:
+  default:
+    name: json-video-studio

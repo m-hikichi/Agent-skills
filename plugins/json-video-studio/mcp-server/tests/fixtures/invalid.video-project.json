@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "1.0.0",
+  "meta": {
+    "id": "invalid-demo",
+    "title": "不正入力のテスト",
+    "language": "ja-JP"
+  },
+  "canvas": {
+    "preset": "youtube-1080p",
+    "fps": 30
+  },
+  "theme": {
+    "backgroundColor": "#000000",
+    "foregroundColor": "#FFFFFF",
+    "accentColor": "#FF0000",
+    "fontFamily": "Noto Sans CJK JP"
+  },
+  "assets": [
+    {
+      "id": "escaped-audio",
+      "type": "audio",
+      "path": "C:\\private\\voice.wav",
+      "rights": {
+        "status": "unknown"
+      }
+    }
+  ],
+  "speakers": [],
+  "sections": [
+    {
+      "id": "broken",
+      "title": "失敗するシーン",
+      "scenes": [
+        {
+          "id": "missing-duration",
+          "visual": {
+            "type": "title",
+            "title": "音声もdurationMsもありません"
+          }
+        }
+      ]
+    }
+  ],
+  "thumbnail": {
+    "textLines": [
+      "INVALID"
+    ]
+  },
+  "outputs": {
+    "video": true,
+    "captions": true,
+    "chapters": true,
+    "thumbnail": true,
+    "storyboard": true
+  },
+  "policies": {
+    "allowUnknownRights": false,
+    "maxDurationMinutes": 1
+  }
+}

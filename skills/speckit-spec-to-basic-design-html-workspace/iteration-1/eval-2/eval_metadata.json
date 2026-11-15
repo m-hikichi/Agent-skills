@@ -1,0 +1,9 @@
+{
+  "eval_id": 2,
+  "name": "full-feature-directory-becomes-implementation-ready",
+  "prompt": "このSpec Kit feature一式から、開発者・プログラマー・マネージャーが実装開始前にレビューできる基本設計HTMLを作成してください。技術詳細は正本にあるものだけを使い、重要フロー、状態、データ、契約、品質・検証・リスクも含めてください。",
+  "comparison": {
+    "with_skill": "v3 working tree",
+    "without_skill": "baseline dc9d2c8"
+  }
+}

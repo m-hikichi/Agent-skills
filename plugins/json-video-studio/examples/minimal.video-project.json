@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0.0",
+  "meta": {
+    "id": "minimal-demo",
+    "title": "最小構成の動画",
+    "description": "VOICEVOXを使わずに描画経路を確認するサンプルです。",
+    "language": "ja-JP"
+  },
+  "canvas": {
+    "preset": "youtube-1080p",
+    "fps": 30
+  },
+  "theme": {
+    "backgroundColor": "#111827",
+    "foregroundColor": "#F9FAFB",
+    "accentColor": "#38BDF8",
+    "fontFamily": "Noto Sans CJK JP",
+    "spacing": "comfortable",
+    "subtitleStyle": {
+      "fontSize": 54,
+      "maxLines": 2,
+      "backgroundColor": "#000000CC",
+      "color": "#FFFFFF"
+    }
+  },
+  "assets": [],
+  "speakers": [],
+  "sections": [
+    {
+      "id": "opening",
+      "title": "オープニング",
+      "scenes": [
+        {
+          "id": "opening-title",
+          "durationMs": 3000,
+          "visual": {
+            "type": "title",
+            "title": "JSON Video Studio",
+            "subtitle": "最小構成のレンダーテスト"
+          }
+        }
+      ]
+    }
+  ],
+  "thumbnail": {
+    "textLines": [
+      "JSONから動画を作る"
+    ],
+    "layout": "center"
+  },
+  "outputs": {
+    "video": true,
+    "captions": true,
+    "chapters": true,
+    "thumbnail": true,
+    "storyboard": true
+  },
+  "policies": {
+    "allowUnknownRights": false,
+    "maxDurationMinutes": 1
+  }
+}
